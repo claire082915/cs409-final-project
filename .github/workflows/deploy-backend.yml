@@ -1,4 +1,4 @@
-name: Deploy backend
+name: Deploy
 
 on:
   push:
@@ -7,9 +7,10 @@ on:
 
 jobs:
   deploy:
+    name: Render
     runs-on: ubuntu-latest
     steps:
-      # Render rebuilds from main when its deploy hook is called
-      - run: curl --fail -X POST "$RENDER_DEPLOY_HOOK_URL"
+      - name: Trigger Render deploy
+        run: curl --fail -X POST "$RENDER_DEPLOY_HOOK_URL"
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}

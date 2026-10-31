@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import itemsRouter from './routes/items.js'
 
 const port = process.env.PORT || 3000
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
@@ -14,7 +15,19 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Connect before listening so requests never hit a server without a database
+app.use('/api/items', itemsRouter)
+
+app.use((err, req, res, next) => {
+  if (err.name === 'CastError' || err.name === 'ValidationError') {
+    return res.status(400).json({ message: err.message })
+  }
+  if (err.status) {
+    return res.status(err.status).json({ message: err.message })
+  }
+  console.error(err)
+  res.status(500).json({ message: 'Server error' })
+})
+
 await mongoose.connect(process.env.MONGODB_URI)
 app.listen(port, () => {
   console.log(`Server running on port ${port}`)
