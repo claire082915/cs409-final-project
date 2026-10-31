@@ -17,7 +17,6 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/items', itemsRouter)
 
-// Send bad ids and failed validation back as 400s, keep body parser statuses, hide the rest
 app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {
     return res.status(400).json({ message: err.message })
@@ -29,7 +28,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Server error' })
 })
 
-// Connect before listening so requests never hit a server without a database
 await mongoose.connect(process.env.MONGODB_URI)
 app.listen(port, () => {
   console.log(`Server running on port ${port}`)

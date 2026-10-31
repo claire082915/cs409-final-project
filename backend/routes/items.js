@@ -2,7 +2,7 @@ import { Router } from 'express'
 import Item from '../models/item.js'
 import requireUser from '../middleware/requireUser.js'
 
-// Owner is left out so an update can't hand an item to someone else
+// Owner can't be changed
 const editableFields = ['name', 'description', 'photos']
 
 const router = Router()
@@ -24,7 +24,7 @@ function requireOwner(req, res, next) {
 }
 
 router.post('/', async (req, res) => {
-  // Express 5 leaves the body undefined when none is sent
+  // Body is undefined when none is sent
   const { name, description, photos } = req.body ?? {}
   const item = await Item.create({ name, description, photos, owner: req.userId })
   res.status(201).json(item)

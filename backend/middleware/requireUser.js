@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-// Placeholder until auth lands, take the user id from a header
+// Placeholder until auth lands
 export default function requireUser(req, res, next) {
   const userId = req.get('X-User-Id')
   if (!mongoose.isObjectIdOrHexString(userId)) {

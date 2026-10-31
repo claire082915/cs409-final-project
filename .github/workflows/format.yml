@@ -15,6 +15,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-      # Keep the version in sync with backend/package.json, skip folders that don't exist yet
+      # Match the version in backend/package.json
       - name: Check formatting
         run: npx prettier@3.9.10 --check --no-error-on-unmatched-pattern backend frontend

@@ -10,7 +10,6 @@ jobs:
     name: Render
     runs-on: ubuntu-latest
     steps:
-      # Render rebuilds from main when its deploy hook is called
       - name: Trigger Render deploy
         run: curl --fail -X POST "$RENDER_DEPLOY_HOOK_URL"
         env:
