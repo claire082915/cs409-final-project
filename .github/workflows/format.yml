@@ -1,0 +1,16 @@
+name: Format check
+
+on:
+  pull_request:
+    paths: ['backend/**', 'frontend/**', '.prettierrc']
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Keep the version in sync with backend/package.json, skip folders that don't exist yet
+      - run: npx prettier@3.9.10 --check --no-error-on-unmatched-pattern backend frontend
