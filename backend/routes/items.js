@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import Item from '../models/item.js'
 import requireUser from '../middleware/requireUser.js'
 
@@ -28,6 +29,17 @@ router.post('/', async (req, res) => {
   const { name, description, photos } = req.body ?? {}
   const item = await Item.create({ name, description, photos, owner: req.userId })
   res.status(201).json(item)
+})
+
+// TODO: Filter by availability from active loans once loans exist
+router.get('/', async (req, res) => {
+  const { owner } = req.query
+  // Without an owner the query would return every item
+  if (!mongoose.isObjectIdOrHexString(owner)) {
+    return res.status(400).json({ message: 'Missing or invalid owner query' })
+  }
+  const items = await Item.find({ owner }).sort({ createdAt: -1 })
+  res.json(items)
 })
 
 router.get('/:id', (req, res) => {
