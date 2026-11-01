@@ -3,6 +3,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import itemsRouter from './routes/items.js'
+import uploadsRouter from './routes/uploads.js'
 
 const port = process.env.PORT || 3000
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
@@ -16,6 +17,7 @@ app.get('/api/health', (req, res) => {
 })
 
 app.use('/api/items', itemsRouter)
+app.use('/api/uploads', uploadsRouter)
 
 app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {
