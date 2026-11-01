@@ -25,8 +25,8 @@ function requireOwner(req, res, next) {
   next()
 }
 
-// Runs after Mongo has dropped the photos, so a Cloudinary failure only leaves orphans
-async function deleteOrphanedPhotos(urls) {
+// Runs after the Mongo update, so a Cloudinary failure only leaves unused images behind
+async function deleteUnusedPhotos(urls) {
   try {
     await deletePhotos(urls)
   } catch (err) {
@@ -36,8 +36,12 @@ async function deleteOrphanedPhotos(urls) {
 
 router.post('/', async (req, res) => {
   // Body is undefined when none is sent
-  const { name, description, photos } = req.body ?? {}
-  const item = await Item.create({ name, description, photos, owner: req.userId })
+  const body = req.body ?? {}
+  const fields = {}
+  for (const field of editableFields) {
+    fields[field] = body[field]
+  }
+  const item = await Item.create({ ...fields, owner: req.userId })
   res.status(201).json(item)
 })
 
@@ -66,14 +70,14 @@ router.patch('/:id', requireOwner, async (req, res) => {
   }
   await req.item.save()
   const removedPhotos = oldPhotos.filter((url) => !req.item.photos.includes(url))
-  await deleteOrphanedPhotos(removedPhotos)
+  await deleteUnusedPhotos(removedPhotos)
   res.json(req.item)
 })
 
 // TODO: Block this while the item is on loan once loans exist
 router.delete('/:id', requireOwner, async (req, res) => {
   await req.item.deleteOne()
-  await deleteOrphanedPhotos(req.item.photos)
+  await deleteUnusedPhotos(req.item.photos)
   res.status(204).end()
 })
 
