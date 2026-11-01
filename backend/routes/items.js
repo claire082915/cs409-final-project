@@ -2,6 +2,7 @@ import { Router } from 'express'
 import mongoose from 'mongoose'
 import Item from '../models/item.js'
 import requireUser from '../middleware/requireUser.js'
+import { deletePhotos } from '../lib/cloudinary.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'photos']
@@ -22,6 +23,15 @@ function requireOwner(req, res, next) {
     return res.status(403).json({ message: 'Only the owner can change this item' })
   }
   next()
+}
+
+// Runs after Mongo has dropped the photos, so a Cloudinary failure only leaves orphans
+async function deleteOrphanedPhotos(urls) {
+  try {
+    await deletePhotos(urls)
+  } catch (err) {
+    console.error('Failed to delete photos from Cloudinary', err)
+  }
 }
 
 router.post('/', async (req, res) => {
@@ -48,18 +58,22 @@ router.get('/:id', (req, res) => {
 
 router.patch('/:id', requireOwner, async (req, res) => {
   const body = req.body ?? {}
+  const oldPhotos = [...req.item.photos]
   for (const field of editableFields) {
     if (body[field] !== undefined) {
       req.item[field] = body[field]
     }
   }
   await req.item.save()
+  const removedPhotos = oldPhotos.filter((url) => !req.item.photos.includes(url))
+  await deleteOrphanedPhotos(removedPhotos)
   res.json(req.item)
 })
 
 // TODO: Block this while the item is on loan once loans exist
 router.delete('/:id', requireOwner, async (req, res) => {
   await req.item.deleteOne()
+  await deleteOrphanedPhotos(req.item.photos)
   res.status(204).end()
 })
 
