@@ -2,6 +2,18 @@
 
 A borrowing tracker so users keep a shared record of who lent what to whom.
 
+## Frontend
+
+The React + Vite frontend lives in `frontend/` and currently uses sample data for its initial screens and interactions.
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Pushes to `main` that change `frontend/` build and deploy the site to GitHub Pages through `.github/workflows/deploy-pages.yml`. In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**. The Vite build uses relative asset paths so it works at the repository's Pages URL.
+
 ## Backend
 
 Deployed at: `https://lendr-api.onrender.com/api`
