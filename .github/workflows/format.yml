@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
+    paths: ['backend/**', 'frontend/**', '.prettierrc']
   pull_request:
     paths: ['backend/**', 'frontend/**', '.prettierrc']
 
