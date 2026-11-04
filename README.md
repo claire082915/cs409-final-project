@@ -81,26 +81,27 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Fields
 
-| Field      | Type   | Notes                                  |
-| ---------- | ------ | -------------------------------------- |
-| `item`     | id     | The item being borrowed                |
-| `owner`    | id     | The item's owner                       |
-| `borrower` | id     | The user who requested it              |
-| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled`   |
-| `dueDate`  | date   | Required                               |
+| Field      | Type   | Notes                                                                     |
+| ---------- | ------ | ------------------------------------------------------------------------- |
+| `item`     | id     | The item being borrowed                                                   |
+| `owner`    | id     | The item's owner                                                          |
+| `borrower` | id     | The user who requested it                                                 |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
+| `dueDate`  | date   | Required                                                                  |
+| `rating`   | number | Optional, whole number from 1 to 5                                        |
 
 #### Dashboard
 
 Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
-| `status`    | Matches                                    |
-| ----------- | ------------------------------------------ |
-| `requested` | Waiting for the owner to approve           |
-| `active`    | Approved and not yet past `dueDate`        |
-| `overdue`   | Approved and past `dueDate`                |
-| `returned`  | Returned by the borrower, or confirmed     |
-| `rejected`  | Rejected by the owner                      |
-| `cancelled` | Withdrawn by the borrower                  |
+| `status`    | Matches                                |
+| ----------- | -------------------------------------- |
+| `requested` | Waiting for the owner to approve       |
+| `active`    | Approved and not yet past `dueDate`    |
+| `overdue`   | Approved and past `dueDate`            |
+| `returned`  | Returned by the borrower, or confirmed |
+| `rejected`  | Rejected by the owner                  |
+| `cancelled` | Withdrawn by the borrower              |
 
 #### Status flow
 

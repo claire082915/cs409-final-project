@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
-    paths: ['backend/**', 'frontend/**', '.prettierrc']
+    paths: ['backend/**', 'frontend/**', '**/*.md', '.prettierrc']
   pull_request:
-    paths: ['backend/**', 'frontend/**', '.prettierrc']
+    paths: ['backend/**', 'frontend/**', '**/*.md', '.prettierrc']
 
 jobs:
   prettier:
@@ -20,4 +20,4 @@ jobs:
           node-version: 24
       # Match the version in backend/package.json
       - name: Check formatting
-        run: npx prettier@3.9.10 --check --no-error-on-unmatched-pattern backend frontend
+        run: npx prettier@3.9.10 --check --no-error-on-unmatched-pattern backend frontend '**/*.md'
