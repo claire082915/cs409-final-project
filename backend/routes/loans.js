@@ -17,6 +17,10 @@ const approveRoute = router.route('/:id/approve')
 const returnRoute = router.route('/:id/return')
 // Confirm return of loaned item (PATCH /api/loans/:id/confirm)
 const confirmRoute = router.route('/:id/confirm')
+// Reject a request (PATCH /api/loans/:id/reject)
+const rejectRoute = router.route('/:id/reject')
+// Withdraw a request (PATCH /api/loans/:id/cancel)
+const cancelRoute = router.route('/:id/cancel')
 
 loansRoute.post(async function (req, res) {
   const body = req.body ?? {}
@@ -180,6 +184,58 @@ confirmRoute.patch(async function (req, res) {
     loan.status = 'confirmed'
     await loan.save()
     return res.status(200).json({ message: 'Success: loans/:id/confirm PATCH', data: loan })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+rejectRoute.patch(async function (req, res) {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).json({ message: 'Loan not found.', data: {} })
+  }
+  try {
+    const loan = await Loan.findById(req.params.id)
+    if (!loan) {
+      return res.status(404).json({ message: 'Loan not found.', data: {} })
+    }
+    // Only the owner can reject -> 403
+    if (String(loan.owner) !== String(req.userId)) {
+      return res.status(403).json({ message: 'Only the item owner can reject.', data: {} })
+    }
+    // Loan is not awaiting approval -> 409
+    if (loan.status !== 'requested') {
+      return res.status(409).json({ message: 'Loan is not awaiting approval.', data: {} })
+    }
+
+    loan.status = 'rejected'
+    await loan.save()
+    return res.status(200).json({ message: 'Success: loans/:id/reject PATCH', data: loan })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+cancelRoute.patch(async function (req, res) {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).json({ message: 'Loan not found.', data: {} })
+  }
+  try {
+    const loan = await Loan.findById(req.params.id)
+    if (!loan) {
+      return res.status(404).json({ message: 'Loan not found.', data: {} })
+    }
+    // Only the borrower can cancel -> 403
+    if (String(loan.borrower) !== String(req.userId)) {
+      return res.status(403).json({ message: 'Only the borrower can cancel.', data: {} })
+    }
+    // Loan was already approved or finished -> 409
+    if (loan.status !== 'requested') {
+      return res.status(409).json({ message: 'Only a pending request can be cancelled.', data: {} })
+    }
+
+    loan.status = 'cancelled'
+    await loan.save()
+    return res.status(200).json({ message: 'Success: loans/:id/cancel PATCH', data: loan })
   } catch (err) {
     return res.status(500).json({ message: 'Server error', data: {} })
   }

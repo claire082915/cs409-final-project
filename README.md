@@ -52,8 +52,8 @@ Item, upload, and loan requests need the `X-User-Id` header until auth is built.
 | `loans/:id/approve` | PATCH  | Approve a request (owner)          |
 | `loans/:id/return`  | PATCH  | Mark the item returned (borrower)  |
 | `loans/:id/confirm` | PATCH  | Confirm the return (owner)         |
-| `loans/:id/reject`  | PATCH  | Reject a request (owner) - TBD     |
-| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower) - TBD|
+| `loans/:id/reject`  | PATCH  | Reject a request (owner)           |
+| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)      |
 
 ### Items
 
