@@ -1,11 +1,14 @@
-import mongoose from 'mongoose'
+import { verifyToken } from '../lib/auth.js'
 
-// Placeholder until auth lands
 export default function requireUser(req, res, next) {
-  const userId = req.get('X-User-Id')
-  if (!mongoose.isObjectIdOrHexString(userId)) {
-    return res.status(401).json({ message: 'Missing or invalid X-User-Id header' })
+  const [scheme, token] = req.get('Authorization')?.split(' ') ?? []
+  if (scheme !== 'Bearer' || !token) {
+    return res.status(401).json({ message: 'Missing bearer token' })
   }
-  req.userId = userId
+  try {
+    req.userId = verifyToken(token)
+  } catch {
+    return res.status(401).json({ message: 'Invalid or expired token' })
+  }
   next()
 }
