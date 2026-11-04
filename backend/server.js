@@ -27,6 +27,11 @@ app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {
     return res.status(400).json({ message: err.message })
   }
+  // Duplicate key on a unique index
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0]
+    return res.status(409).json({ message: `${field} is already taken` })
+  }
   if (err.status) {
     return res.status(err.status).json({ message: err.message })
   }

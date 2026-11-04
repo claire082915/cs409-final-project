@@ -27,6 +27,10 @@ router.post('/register', async (req, res) => {
       .status(400)
       .json({ message: `Password must be at least ${minPasswordLength} characters` })
   }
+  // bcrypt ignores everything past 72 bytes
+  if (bcrypt.truncates(credentials.password)) {
+    return res.status(400).json({ message: 'Password is too long' })
+  }
   const { username, displayName } = req.body
   if (typeof username !== 'string' || typeof displayName !== 'string') {
     return res.status(400).json({ message: 'Username and display name are required' })
