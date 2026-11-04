@@ -33,7 +33,7 @@ Add `MONGODB_URI` and `CLOUDINARY_URL` values in `.env`.
 
 ### Endpoints
 
-Item and upload requests need the `X-User-Id` header until auth is built.
+Item, upload, and loan requests need the `X-User-Id` header until auth is built.
 
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
@@ -44,6 +44,16 @@ Item and upload requests need the `X-User-Id` header until auth is built.
 |                     | PATCH  | Update name, description or photos |
 |                     | DELETE | Delete an item and its photos      |
 | `uploads/signature` | POST   | Sign a photo upload                |
+
+| Endpoint            | Method | Action                             |
+| ------------------- | ------ | ---------------------------------- |
+| `loans`             | POST   | Request a loan                     |
+| `loans/:id`         | GET    | View a loan                        |
+| `loans/:id/approve` | PATCH  | Approve a request (owner)          |
+| `loans/:id/return`  | PATCH  | Mark the item returned (borrower)  |
+| `loans/:id/confirm` | PATCH  | Confirm the return (owner)         |
+| `loans/:id/reject`  | PATCH  | Reject a request (owner) - TBD     |
+| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower) - TBD|
 
 ### Items
 
