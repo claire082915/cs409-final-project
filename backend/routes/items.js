@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
 import Item from '../models/item.js'
+import Loan, { ACTIVE_STATUSES } from '../models/loan.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos } from '../lib/cloudinary.js'
 
@@ -34,6 +35,23 @@ async function deleteUnusedPhotos(urls) {
   }
 }
 
+async function isOnLoan(itemId) {
+  return Boolean(await Loan.exists({ item: itemId, status: { $in: ACTIVE_STATUSES } }))
+}
+
+// Ids as strings so they can be matched against item.id
+async function loanedItemIds(itemIds) {
+  const loanedIds = await Loan.distinct('item', {
+    item: { $in: itemIds },
+    status: { $in: ACTIVE_STATUSES },
+  })
+  return new Set(loanedIds.map(String))
+}
+
+function withAvailability(item, available) {
+  return { ...item.toJSON(), available }
+}
+
 router.post('/', async (req, res) => {
   // Body is undefined when none is sent
   const body = req.body ?? {}
@@ -42,10 +60,10 @@ router.post('/', async (req, res) => {
     fields[field] = body[field]
   }
   const item = await Item.create({ ...fields, owner: req.userId })
-  res.status(201).json(item)
+  // A new item has no loans yet
+  res.status(201).json(withAvailability(item, true))
 })
 
-// TODO: Filter by availability from active loans once loans exist
 router.get('/', async (req, res) => {
   const { owner } = req.query
   // Without an owner the query would return every item
@@ -53,11 +71,13 @@ router.get('/', async (req, res) => {
     return res.status(400).json({ message: 'Missing or invalid owner query' })
   }
   const items = await Item.find({ owner }).sort({ createdAt: -1 })
-  res.json(items)
+  const loanedIds = await loanedItemIds(items.map((item) => item._id))
+  const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
+  res.json(itemsWithAvailability)
 })
 
-router.get('/:id', (req, res) => {
-  res.json(req.item)
+router.get('/:id', async (req, res) => {
+  res.json(withAvailability(req.item, !(await isOnLoan(req.item._id))))
 })
 
 router.patch('/:id', requireOwner, async (req, res) => {
@@ -71,12 +91,15 @@ router.patch('/:id', requireOwner, async (req, res) => {
   await req.item.save()
   const removedPhotos = oldPhotos.filter((url) => !req.item.photos.includes(url))
   await deleteUnusedPhotos(removedPhotos)
-  res.json(req.item)
+  res.json(withAvailability(req.item, !(await isOnLoan(req.item._id))))
 })
 
-// TODO: Block this while the item is on loan once loans exist
 router.delete('/:id', requireOwner, async (req, res) => {
+  if (await isOnLoan(req.item._id)) {
+    return res.status(409).json({ message: "Can't delete an item while it's on loan" })
+  }
   await req.item.deleteOne()
+  await Loan.updateMany({ item: req.item._id, status: 'requested' }, { status: 'rejected' })
   await deleteUnusedPhotos(req.item.photos)
   res.status(204).end()
 })

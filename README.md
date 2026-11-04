@@ -65,6 +65,8 @@ Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 | `description` | string   | Optional          |
 | `photos`      | string[] | Cloudinary URLs   |
 
+Item responses also include `available`, which is `false` while the item is on loan.
+
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 
 ### Loans
