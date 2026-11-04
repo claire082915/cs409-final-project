@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const STATUSES = ['requested', 'approved', 'returned', 'confirmed']
+const STATUSES = ['requested', 'approved', 'returned', 'confirmed', 'rejected', 'cancelled']
 
 const loanSchema = new mongoose.Schema(
   {
