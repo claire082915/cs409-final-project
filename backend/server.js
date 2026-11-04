@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import authRouter from './routes/auth.js'
 import itemsRouter from './routes/items.js'
 import uploadsRouter from './routes/uploads.js'
 import loansRouter from './routes/loans.js'
@@ -17,6 +18,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
+app.use('/api/auth', authRouter)
 app.use('/api/items', itemsRouter)
 app.use('/api/uploads', uploadsRouter)
 app.use('/api/loans', loansRouter)

@@ -29,15 +29,17 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI` and `CLOUDINARY_URL` values in `.env`.
+Add `MONGODB_URI`, `CLOUDINARY_URL` and `JWT_SECRET` values in `.env`.
 
 ### Endpoints
 
-Item, upload, and loan requests need the `X-User-Id` header until auth is built.
+Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
 | `health`            | GET    | Check the server is up             |
+| `auth/register`     | POST   | Create an account, returns a JWT   |
+| `auth/login`        | POST   | Log in, returns a JWT              |
 | `items`             | POST   | Create an item                     |
 | `items?owner=:id`   | GET    | List a user's items, newest first  |
 | `items/:id`         | GET    | Get an item                        |
@@ -45,15 +47,15 @@ Item, upload, and loan requests need the `X-User-Id` header until auth is built.
 |                     | DELETE | Delete an item and its photos      |
 | `uploads/signature` | POST   | Sign a photo upload                |
 
-| Endpoint            | Method | Action                             |
-| ------------------- | ------ | ---------------------------------- |
-| `loans`             | POST   | Request a loan                     |
-| `loans/:id`         | GET    | View a loan                        |
-| `loans/:id/approve` | PATCH  | Approve a request (owner)          |
-| `loans/:id/return`  | PATCH  | Mark the item returned (borrower)  |
-| `loans/:id/confirm` | PATCH  | Confirm the return (owner)         |
-| `loans/:id/reject`  | PATCH  | Reject a request (owner)           |
-| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)      |
+| Endpoint            | Method | Action                            |
+| ------------------- | ------ | --------------------------------- |
+| `loans`             | POST   | Request a loan                    |
+| `loans/:id`         | GET    | View a loan                       |
+| `loans/:id/approve` | PATCH  | Approve a request (owner)         |
+| `loans/:id/return`  | PATCH  | Mark the item returned (borrower) |
+| `loans/:id/confirm` | PATCH  | Confirm the return (owner)        |
+| `loans/:id/reject`  | PATCH  | Reject a request (owner)          |
+| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)     |
 
 ### Items
 
@@ -69,13 +71,13 @@ PATCH replaces the whole `photos` list and deletes any left-out photos from Clou
 
 `POST loans` takes `{ itemId, dueDate }`. The caller becomes the borrower, and `dueDate` must be a future date.
 
-| Field      | Type   | Notes                                                    |
-| ---------- | ------ | -------------------------------------------------------- |
-| `item`     | id     | The item being borrowed                                  |
-| `owner`    | id     | The item's owner                                         |
-| `borrower` | id     | The user who requested it                                |
-| `status`   | string | `requested`, `approved`, `returned`, `confirmed`         |
-| `dueDate`  | date   | Required                                                 |
+| Field      | Type   | Notes                                            |
+| ---------- | ------ | ------------------------------------------------ |
+| `item`     | id     | The item being borrowed                          |
+| `owner`    | id     | The item's owner                                 |
+| `borrower` | id     | The user who requested it                        |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed` |
+| `dueDate`  | date   | Required                                         |
 
 A loan moves `requested` → `approved` → `returned` → `confirmed`. The owner approves and confirms, and the borrower returns. An item counts as on loan while a loan is `approved` or `returned`.
 
