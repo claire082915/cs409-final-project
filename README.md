@@ -65,6 +65,22 @@ Item, upload, and loan requests need the `X-User-Id` header until auth is built.
 
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 
+### Loans
+
+`POST loans` takes `{ itemId, dueDate }`. The caller becomes the borrower, and `dueDate` must be a future date.
+
+| Field      | Type   | Notes                                                    |
+| ---------- | ------ | -------------------------------------------------------- |
+| `item`     | id     | The item being borrowed                                  |
+| `owner`    | id     | The item's owner                                         |
+| `borrower` | id     | The user who requested it                                |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed`         |
+| `dueDate`  | date   | Required                                                 |
+
+A loan moves `requested` → `approved` → `returned` → `confirmed`. The owner approves and confirms, and the borrower returns. An item counts as on loan while a loan is `approved` or `returned`.
+
+Loan responses are shaped `{ message, data }`, with `data` holding the loan.
+
 ### Photos
 
 1. Call `POST uploads/signature` to get `cloudName`, `apiKey`, `timestamp`, `folder` and `signature`
