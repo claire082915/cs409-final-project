@@ -86,8 +86,7 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 | `item`     | id     | The item being borrowed                |
 | `owner`    | id     | The item's owner                       |
 | `borrower` | id     | The user who requested it              |
-| `status`   | string | `requested`, `approved`, `returned`,   |
-                        `confirmed`, `rejected`, `cancelled`   |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled`   |
 | `dueDate`  | date   | Required                               |
 
 #### Dashboard
