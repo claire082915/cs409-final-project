@@ -19,13 +19,6 @@ const loanSchema = new mongoose.Schema(
     approvedAt: Date,
     returnedAt: Date,
     confirmedAt: Date,
-    // Owner's rating of the borrower, unset until rated
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5,
-      validate: { validator: Number.isInteger, message: 'Rating must be a whole number' },
-    },
   },
   { timestamps: true },
 )

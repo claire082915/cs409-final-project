@@ -59,6 +59,8 @@ Item, upload, loan, and user requests need an `Authorization: Bearer <token>` he
 | `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)         |
 | `loans/lent`        | GET    | List loans you lent, newest first     |
 | `loans/borrowed`    | GET    | List loans you borrowed, newest first |
+| `loans/:id/ratings` | POST   | Rate the other user                   |
+|                     | GET    | See the rating you gave on a loan     |
 | `loans/reminders`   | GET    | List borrowed loans to return soon    |
 
 ### Items
@@ -90,7 +92,6 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 | `borrower` | id     | The user who requested it                                                 |
 | `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
 | `dueDate`  | date   | Required                                                                  |
-| `rating`   | number | Optional, whole number from 1 to 5                                        |
 
 #### Dashboard
 
@@ -119,9 +120,15 @@ An item counts as on loan while a loan is `approved` or `returned`.
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
 
+#### Ratings
+
+`POST loans/:id/ratings` takes `{ score }`, a whole number from 1 to 5. It only works once the loan is `confirmed`, and each person can rate a loan once. The owner rates the borrower and the borrower rates the owner.
+
+`GET loans/:id/ratings` returns only the rating you gave on that loan. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
+
 ### Profiles
 
-`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is the average `rating` across loans where the user was the borrower, or `null` if none are rated.
+`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
 ### Photos
 

@@ -1,20 +1,20 @@
 import { Router } from 'express'
 import Item from '../models/item.js'
-import Loan from '../models/loan.js'
 import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
+import Rating from '../models/rating.js'
 
 const router = Router()
 router.use(requireUser)
 
-// Null when nobody has rated the user as a borrower yet
-async function borrowerReputation(userId) {
-  const [result] = await Loan.aggregate([
-    { $match: { borrower: userId } },
-    { $group: { _id: null, average: { $avg: '$rating' } } },
+// Null when nobody has rated the user yet
+async function reputation(userId) {
+  const [result] = await Rating.aggregate([
+    { $match: { ratee: userId } },
+    { $group: { _id: null, average: { $avg: '$score' }, count: { $sum: 1 } } },
   ])
-  return result?.average ?? null
+  return result ? { average: result.average, count: result.count } : null
 }
 
 router.get('/:username', async (req, res) => {
@@ -29,7 +29,7 @@ router.get('/:username', async (req, res) => {
     username: user.username,
     displayName: user.displayName,
     items: itemsWithAvailability,
-    reputation: await borrowerReputation(user._id),
+    reputation: await reputation(user._id),
   })
 })
 

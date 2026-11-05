@@ -3,6 +3,7 @@ import Item from '../models/item.js'
 import Loan from '../models/loan.js'
 import { Router } from 'express'
 import requireUser from '../middleware/requireUser.js'
+import Rating from '../models/rating.js'
 
 // Loans due within this many days count as due soon
 const dueSoonDays = 3
@@ -31,6 +32,8 @@ const confirmRoute = router.route('/:id/confirm')
 const rejectRoute = router.route('/:id/reject')
 // Withdraw a request (PATCH /api/loans/:id/cancel)
 const cancelRoute = router.route('/:id/cancel')
+// Rate the other person on a loan (POST) or see your own rating (GET) (/api/loans/:id/ratings)
+const ratingsRoute = router.route('/:id/ratings')
 
 function statusFilter(status) {
   const currDate = new Date()
@@ -330,6 +333,82 @@ cancelRoute.patch(async function (req, res) {
     loan.status = 'cancelled'
     await loan.save()
     return res.status(200).json({ message: 'Success: loans/:id/cancel PATCH', data: loan })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+ratingsRoute.post(async function (req, res) {
+  const body = req.body ?? {}
+
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).json({ message: 'Loan not found.', data: {} })
+  }
+
+  try {
+    const loan = await Loan.findById(req.params.id)
+    if (!loan) {
+      return res.status(404).json({ message: 'Loan not found.', data: {} })
+    }
+
+    const isOwner = String(loan.owner) === String(req.userId)
+    const isBorrower = String(loan.borrower) === String(req.userId)
+    if (!isOwner && !isBorrower) {
+      return res.status(403).json({ message: 'Only the owner or borrower can rate.', data: {} })
+    }
+
+    if (loan.status !== 'confirmed') {
+      return res.status(409).json({ message: 'Loan is not confirmed yet.', data: {} })
+    }
+
+    // score must be from 1 to 5 -> 400
+    if (!Number.isInteger(body.score) || body.score < 1 || body.score > 5) {
+      return res.status(400).json({ message: 'score must be from 1 to 5.', data: {} })
+    }
+
+    // Already rated this loan -> 409
+    if (await Rating.exists({ loan: loan._id, rater: req.userId })) {
+      return res.status(409).json({ message: 'You already rated this loan.', data: {} })
+    }
+
+    let ratee = null
+    if (isOwner) {
+      ratee = loan.borrower
+    } else {
+      ratee = loan.owner
+    }
+    const newRating = await Rating.create({
+      loan: loan._id,
+      rater: req.userId,
+      ratee: ratee,
+      score: body.score,
+    })
+
+    return res.status(201).json({ message: 'Success: loans/:id/ratings POST', data: newRating })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+ratingsRoute.get(async function (req, res) {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).json({ message: 'Loan not found.', data: {} })
+  }
+
+  try {
+    const loan = await Loan.findById(req.params.id)
+    if (!loan) {
+      return res.status(404).json({ message: 'Loan not found.', data: {} })
+    }
+
+    if (String(loan.owner) !== String(req.userId) && String(loan.borrower) !== String(req.userId)) {
+      return res
+        .status(403)
+        .json({ message: 'Only the owner or borrower can view ratings.', data: {} })
+    }
+    const ratings = await Rating.find({ loan: loan._id, rater: req.userId })
+
+    return res.status(200).json({ message: 'Success: loans/:id/ratings GET', data: ratings })
   } catch (err) {
     return res.status(500).json({ message: 'Server error', data: {} })
   }
