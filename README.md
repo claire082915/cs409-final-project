@@ -58,6 +58,8 @@ Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 | `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)         |
 | `loans/lent`        | GET    | List loans you lent, newest first     |
 | `loans/borrowed`    | GET    | List loans you borrowed, newest first |
+| `loans/:id/ratings` | POST   | Rate the other user                   |
+|                     | GET    | See the rating you gave on a loan     |
 
 ### Items
 
@@ -81,26 +83,26 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Fields
 
-| Field      | Type   | Notes                                  |
-| ---------- | ------ | -------------------------------------- |
-| `item`     | id     | The item being borrowed                |
-| `owner`    | id     | The item's owner                       |
-| `borrower` | id     | The user who requested it              |
-| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled`   |
-| `dueDate`  | date   | Required                               |
+| Field      | Type   | Notes                                                                     |
+| ---------- | ------ | ------------------------------------------------------------------------- |
+| `item`     | id     | The item being borrowed                                                   |
+| `owner`    | id     | The item's owner                                                          |
+| `borrower` | id     | The user who requested it                                                 |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
+| `dueDate`  | date   | Required                                                                  |
 
 #### Dashboard
 
 Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
-| `status`    | Matches                                    |
-| ----------- | ------------------------------------------ |
-| `requested` | Waiting for the owner to approve           |
-| `active`    | Approved and not yet past `dueDate`        |
-| `overdue`   | Approved and past `dueDate`                |
-| `returned`  | Returned by the borrower, or confirmed     |
-| `rejected`  | Rejected by the owner                      |
-| `cancelled` | Withdrawn by the borrower                  |
+| `status`    | Matches                                |
+| ----------- | -------------------------------------- |
+| `requested` | Waiting for the owner to approve       |
+| `active`    | Approved and not yet past `dueDate`    |
+| `overdue`   | Approved and past `dueDate`            |
+| `returned`  | Returned by the borrower, or confirmed |
+| `rejected`  | Rejected by the owner                  |
+| `cancelled` | Withdrawn by the borrower              |
 
 #### Status flow
 
@@ -110,6 +112,12 @@ An item counts as on loan while a loan is `approved` or `returned`.
 - `approved` → `returned` (borrower returns the item)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
+
+#### Ratings
+
+`POST loans/:id/ratings` takes `{ score }`, a whole number from 1 to 5. It only works once the loan is `confirmed`, and each person can rate a loan once. The owner rates the borrower and the borrower rates the owner.
+
+`GET loans/:id/ratings` returns only the rating you gave on that loan. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
 
 ### Photos
 
