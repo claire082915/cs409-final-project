@@ -16,7 +16,7 @@ Pushes to `main` that change `frontend/` build and deploy the site to GitHub Pag
 
 ## Backend
 
-Deployed at: `https://lendr-api.onrender.com/api`
+Deployed at: https://lendr-api.onrender.com/api
 
 Changes to `backend/` on `main` are auto-deployed.
 
@@ -29,23 +29,26 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI`, `CLOUDINARY_URL` and `JWT_SECRET` values in `.env`.
+Add `MONGODB_URI`, `CLOUDINARY_URL` and `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) values in `.env`.
+
+### Auth
+
+Sign up, log in (email or Google), log out and password reset will happen in the frontend with the Firebase SDK. The backend only verifies Firebase ID tokens and stores each user's profile.
 
 ### Endpoints
 
-Item, upload, loan, and user requests need an `Authorization: Bearer <token>` header.
+Every request except `health` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
 
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
 | `health`            | GET    | Check the server is up             |
-| `auth/register`     | POST   | Create an account, returns a JWT   |
-| `auth/login`        | POST   | Log in, returns a JWT              |
 | `items`             | POST   | Create an item                     |
 | `items?owner=:id`   | GET    | List a user's items, newest first  |
 | `items/:id`         | GET    | Get an item                        |
 |                     | PATCH  | Update name, description or photos |
 |                     | DELETE | Delete an item and its photos      |
 | `uploads/signature` | POST   | Sign a photo upload                |
+| `users`             | POST   | Create your profile                |
 | `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |

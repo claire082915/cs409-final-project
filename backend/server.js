@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
-import authRouter from './routes/auth.js'
+import { initializeApp, cert } from 'firebase-admin/app'
 import itemsRouter from './routes/items.js'
 import uploadsRouter from './routes/uploads.js'
 import loansRouter from './routes/loans.js'
@@ -13,6 +13,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
 // MongoDB's error code for a write that breaks a unique index
 const duplicateKeyCode = 11000
 
+initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) })
+
 const app = express()
 app.use(cors({ origin: allowedOrigins }))
 app.use(express.json())
@@ -21,7 +23,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-app.use('/api/auth', authRouter)
 app.use('/api/items', itemsRouter)
 app.use('/api/uploads', uploadsRouter)
 app.use('/api/loans', loansRouter)
