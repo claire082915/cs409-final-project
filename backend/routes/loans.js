@@ -9,6 +9,10 @@ router.use(requireUser)
 
 // Request a loan (POST /api/loans)
 const loansRoute = router.route('/')
+// List loans you lent (GET /api/loans/lent)
+const lentRoute = router.route('/lent')
+// List loans you borrowed (GET /api/loans/borrowed)
+const borrowedRoute = router.route('/borrowed')
 // View a loan (GET /api/loans/:id)
 const loansIdRoute = router.route('/:id')
 // Approve a loan (PATCH /api/loans/:id/approve)
@@ -21,6 +25,32 @@ const confirmRoute = router.route('/:id/confirm')
 const rejectRoute = router.route('/:id/reject')
 // Withdraw a request (PATCH /api/loans/:id/cancel)
 const cancelRoute = router.route('/:id/cancel')
+
+function statusFilter(status) {
+  const currDate = new Date()
+  if (status === undefined) {
+    return {}
+  } 
+  if (status === 'requested') {
+    return {status: 'requested'}
+  }
+  if (status === 'active') {
+    return {status: 'approved', dueDate: {$gte: currDate}}
+  }
+  if (status === 'overdue') {
+    return {status: 'approved', dueDate: {$lt: currDate}}
+  }
+  if (status === 'returned') {
+    return {status: {$in: ['returned', 'confirmed']}}
+  }
+  if (status === 'rejected') {
+    return {status: 'rejected'}
+  }
+  if (status === 'cancelled') {
+    return {status: 'cancelled'}
+  }
+  return null
+}
 
 loansRoute.post(async function (req, res) {
   const body = req.body ?? {}
@@ -75,6 +105,35 @@ loansRoute.post(async function (req, res) {
   }
 })
 
+lentRoute.get(async function (req, res) {
+  const filter = statusFilter(req.query.status)
+  if (!filter) {
+    return res.status(400).json({ message: 'Invalid status filter.', data: {} })
+  }
+  filter.owner = req.userId
+  try {
+    const loans = await Loan.find(filter).sort({createdAt: -1}).populate('item', 'name description photos')
+
+    return res.status(200).json({ message: 'Success: loans/lent GET', data: loans })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+borrowedRoute.get(async function (req, res) {
+  const filter = statusFilter(req.query.status)
+  if (!filter) {
+    return res.status(400).json({ message: 'Invalid status filter.', data: {} })
+  }
+  filter.borrower = req.userId
+  try {
+    const loans = await Loan.find(filter).sort({createdAt: -1}).populate('item', 'name description photos')
+    return res.status(200).json({ message: 'Success: loans/borrowed GET', data: loans })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
 loansIdRoute.get(async function (req, res) {
   // URL id is not a valid id -> 404
   if (!mongoose.isValidObjectId(req.params.id)) {
@@ -82,7 +141,7 @@ loansIdRoute.get(async function (req, res) {
   }
 
   try {
-    const loan = await Loan.findById(req.params.id)
+    const loan = await Loan.findById(req.params.id).populate('item', 'name description photos')
     if (!loan) {
       return res.status(404).json({ message: 'Loan not found.', data: {} })
     }
