@@ -225,6 +225,7 @@ approveRoute.patch(async function (req, res) {
     }
 
     loan.status = 'approved'
+    loan.approvedAt = new Date()
     await loan.save()
     return res.status(200).json({ message: 'Success: loans/:id/approve PATCH', data: loan })
   } catch (err) {
@@ -252,6 +253,7 @@ returnRoute.patch(async function (req, res) {
     }
 
     loan.status = 'returned'
+    loan.returnedAt = new Date()
     await loan.save()
     return res.status(200).json({ message: 'Success: loans/:id/return PATCH', data: loan })
   } catch (err) {
@@ -279,6 +281,7 @@ confirmRoute.patch(async function (req, res) {
     }
 
     loan.status = 'confirmed'
+    loan.confirmedAt = new Date()
     await loan.save()
     return res.status(200).json({ message: 'Success: loans/:id/confirm PATCH', data: loan })
   } catch (err) {

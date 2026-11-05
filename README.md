@@ -85,13 +85,16 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Fields
 
-| Field      | Type   | Notes                                                                     |
-| ---------- | ------ | ------------------------------------------------------------------------- |
-| `item`     | id     | The item being borrowed                                                   |
-| `owner`    | id     | The item's owner                                                          |
-| `borrower` | id     | The user who requested it                                                 |
-| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
-| `dueDate`  | date   | Required                                                                  |
+| Field         | Type   | Notes                                                                     |
+| ------------- | ------ | ------------------------------------------------------------------------- |
+| `item`        | id     | The item being borrowed                                                   |
+| `owner`       | id     | The item's owner                                                          |
+| `borrower`    | id     | The user who requested it                                                 |
+| `status`      | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
+| `dueDate`     | date   | Required                                                                  |
+| `approvedAt`  | date   | Set when the owner approves the request                                   |
+| `returnedAt`  | date   | Set when the borrower marks the item returned                             |
+| `confirmedAt` | date   | Set when the owner confirms the return                                    |
 
 #### Dashboard
 
