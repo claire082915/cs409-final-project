@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 
 const STATUSES = ['requested', 'approved', 'returned', 'confirmed', 'rejected', 'cancelled']
+// The item stays on loan until the owner confirms the return
+export const ACTIVE_STATUSES = ['approved', 'returned']
 
 const loanSchema = new mongoose.Schema(
   {
