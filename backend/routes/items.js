@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
 import Item from '../models/item.js'
-import Loan, { ACTIVE_STATUSES } from '../models/loan.js'
+import Loan from '../models/loan.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos } from '../lib/cloudinary.js'
+import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'photos']
@@ -33,23 +34,6 @@ async function deleteUnusedPhotos(urls) {
   } catch (err) {
     console.error('Failed to delete photos from Cloudinary', err)
   }
-}
-
-async function isOnLoan(itemId) {
-  return Boolean(await Loan.exists({ item: itemId, status: { $in: ACTIVE_STATUSES } }))
-}
-
-// Ids as strings so they can be matched against item.id
-async function loanedItemIds(itemIds) {
-  const loanedIds = await Loan.distinct('item', {
-    item: { $in: itemIds },
-    status: { $in: ACTIVE_STATUSES },
-  })
-  return new Set(loanedIds.map(String))
-}
-
-function withAvailability(item, available) {
-  return { ...item.toJSON(), available }
 }
 
 router.post('/', async (req, res) => {

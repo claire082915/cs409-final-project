@@ -33,7 +33,7 @@ Add `MONGODB_URI`, `CLOUDINARY_URL` and `JWT_SECRET` values in `.env`.
 
 ### Endpoints
 
-Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
+Item, upload, loan, and user requests need an `Authorization: Bearer <token>` header.
 
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
@@ -46,6 +46,7 @@ Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 |                     | PATCH  | Update name, description or photos |
 |                     | DELETE | Delete an item and its photos      |
 | `uploads/signature` | POST   | Sign a photo upload                |
+| `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
 | ------------------- | ------ | ------------------------------------- |
@@ -111,6 +112,10 @@ An item counts as on loan while a loan is `approved` or `returned`.
 - `approved` → `returned` (borrower returns the item)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
+
+### Profiles
+
+`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` are the user's items, newest first, each with `available`. `reputation` is the average `rating` across loans where the user was the borrower, or `null` if none are rated.
 
 ### Photos
 
