@@ -6,6 +6,7 @@ import authRouter from './routes/auth.js'
 import itemsRouter from './routes/items.js'
 import uploadsRouter from './routes/uploads.js'
 import loansRouter from './routes/loans.js'
+import usersRouter from './routes/users.js'
 
 const port = process.env.PORT || 3000
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
@@ -24,6 +25,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/items', itemsRouter)
 app.use('/api/uploads', uploadsRouter)
 app.use('/api/loans', loansRouter)
+app.use('/api/users', usersRouter)
 
 app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {

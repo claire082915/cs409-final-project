@@ -33,7 +33,7 @@ Add `MONGODB_URI`, `CLOUDINARY_URL` and `JWT_SECRET` values in `.env`.
 
 ### Endpoints
 
-Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
+Item, upload, loan, and user requests need an `Authorization: Bearer <token>` header.
 
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
@@ -46,6 +46,7 @@ Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 |                     | PATCH  | Update name, description or photos |
 |                     | DELETE | Delete an item and its photos      |
 | `uploads/signature` | POST   | Sign a photo upload                |
+| `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
 | ------------------- | ------ | ------------------------------------- |
@@ -58,6 +59,7 @@ Item, upload, and loan requests need an `Authorization: Bearer <token>` header.
 | `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)         |
 | `loans/lent`        | GET    | List loans you lent, newest first     |
 | `loans/borrowed`    | GET    | List loans you borrowed, newest first |
+| `loans/reminders`   | GET    | List borrowed loans to return soon    |
 
 ### Items
 
@@ -81,26 +83,32 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Fields
 
-| Field      | Type   | Notes                                  |
-| ---------- | ------ | -------------------------------------- |
-| `item`     | id     | The item being borrowed                |
-| `owner`    | id     | The item's owner                       |
-| `borrower` | id     | The user who requested it              |
-| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled`   |
-| `dueDate`  | date   | Required                               |
+| Field      | Type   | Notes                                                                     |
+| ---------- | ------ | ------------------------------------------------------------------------- |
+| `item`     | id     | The item being borrowed                                                   |
+| `owner`    | id     | The item's owner                                                          |
+| `borrower` | id     | The user who requested it                                                 |
+| `status`   | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
+| `dueDate`  | date   | Required                                                                  |
+| `rating`   | number | Optional, whole number from 1 to 5                                        |
 
 #### Dashboard
 
 Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
-| `status`    | Matches                                    |
-| ----------- | ------------------------------------------ |
-| `requested` | Waiting for the owner to approve           |
-| `active`    | Approved and not yet past `dueDate`        |
-| `overdue`   | Approved and past `dueDate`                |
-| `returned`  | Returned by the borrower, or confirmed     |
-| `rejected`  | Rejected by the owner                      |
-| `cancelled` | Withdrawn by the borrower                  |
+| `status`    | Matches                                 |
+| ----------- | --------------------------------------- |
+| `requested` | Waiting for the owner to approve        |
+| `active`    | Approved and not yet past `dueDate`     |
+| `overdue`   | Approved and past `dueDate`             |
+| `due-soon`  | Approved and due within the next 3 days |
+| `returned`  | Returned by the borrower, or confirmed  |
+| `rejected`  | Rejected by the owner                   |
+| `cancelled` | Withdrawn by the borrower               |
+
+#### Reminders
+
+`GET loans/reminders` returns your borrowed loans that are overdue or due soon, in `data.overdue` and `data.dueSoon`, soonest due first.
 
 #### Status flow
 
@@ -110,6 +118,10 @@ An item counts as on loan while a loan is `approved` or `returned`.
 - `approved` → `returned` (borrower returns the item)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
+
+### Profiles
+
+`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is the average `rating` across loans where the user was the borrower, or `null` if none are rated.
 
 ### Photos
 
