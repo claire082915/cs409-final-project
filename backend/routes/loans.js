@@ -4,6 +4,10 @@ import Loan from '../models/loan.js'
 import { Router } from 'express'
 import requireUser from '../middleware/requireUser.js'
 
+// Loans due within this many days count as due soon
+const dueSoonDays = 3
+const msPerDay = 24 * 60 * 60 * 1000
+
 const router = Router()
 router.use(requireUser)
 
@@ -13,6 +17,8 @@ const loansRoute = router.route('/')
 const lentRoute = router.route('/lent')
 // List loans you borrowed (GET /api/loans/borrowed)
 const borrowedRoute = router.route('/borrowed')
+// List borrowed loans that are overdue or due soon (GET /api/loans/reminders)
+const remindersRoute = router.route('/reminders')
 // View a loan (GET /api/loans/:id)
 const loansIdRoute = router.route('/:id')
 // Approve a loan (PATCH /api/loans/:id/approve)
@@ -39,6 +45,10 @@ function statusFilter(status) {
   }
   if (status === 'overdue') {
     return {status: 'approved', dueDate: {$lt: currDate}}
+  }
+  if (status === 'due-soon') {
+    const cutoff = new Date(currDate.getTime() + dueSoonDays * msPerDay)
+    return { status: 'approved', dueDate: { $gte: currDate, $lte: cutoff } }
   }
   if (status === 'returned') {
     return {status: {$in: ['returned', 'confirmed']}}
@@ -129,6 +139,27 @@ borrowedRoute.get(async function (req, res) {
   try {
     const loans = await Loan.find(filter).sort({createdAt: -1}).populate('item', 'name description photos')
     return res.status(200).json({ message: 'Success: loans/borrowed GET', data: loans })
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error', data: {} })
+  }
+})
+
+// Soonest due first, since these are the ones to return next
+async function borrowedLoansSortedByDueDate(userId, status) {
+  return Loan.find({ ...statusFilter(status), borrower: userId })
+    .sort({ dueDate: 1 })
+    .populate('item', 'name description photos')
+}
+
+remindersRoute.get(async function (req, res) {
+  try {
+    const [overdue, dueSoon] = await Promise.all([
+      borrowedLoansSortedByDueDate(req.userId, 'overdue'),
+      borrowedLoansSortedByDueDate(req.userId, 'due-soon'),
+    ])
+    return res
+      .status(200)
+      .json({ message: 'Success: loans/reminders GET', data: { overdue, dueSoon } })
   } catch (err) {
     return res.status(500).json({ message: 'Server error', data: {} })
   }

@@ -59,6 +59,7 @@ Item, upload, loan, and user requests need an `Authorization: Bearer <token>` he
 | `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)         |
 | `loans/lent`        | GET    | List loans you lent, newest first     |
 | `loans/borrowed`    | GET    | List loans you borrowed, newest first |
+| `loans/reminders`   | GET    | List borrowed loans to return soon    |
 
 ### Items
 
@@ -95,14 +96,19 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
-| `status`    | Matches                                |
-| ----------- | -------------------------------------- |
-| `requested` | Waiting for the owner to approve       |
-| `active`    | Approved and not yet past `dueDate`    |
-| `overdue`   | Approved and past `dueDate`            |
-| `returned`  | Returned by the borrower, or confirmed |
-| `rejected`  | Rejected by the owner                  |
-| `cancelled` | Withdrawn by the borrower              |
+| `status`    | Matches                                 |
+| ----------- | --------------------------------------- |
+| `requested` | Waiting for the owner to approve        |
+| `active`    | Approved and not yet past `dueDate`     |
+| `overdue`   | Approved and past `dueDate`             |
+| `due-soon`  | Approved and due within the next 3 days |
+| `returned`  | Returned by the borrower, or confirmed  |
+| `rejected`  | Rejected by the owner                   |
+| `cancelled` | Withdrawn by the borrower               |
+
+#### Reminders
+
+`GET loans/reminders` returns `{ overdue, dueSoon }`, the borrowed loans matching the `overdue` and `due-soon` filters, each soonest due first.
 
 #### Status flow
 
