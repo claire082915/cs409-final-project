@@ -36,28 +36,28 @@ function statusFilter(status) {
   const currDate = new Date()
   if (status === undefined) {
     return {}
-  } 
+  }
   if (status === 'requested') {
-    return {status: 'requested'}
+    return { status: 'requested' }
   }
   if (status === 'active') {
-    return {status: 'approved', dueDate: {$gte: currDate}}
+    return { status: 'approved', dueDate: { $gte: currDate } }
   }
   if (status === 'overdue') {
-    return {status: 'approved', dueDate: {$lt: currDate}}
+    return { status: 'approved', dueDate: { $lt: currDate } }
   }
   if (status === 'due-soon') {
     const cutoff = new Date(currDate.getTime() + dueSoonDays * msPerDay)
     return { status: 'approved', dueDate: { $gte: currDate, $lte: cutoff } }
   }
   if (status === 'returned') {
-    return {status: {$in: ['returned', 'confirmed']}}
+    return { status: { $in: ['returned', 'confirmed'] } }
   }
   if (status === 'rejected') {
-    return {status: 'rejected'}
+    return { status: 'rejected' }
   }
   if (status === 'cancelled') {
-    return {status: 'cancelled'}
+    return { status: 'cancelled' }
   }
   return null
 }
@@ -122,7 +122,9 @@ lentRoute.get(async function (req, res) {
   }
   filter.owner = req.userId
   try {
-    const loans = await Loan.find(filter).sort({createdAt: -1}).populate('item', 'name description photos')
+    const loans = await Loan.find(filter)
+      .sort({ createdAt: -1 })
+      .populate('item', 'name description photos')
 
     return res.status(200).json({ message: 'Success: loans/lent GET', data: loans })
   } catch (err) {
@@ -137,7 +139,9 @@ borrowedRoute.get(async function (req, res) {
   }
   filter.borrower = req.userId
   try {
-    const loans = await Loan.find(filter).sort({createdAt: -1}).populate('item', 'name description photos')
+    const loans = await Loan.find(filter)
+      .sort({ createdAt: -1 })
+      .populate('item', 'name description photos')
     return res.status(200).json({ message: 'Success: loans/borrowed GET', data: loans })
   } catch (err) {
     return res.status(500).json({ message: 'Server error', data: {} })

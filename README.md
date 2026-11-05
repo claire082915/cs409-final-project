@@ -108,7 +108,7 @@ Each loan's `item` is `{ name, description, photos }`, or `null` if the item was
 
 #### Reminders
 
-`GET loans/reminders` returns `{ overdue, dueSoon }`, the borrowed loans matching the `overdue` and `due-soon` filters, each soonest due first.
+`GET loans/reminders` returns your borrowed loans that are overdue or due soon, in `data.overdue` and `data.dueSoon`, soonest due first.
 
 #### Status flow
 
@@ -121,7 +121,7 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 ### Profiles
 
-`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` are the user's items, newest first, each with `available`. `reputation` is the average `rating` across loans where the user was the borrower, or `null` if none are rated.
+`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is the average `rating` across loans where the user was the borrower, or `null` if none are rated.
 
 ### Photos
 
