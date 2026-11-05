@@ -1,14 +1,37 @@
-import { verifyToken } from '../lib/auth.js'
+import { getAuth } from 'firebase-admin/auth'
+import User from '../models/user.js'
 
-export default function requireUser(req, res, next) {
-  const [scheme, token] = req.get('Authorization')?.split(' ') ?? []
-  if (scheme !== 'Bearer' || !token) {
-    return res.status(401).json({ message: 'Missing bearer token' })
+// Null when the header is missing or the token is bad or expired
+async function decodeIdToken(req) {
+  const [scheme, idToken] = req.get('Authorization')?.split(' ') ?? []
+  if (scheme !== 'Bearer' || !idToken) {
+    return null
   }
   try {
-    req.userId = verifyToken(token)
+    return await getAuth().verifyIdToken(idToken)
   } catch {
-    return res.status(401).json({ message: 'Invalid or expired token' })
+    return null
   }
+}
+
+// For creating a profile, when the signed in user has none yet
+export async function requireIdToken(req, res, next) {
+  req.idToken = await decodeIdToken(req)
+  if (!req.idToken) {
+    return res.status(401).json({ message: 'Missing or invalid token' })
+  }
+  next()
+}
+
+export default async function requireUser(req, res, next) {
+  const idToken = await decodeIdToken(req)
+  if (!idToken) {
+    return res.status(401).json({ message: 'Missing or invalid token' })
+  }
+  const user = await User.findOne({ firebaseUid: idToken.uid })
+  if (!user) {
+    return res.status(403).json({ message: 'Create a profile first' })
+  }
+  req.userId = user.id
   next()
 }
