@@ -4,6 +4,7 @@ export default function MobileResponsivePage() {
     <PagePlaceholder
       title="Mobile view"
       description="Responsive layout reference for Lendr’s core screens on a phone."
+      withSidebar={false}
     />
   )
 }

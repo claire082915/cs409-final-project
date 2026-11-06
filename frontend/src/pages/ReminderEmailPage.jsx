@@ -4,6 +4,7 @@ export default function ReminderEmailPage() {
     <PagePlaceholder
       title="Return reminder email"
       description="A preview of the friendly email sent as a return date approaches."
+      withSidebar={false}
     />
   )
 }

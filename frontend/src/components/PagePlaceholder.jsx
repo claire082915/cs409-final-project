@@ -1,35 +1,26 @@
-import { Link } from 'react-router-dom'
+import AppShell from './AppShell.jsx'
 
-const pages = [
-  ['Dashboard', '/dashboard'],
-  ['My items', '/inventory'],
-  ['Browse items', '/browse'],
-  ['Borrow request', '/borrow-request'],
-  ['Lending approval', '/lending-approval'],
-  ['Loan details', '/loan-details'],
-  ['Reminder email', '/reminder-email'],
-  ['Return confirmation', '/return-confirmation'],
-  ['Reputation', '/reputation'],
-  ['Mobile view', '/mobile'],
-]
-
-export default function PagePlaceholder({ title, description }) {
+export default function PagePlaceholder({ title, description, withSidebar = true }) {
   return (
-    <main className="placeholder-page">
-      <Link className="placeholder-home" to="/">
-        ← Back to Lendr
-      </Link>
-      <span className="placeholder-kicker">LENDR PAGE SCAFFOLD</span>
-      <h1>{title}</h1>
-      <p>{description}</p>
-      <p className="placeholder-note">This screen is ready for its layout and interactions.</p>
-      <nav className="placeholder-nav" aria-label="Page scaffolds">
-        {pages.map(([label, to]) => (
-          <Link key={to} to={to}>
-            {label}
-          </Link>
-        ))}
-      </nav>
-    </main>
+    <AppShell withSidebar={withSidebar}>
+      <main className="screen-scaffold">
+        <div className="screen-heading">
+          <div>
+            <span className="placeholder-kicker">YOUR LENDR SPACE</span>
+            <h1>{title}</h1>
+            <p>{description}</p>
+          </div>
+        </div>
+        <section className="scaffold-panel">
+          <div className="scaffold-panel-icon">
+            <span>✦</span>
+          </div>
+          <h2>{title} is ready to take shape</h2>
+          <p>
+            This shared app layout is in place. Screen content and interactions can be added here.
+          </p>
+        </section>
+      </main>
+    </AppShell>
   )
 }

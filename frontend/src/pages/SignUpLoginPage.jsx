@@ -4,6 +4,7 @@ export default function SignUpLoginPage() {
     <PagePlaceholder
       title="Sign up / Log in"
       description="Account forms for creating an account and returning to Lendr."
+      withSidebar={false}
     />
   )
 }
