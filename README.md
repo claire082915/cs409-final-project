@@ -39,6 +39,8 @@ Sign up, log in (email or Google), log out and password reset will happen in the
 
 Every request except `health` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
 
+Every response is shaped `{ message, data }`. On success `message` is `OK` and `data` holds the result. On an error `message` says what went wrong and `data` is `{}`. `DELETE items/:id` returns 204 with no body.
+
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
 | `health`            | GET    | Check the server is up             |
@@ -79,8 +81,6 @@ Item responses also include `available`, which is `false` while the item is on l
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 
 ### Loans
-
-Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Request a loan
 
@@ -134,7 +134,7 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 ### Profiles
 
-`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
+`GET users/:username` returns `{ username, displayName, items, reputation }` in `data`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
 ### Photos
 

@@ -6,7 +6,7 @@ const router = Router()
 router.use(requireUser)
 
 router.post('/signature', (req, res) => {
-  res.json(signUpload(req.userId))
+  res.json({ message: 'OK', data: signUpload(req.userId) })
 })
 
 export default router

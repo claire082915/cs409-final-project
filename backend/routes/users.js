@@ -20,10 +20,10 @@ async function reputation(userId) {
 router.post('/', requireIdToken, async (req, res) => {
   const { username, displayName } = req.body ?? {}
   if (typeof username !== 'string' || typeof displayName !== 'string') {
-    return res.status(400).json({ message: 'Username and display name are required' })
+    return res.status(400).json({ message: 'Username and display name are required', data: {} })
   }
   if (await User.exists({ firebaseUid: req.idToken.uid })) {
-    return res.status(409).json({ message: 'Profile already exists' })
+    return res.status(409).json({ message: 'Profile already exists', data: {} })
   }
   const user = await User.create({
     firebaseUid: req.idToken.uid,
@@ -31,23 +31,24 @@ router.post('/', requireIdToken, async (req, res) => {
     username,
     displayName,
   })
-  res.status(201).json(user)
+  res.status(201).json({ message: 'OK', data: user })
 })
 
 router.get('/:username', requireUser, async (req, res) => {
   const user = await User.findOne({ username: req.params.username.toLowerCase() })
   if (!user) {
-    return res.status(404).json({ message: 'User not found' })
+    return res.status(404).json({ message: 'User not found', data: {} })
   }
   const items = await Item.find({ owner: user._id }).sort({ createdAt: -1 })
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
-  res.json({
+  const profile = {
     username: user.username,
     displayName: user.displayName,
     items: itemsWithAvailability,
     reputation: await reputation(user._id),
-  })
+  }
+  res.json({ message: 'OK', data: profile })
 })
 
 export default router

@@ -13,16 +13,16 @@ const router = Router()
 router.use(requireUser)
 
 router.param('id', async (req, res, next, id) => {
-  req.item = await Item.findById(id)
+  req.item = mongoose.isObjectIdOrHexString(id) ? await Item.findById(id) : null
   if (!req.item) {
-    return res.status(404).json({ message: 'Item not found' })
+    return res.status(404).json({ message: 'Item not found', data: {} })
   }
   next()
 })
 
 function requireOwner(req, res, next) {
   if (!req.item.owner.equals(req.userId)) {
-    return res.status(403).json({ message: 'Only the owner can change this item' })
+    return res.status(403).json({ message: 'Only the owner can change this item', data: {} })
   }
   next()
 }
@@ -45,23 +45,23 @@ router.post('/', async (req, res) => {
   }
   const item = await Item.create({ ...fields, owner: req.userId })
   // A new item has no loans yet
-  res.status(201).json(withAvailability(item, true))
+  res.status(201).json({ message: 'OK', data: withAvailability(item, true) })
 })
 
 router.get('/', async (req, res) => {
   const { owner } = req.query
   // Without an owner the query would return every item
   if (!mongoose.isObjectIdOrHexString(owner)) {
-    return res.status(400).json({ message: 'Missing or invalid owner query' })
+    return res.status(400).json({ message: 'Missing or invalid owner query', data: {} })
   }
   const items = await Item.find({ owner }).sort({ createdAt: -1 })
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
-  res.json(itemsWithAvailability)
+  res.json({ message: 'OK', data: itemsWithAvailability })
 })
 
 router.get('/:id', async (req, res) => {
-  res.json(withAvailability(req.item, !(await isOnLoan(req.item._id))))
+  res.json({ message: 'OK', data: withAvailability(req.item, !(await isOnLoan(req.item._id))) })
 })
 
 router.patch('/:id', requireOwner, async (req, res) => {
@@ -75,12 +75,12 @@ router.patch('/:id', requireOwner, async (req, res) => {
   await req.item.save()
   const removedPhotos = oldPhotos.filter((url) => !req.item.photos.includes(url))
   await deleteUnusedPhotos(removedPhotos)
-  res.json(withAvailability(req.item, !(await isOnLoan(req.item._id))))
+  res.json({ message: 'OK', data: withAvailability(req.item, !(await isOnLoan(req.item._id))) })
 })
 
 router.delete('/:id', requireOwner, async (req, res) => {
   if (await isOnLoan(req.item._id)) {
-    return res.status(409).json({ message: "Can't delete an item while it's on loan" })
+    return res.status(409).json({ message: "Can't delete an item while it's on loan", data: {} })
   }
   await req.item.deleteOne()
   await Loan.updateMany({ item: req.item._id, status: 'requested' }, { status: 'rejected' })
