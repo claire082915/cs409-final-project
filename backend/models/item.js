@@ -4,7 +4,7 @@ import { isUserPhotoUrl } from '../lib/cloudinary.js'
 // Availability comes from loans
 const itemSchema = new mongoose.Schema(
   {
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true, trim: true },
     description: { type: String, trim: true, default: '' },
     // Cloudinary URLs from the owner's folder
@@ -20,5 +20,8 @@ const itemSchema = new mongoose.Schema(
   },
   { timestamps: true },
 )
+
+// Item lists are filtered by owner and sorted newest first
+itemSchema.index({ owner: 1, createdAt: -1 })
 
 export default mongoose.model('Item', itemSchema)

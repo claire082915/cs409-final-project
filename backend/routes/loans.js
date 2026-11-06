@@ -4,6 +4,7 @@ import Loan from '../models/loan.js'
 import { Router } from 'express'
 import requireUser from '../middleware/requireUser.js'
 import Rating from '../models/rating.js'
+import { isDuplicateKeyError } from '../lib/duplicateKey.js'
 
 // Loans due within this many days count as due soon
 const dueSoonDays = 3
@@ -69,7 +70,7 @@ loansRoute.post(async function (req, res) {
   const body = req.body ?? {}
 
   // Missing or invalid itemId -> 400
-  if (!mongoose.isValidObjectId(body.itemId)) {
+  if (!mongoose.isObjectIdOrHexString(body.itemId)) {
     return res.status(400).json({ message: 'Missing or invalid itemId', data: {} })
   }
   // Missing, invalid, or past dueDate -> 400
@@ -105,12 +106,21 @@ loansRoute.post(async function (req, res) {
   }
 
   // Create a new loan. Respond with details of new loan
-  const newLoan = await Loan.create({
-    item: item._id,
-    owner: item.owner,
-    borrower: req.userId,
-    dueDate: body.dueDate,
-  })
+  let newLoan
+  try {
+    newLoan = await Loan.create({
+      item: item._id,
+      owner: item.owner,
+      borrower: req.userId,
+      dueDate: body.dueDate,
+    })
+  } catch (err) {
+    // A second request from this user landed after the check above
+    if (isDuplicateKeyError(err)) {
+      return res.status(409).json({ message: 'You already requested this item', data: {} })
+    }
+    throw err
+  }
   return res.status(201).json({ message: 'OK', data: newLoan })
 })
 
@@ -156,7 +166,7 @@ remindersRoute.get(async function (req, res) {
 
 loansIdRoute.get(async function (req, res) {
   // URL id is not a valid id -> 404
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
@@ -175,7 +185,7 @@ loansIdRoute.get(async function (req, res) {
 })
 
 approveRoute.patch(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
@@ -203,12 +213,20 @@ approveRoute.patch(async function (req, res) {
 
   loan.status = 'approved'
   loan.approvedAt = new Date()
-  await loan.save()
+  try {
+    await loan.save()
+  } catch (err) {
+    // Another request for this item was approved after the checks above
+    if (isDuplicateKeyError(err)) {
+      return res.status(409).json({ message: 'Item is already on loan', data: {} })
+    }
+    throw err
+  }
   return res.status(200).json({ message: 'OK', data: loan })
 })
 
 returnRoute.patch(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
@@ -232,7 +250,7 @@ returnRoute.patch(async function (req, res) {
 })
 
 confirmRoute.patch(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
@@ -256,7 +274,7 @@ confirmRoute.patch(async function (req, res) {
 })
 
 rejectRoute.patch(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
   const loan = await Loan.findById(req.params.id)
@@ -278,7 +296,7 @@ rejectRoute.patch(async function (req, res) {
 })
 
 cancelRoute.patch(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
   const loan = await Loan.findById(req.params.id)
@@ -302,7 +320,7 @@ cancelRoute.patch(async function (req, res) {
 ratingsRoute.post(async function (req, res) {
   const body = req.body ?? {}
 
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
@@ -337,18 +355,27 @@ ratingsRoute.post(async function (req, res) {
   } else {
     ratee = loan.owner
   }
-  const newRating = await Rating.create({
-    loan: loan._id,
-    rater: req.userId,
-    ratee: ratee,
-    score: body.score,
-  })
+  let newRating
+  try {
+    newRating = await Rating.create({
+      loan: loan._id,
+      rater: req.userId,
+      ratee: ratee,
+      score: body.score,
+    })
+  } catch (err) {
+    // A second rating from this user landed after the check above
+    if (isDuplicateKeyError(err)) {
+      return res.status(409).json({ message: 'You already rated this loan', data: {} })
+    }
+    throw err
+  }
 
   return res.status(201).json({ message: 'OK', data: newRating })
 })
 
 ratingsRoute.get(async function (req, res) {
-  if (!mongoose.isValidObjectId(req.params.id)) {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 

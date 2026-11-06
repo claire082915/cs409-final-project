@@ -7,11 +7,10 @@ import itemsRouter from './routes/items.js'
 import uploadsRouter from './routes/uploads.js'
 import loansRouter from './routes/loans.js'
 import usersRouter from './routes/users.js'
+import { isDuplicateKeyError } from './lib/duplicateKey.js'
 
 const port = process.env.PORT || 3000
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',')
-// MongoDB's error code for a write that breaks a unique index
-const duplicateKeyCode = 11000
 
 initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) })
 
@@ -32,7 +31,7 @@ app.use((err, req, res, next) => {
   if (err.name === 'CastError' || err.name === 'ValidationError') {
     return res.status(400).json({ message: err.message, data: {} })
   }
-  if (err.code === duplicateKeyCode) {
+  if (isDuplicateKeyError(err)) {
     const field = Object.keys(err.keyValue)[0]
     return res.status(409).json({ message: `${field} is already taken`, data: {} })
   }
