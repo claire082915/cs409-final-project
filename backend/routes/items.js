@@ -13,7 +13,9 @@ const router = Router()
 router.use(requireUser)
 
 router.param('id', async (req, res, next, id) => {
-  req.item = mongoose.isObjectIdOrHexString(id) ? await Item.findById(id) : null
+  req.item = mongoose.isObjectIdOrHexString(id)
+    ? await Item.findOne({ _id: id, deletedAt: null })
+    : null
   if (!req.item) {
     return res.status(404).json({ message: 'Item not found', data: {} })
   }
@@ -54,7 +56,7 @@ router.get('/', async (req, res) => {
   if (!mongoose.isObjectIdOrHexString(owner)) {
     return res.status(400).json({ message: 'Missing or invalid owner query', data: {} })
   }
-  const items = await Item.find({ owner }).sort({ createdAt: -1 })
+  const items = await Item.find({ owner, deletedAt: null }).sort({ createdAt: -1 })
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
   res.json({ message: 'OK', data: itemsWithAvailability })
@@ -82,9 +84,10 @@ router.delete('/:id', requireOwner, async (req, res) => {
   if (await isOnLoan(req.item._id)) {
     return res.status(409).json({ message: "Can't delete an item while it's on loan", data: {} })
   }
-  await req.item.deleteOne()
+  // Keep the doc and its photos so past loans can still show the item
+  req.item.deletedAt = new Date()
+  await req.item.save()
   await Loan.updateMany({ item: req.item._id, status: 'requested' }, { status: 'rejected' })
-  await deleteUnusedPhotos(req.item.photos)
   res.status(204).end()
 })
 

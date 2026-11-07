@@ -39,7 +39,7 @@ router.get('/:username', requireUser, async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: 'User not found', data: {} })
   }
-  const items = await Item.find({ owner: user._id }).sort({ createdAt: -1 })
+  const items = await Item.find({ owner: user._id, deletedAt: null }).sort({ createdAt: -1 })
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
   const profile = {

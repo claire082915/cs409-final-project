@@ -48,7 +48,7 @@ Every response is shaped `{ message, data }`. On success `message` is `OK` and `
 | `items?owner=:id`   | GET    | List a user's items, newest first  |
 | `items/:id`         | GET    | Get an item                        |
 |                     | PATCH  | Update name, description or photos |
-|                     | DELETE | Delete an item and its photos      |
+|                     | DELETE | Delete an item                     |
 | `uploads/signature` | POST   | Sign a photo upload                |
 | `users`             | POST   | Create your profile                |
 | `users/:username`   | GET    | View a user's profile              |
@@ -78,6 +78,8 @@ Every response is shaped `{ message, data }`. On success `message` is `OK` and `
 
 Item responses also include `available`, which is `false` while the item is on loan.
 
+`DELETE items/:id` fails with 409 while the item is on loan. A deleted item no longer shows in lists or profiles and returns 404, but it keeps its photos so past loans can still show it. Its pending requests become `rejected`.
+
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 
 ### Loans
@@ -101,7 +103,7 @@ PATCH replaces the whole `photos` list and deletes any left-out photos from Clou
 
 #### Dashboard
 
-Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
+Each loan's `item` is `{ name, description, photos, deletedAt }`, with `deletedAt` set if the owner deleted the item. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
 | `status`    | Matches                                 |
 | ----------- | --------------------------------------- |

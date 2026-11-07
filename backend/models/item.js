@@ -17,6 +17,8 @@ const itemSchema = new mongoose.Schema(
         message: 'Photos must be uploaded by the item owner',
       },
     },
+    // Set when the owner deletes the item, the doc stays so loan history can still show it
+    deletedAt: Date,
   },
   { timestamps: true },
 )

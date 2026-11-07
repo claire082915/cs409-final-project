@@ -83,7 +83,7 @@ loansRoute.post(async function (req, res) {
   }
 
   // Item does not exist -> 404
-  const item = await Item.findById(body.itemId)
+  const item = await Item.findOne({ _id: body.itemId, deletedAt: null })
   if (!item) {
     return res.status(404).json({ message: 'Item not found', data: {} })
   }
@@ -132,7 +132,7 @@ lentRoute.get(async function (req, res) {
   filter.owner = req.userId
   const loans = await Loan.find(filter)
     .sort({ createdAt: -1 })
-    .populate('item', 'name description photos')
+    .populate('item', 'name description photos deletedAt')
 
   return res.status(200).json({ message: 'OK', data: loans })
 })
@@ -145,7 +145,7 @@ borrowedRoute.get(async function (req, res) {
   filter.borrower = req.userId
   const loans = await Loan.find(filter)
     .sort({ createdAt: -1 })
-    .populate('item', 'name description photos')
+    .populate('item', 'name description photos deletedAt')
   return res.status(200).json({ message: 'OK', data: loans })
 })
 
@@ -153,7 +153,7 @@ borrowedRoute.get(async function (req, res) {
 async function borrowedLoansSortedByDueDate(userId, status) {
   return Loan.find({ ...statusFilter(status), borrower: userId })
     .sort({ dueDate: 1 })
-    .populate('item', 'name description photos')
+    .populate('item', 'name description photos deletedAt')
 }
 
 remindersRoute.get(async function (req, res) {
@@ -170,7 +170,10 @@ loansIdRoute.get(async function (req, res) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
 
-  const loan = await Loan.findById(req.params.id).populate('item', 'name description photos')
+  const loan = await Loan.findById(req.params.id).populate(
+    'item',
+    'name description photos deletedAt',
+  )
   if (!loan) {
     return res.status(404).json({ message: 'Loan not found', data: {} })
   }
@@ -209,6 +212,10 @@ approveRoute.patch(async function (req, res) {
   // Item was returned but not confirmed yet -> 409
   if (await Loan.exists({ item: loan.item, status: 'returned' })) {
     return res.status(409).json({ message: 'Item is already on loan', data: {} })
+  }
+  // Owner deleted the item after this request was made -> 409
+  if (!(await Item.exists({ _id: loan.item, deletedAt: null }))) {
+    return res.status(409).json({ message: 'Item was deleted', data: {} })
   }
 
   loan.status = 'approved'
