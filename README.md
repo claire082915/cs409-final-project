@@ -39,6 +39,8 @@ Sign up, log in (email or Google), log out and password reset will happen in the
 
 Every request except `health` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
 
+Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
+
 | Endpoint            | Method | Action                             |
 | ------------------- | ------ | ---------------------------------- |
 | `health`            | GET    | Check the server is up             |
@@ -46,7 +48,7 @@ Every request except `health` needs an `Authorization: Bearer <Firebase ID token
 | `items?owner=:id`   | GET    | List a user's items, newest first  |
 | `items/:id`         | GET    | Get an item                        |
 |                     | PATCH  | Update name, description or photos |
-|                     | DELETE | Delete an item and its photos      |
+|                     | DELETE | Delete an item                     |
 | `uploads/signature` | POST   | Sign a photo upload                |
 | `users`             | POST   | Create your profile                |
 | `users/:username`   | GET    | View a user's profile              |
@@ -76,11 +78,11 @@ Every request except `health` needs an `Authorization: Bearer <Firebase ID token
 
 Item responses also include `available`, which is `false` while the item is on loan.
 
+Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
+
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 
 ### Loans
-
-Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Request a loan
 
@@ -101,7 +103,7 @@ Loan responses are shaped `{ message, data }`, with `data` holding the loan.
 
 #### Dashboard
 
-Each loan's `item` is `{ name, description, photos }`, or `null` if the item was deleted. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
+Each loan's `item` is `{ name, description, photos, deletedAt }`. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
 | `status`    | Matches                                 |
 | ----------- | --------------------------------------- |
@@ -121,7 +123,7 @@ Each loan's `item` is `{ name, description, photos }`, or `null` if the item was
 
 An item counts as on loan while a loan is `approved` or `returned`.
 
-- `requested` → `approved` (owner approves)
+- `requested` → `approved` (owner approves, only before `dueDate`)
 - `approved` → `returned` (borrower returns the item)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
@@ -133,6 +135,8 @@ An item counts as on loan while a loan is `approved` or `returned`.
 `GET loans/:id/ratings` returns only the rating you gave on that loan. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
 
 ### Profiles
+
+`POST users` takes `{ username, displayName }`. A username is 3 to 30 letters, digits, dots or underscores, and is stored lowercase.
 
 `GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 

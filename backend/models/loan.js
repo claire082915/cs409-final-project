@@ -23,4 +23,18 @@ const loanSchema = new mongoose.Schema(
   { timestamps: true },
 )
 
+loanSchema.index({ item: 1, status: 1 })
+loanSchema.index({ owner: 1, createdAt: -1 })
+loanSchema.index({ borrower: 1, createdAt: -1 })
+// Only one loan can hold an item at a time
+loanSchema.index(
+  { item: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ACTIVE_STATUSES } } },
+)
+// Each borrower can have one pending request per item
+loanSchema.index(
+  { item: 1, borrower: 1 },
+  { unique: true, partialFilterExpression: { status: 'requested' } },
+)
+
 export default mongoose.model('Loan', loanSchema)
