@@ -1,4 +1,5 @@
 import AppShell from './AppShell.jsx'
+import '../styles/components/page-scaffold.css'
 
 export default function PagePlaceholder({ title, description, withSidebar = true }) {
   return (

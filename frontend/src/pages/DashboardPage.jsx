@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/dashboard.css'
 export default function DashboardPage() {
   return (
     <PagePlaceholder

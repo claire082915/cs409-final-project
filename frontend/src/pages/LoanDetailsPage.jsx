@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/loan-details.css'
 export default function LoanDetailsPage() {
   return (
     <PagePlaceholder

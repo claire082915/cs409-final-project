@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/reputation.css'
 export default function ReputationPage() {
   return (
     <PagePlaceholder

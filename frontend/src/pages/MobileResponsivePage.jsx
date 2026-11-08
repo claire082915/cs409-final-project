@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/mobile-responsive.css'
 export default function MobileResponsivePage() {
   return (
     <PagePlaceholder

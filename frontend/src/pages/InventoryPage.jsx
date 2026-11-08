@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/inventory.css'
 export default function InventoryPage() {
   return (
     <PagePlaceholder

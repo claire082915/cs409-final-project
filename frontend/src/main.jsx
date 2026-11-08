@@ -1,3 +1,4 @@
+import './styles/global.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter, Route, Routes } from 'react-router-dom'
@@ -13,7 +14,6 @@ import ReminderEmailPage from './pages/ReminderEmailPage.jsx'
 import ReturnConfirmationPage from './pages/ReturnConfirmationPage.jsx'
 import ReputationPage from './pages/ReputationPage.jsx'
 import MobileResponsivePage from './pages/MobileResponsivePage.jsx'
-import './style.css'
 
 function App() {
   return (

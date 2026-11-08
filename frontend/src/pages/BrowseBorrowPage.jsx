@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/browse-borrow.css'
 export default function BrowseBorrowPage() {
   return (
     <PagePlaceholder

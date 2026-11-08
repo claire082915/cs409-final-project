@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/sign-up-login.css'
 export default function SignUpLoginPage() {
   return (
     <PagePlaceholder

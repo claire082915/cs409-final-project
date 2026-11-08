@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import Logo from './Logo.jsx'
+import '../styles/components/app-shell.css'
 
 const navigation = [
   { label: 'Home', to: '/dashboard', icon: Home },

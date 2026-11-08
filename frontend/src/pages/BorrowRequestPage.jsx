@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/borrow-request.css'
 export default function BorrowRequestPage() {
   return (
     <PagePlaceholder

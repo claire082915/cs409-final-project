@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/lending-approval.css'
 export default function LendingApprovalPage() {
   return (
     <PagePlaceholder

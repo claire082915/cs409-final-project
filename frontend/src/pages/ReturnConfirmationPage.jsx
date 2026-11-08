@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/return-confirmation.css'
 export default function ReturnConfirmationPage() {
   return (
     <PagePlaceholder

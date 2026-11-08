@@ -1,4 +1,5 @@
 import PagePlaceholder from '../components/PagePlaceholder.jsx'
+import '../styles/pages/reminder-email.css'
 export default function ReminderEmailPage() {
   return (
     <PagePlaceholder

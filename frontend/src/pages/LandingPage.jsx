@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Button from '../components/Button.jsx'
 import FeatureCard from '../components/FeatureCard.jsx'
 import Logo from '../components/Logo.jsx'
+import '../styles/pages/landing.css'
 
 function scrollTo(event, id) {
   event.preventDefault()
