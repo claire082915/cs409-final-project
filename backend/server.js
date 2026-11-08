@@ -28,8 +28,13 @@ app.use('/api/loans', loansRouter)
 app.use('/api/users', usersRouter)
 
 app.use((err, req, res, next) => {
-  if (err.name === 'CastError' || err.name === 'ValidationError') {
+  if (err.name === 'CastError') {
     return res.status(400).json({ message: err.message, data: {} })
+  }
+  // Send the field's own message without the model name prefix
+  if (err.name === 'ValidationError') {
+    const firstError = Object.values(err.errors)[0]
+    return res.status(400).json({ message: firstError.message, data: {} })
   }
   if (isDuplicateKeyError(err)) {
     const field = Object.keys(err.keyValue)[0]

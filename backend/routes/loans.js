@@ -5,13 +5,28 @@ import { Router } from 'express'
 import requireUser from '../middleware/requireUser.js'
 import Rating from '../models/rating.js'
 import { isDuplicateKeyError } from '../lib/duplicateKey.js'
+import { isOnLoan } from '../lib/availability.js'
 
 // Loans due within this many days count as due soon
 const dueSoonDays = 3
 const msPerDay = 24 * 60 * 60 * 1000
+// Read routes show the item and both users instead of bare ids
+const loanDetails = [
+  { path: 'item', select: 'name description photos deletedAt' },
+  { path: 'owner', select: 'username displayName' },
+  { path: 'borrower', select: 'username displayName' },
+]
 
 const router = Router()
 router.use(requireUser)
+
+router.param('id', async (req, res, next, id) => {
+  req.loan = mongoose.isObjectIdOrHexString(id) ? await Loan.findById(id) : null
+  if (!req.loan) {
+    return res.status(404).json({ message: 'Loan not found', data: {} })
+  }
+  next()
+})
 
 // Request a loan (POST /api/loans)
 const loansRoute = router.route('/')
@@ -88,15 +103,11 @@ loansRoute.post(async function (req, res) {
     return res.status(404).json({ message: 'Item not found', data: {} })
   }
   // Borrowing your own item -> 400
-  if (String(item.owner) === String(req.userId)) {
+  if (item.owner.equals(req.userId)) {
     return res.status(400).json({ message: "You can't borrow your own item", data: {} })
   }
-  // Item is already out on loan -> 409
-  if (await Loan.exists({ item: item._id, status: 'approved' })) {
-    return res.status(409).json({ message: 'Item is already on loan', data: {} })
-  }
-  // Item was returned but the owner hasn't confirmed yet -> 409
-  if (await Loan.exists({ item: item._id, status: 'returned' })) {
+  // Item is out on loan or returned but not confirmed yet -> 409
+  if (await isOnLoan(item._id)) {
     return res.status(409).json({ message: 'Item is already on loan', data: {} })
   }
 
@@ -130,9 +141,7 @@ lentRoute.get(async function (req, res) {
     return res.status(400).json({ message: 'Invalid status filter', data: {} })
   }
   filter.owner = req.userId
-  const loans = await Loan.find(filter)
-    .sort({ createdAt: -1 })
-    .populate('item', 'name description photos deletedAt')
+  const loans = await Loan.find(filter).sort({ createdAt: -1 }).populate(loanDetails)
 
   return res.status(200).json({ message: 'OK', data: loans })
 })
@@ -143,9 +152,7 @@ borrowedRoute.get(async function (req, res) {
     return res.status(400).json({ message: 'Invalid status filter', data: {} })
   }
   filter.borrower = req.userId
-  const loans = await Loan.find(filter)
-    .sort({ createdAt: -1 })
-    .populate('item', 'name description photos deletedAt')
+  const loans = await Loan.find(filter).sort({ createdAt: -1 }).populate(loanDetails)
   return res.status(200).json({ message: 'OK', data: loans })
 })
 
@@ -153,7 +160,7 @@ borrowedRoute.get(async function (req, res) {
 async function borrowedLoansSortedByDueDate(userId, status) {
   return Loan.find({ ...statusFilter(status), borrower: userId })
     .sort({ dueDate: 1 })
-    .populate('item', 'name description photos deletedAt')
+    .populate(loanDetails)
 }
 
 remindersRoute.get(async function (req, res) {
@@ -165,63 +172,44 @@ remindersRoute.get(async function (req, res) {
 })
 
 loansIdRoute.get(async function (req, res) {
-  // URL id is not a valid id -> 404
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id).populate(
-    'item',
-    'name description photos deletedAt',
-  )
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
   // Only the owner or the borrower can view -> 403
-  if (String(loan.owner) !== String(req.userId) && String(loan.borrower) !== String(req.userId)) {
+  if (!req.loan.owner.equals(req.userId) && !req.loan.borrower.equals(req.userId)) {
     return res
       .status(403)
       .json({ message: 'Only the owner or borrower can view this loan', data: {} })
   }
-  return res.status(200).json({ message: 'OK', data: loan })
+  // Populate after the check above, which compares the bare user ids
+  await req.loan.populate(loanDetails)
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 approveRoute.patch(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
   // Only the owner can approve -> 403
-  if (String(loan.owner) !== String(req.userId)) {
+  if (!req.loan.owner.equals(req.userId)) {
     return res.status(403).json({ message: 'Only the item owner can approve', data: {} })
   }
 
   // Loan is not awaiting approval -> 409
-  if (loan.status !== 'requested') {
+  if (req.loan.status !== 'requested') {
     return res.status(409).json({ message: 'Loan is not awaiting approval', data: {} })
   }
-  // Item went out on another loan in the meantime -> 409
-  if (await Loan.exists({ item: loan.item, status: 'approved' })) {
-    return res.status(409).json({ message: 'Item is already on loan', data: {} })
+  // Due date passed while the request was waiting -> 409
+  if (req.loan.dueDate <= new Date()) {
+    return res.status(409).json({ message: 'Due date has already passed', data: {} })
   }
-  // Item was returned but not confirmed yet -> 409
-  if (await Loan.exists({ item: loan.item, status: 'returned' })) {
+  // Item went out on another loan in the meantime -> 409
+  if (await isOnLoan(req.loan.item)) {
     return res.status(409).json({ message: 'Item is already on loan', data: {} })
   }
   // Owner deleted the item after this request was made -> 409
-  if (!(await Item.exists({ _id: loan.item, deletedAt: null }))) {
+  if (!(await Item.exists({ _id: req.loan.item, deletedAt: null }))) {
     return res.status(409).json({ message: 'Item was deleted', data: {} })
   }
 
-  loan.status = 'approved'
-  loan.approvedAt = new Date()
+  req.loan.status = 'approved'
+  req.loan.approvedAt = new Date()
   try {
-    await loan.save()
+    await req.loan.save()
   } catch (err) {
     // Another request for this item was approved after the checks above
     if (isDuplicateKeyError(err)) {
@@ -229,120 +217,81 @@ approveRoute.patch(async function (req, res) {
     }
     throw err
   }
-  return res.status(200).json({ message: 'OK', data: loan })
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 returnRoute.patch(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
   // Only the borrower can return -> 403
-  if (String(loan.borrower) !== String(req.userId)) {
+  if (!req.loan.borrower.equals(req.userId)) {
     return res.status(403).json({ message: 'Only the borrower can return', data: {} })
   }
   // Loan is not approved -> 409
-  if (loan.status !== 'approved') {
+  if (req.loan.status !== 'approved') {
     return res.status(409).json({ message: 'Loan is not approved', data: {} })
   }
 
-  loan.status = 'returned'
-  loan.returnedAt = new Date()
-  await loan.save()
-  return res.status(200).json({ message: 'OK', data: loan })
+  req.loan.status = 'returned'
+  req.loan.returnedAt = new Date()
+  await req.loan.save()
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 confirmRoute.patch(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
   // Only the owner can confirm -> 403
-  if (String(loan.owner) !== String(req.userId)) {
+  if (!req.loan.owner.equals(req.userId)) {
     return res.status(403).json({ message: 'Only the item owner can confirm', data: {} })
   }
   // Borrower has not returned the item yet -> 409
-  if (loan.status !== 'returned') {
+  if (req.loan.status !== 'returned') {
     return res.status(409).json({ message: 'Borrower has not returned this item yet', data: {} })
   }
 
-  loan.status = 'confirmed'
-  loan.confirmedAt = new Date()
-  await loan.save()
-  return res.status(200).json({ message: 'OK', data: loan })
+  req.loan.status = 'confirmed'
+  req.loan.confirmedAt = new Date()
+  await req.loan.save()
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 rejectRoute.patch(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
   // Only the owner can reject -> 403
-  if (String(loan.owner) !== String(req.userId)) {
+  if (!req.loan.owner.equals(req.userId)) {
     return res.status(403).json({ message: 'Only the item owner can reject', data: {} })
   }
   // Loan is not awaiting approval -> 409
-  if (loan.status !== 'requested') {
+  if (req.loan.status !== 'requested') {
     return res.status(409).json({ message: 'Loan is not awaiting approval', data: {} })
   }
 
-  loan.status = 'rejected'
-  await loan.save()
-  return res.status(200).json({ message: 'OK', data: loan })
+  req.loan.status = 'rejected'
+  await req.loan.save()
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 cancelRoute.patch(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
   // Only the borrower can cancel -> 403
-  if (String(loan.borrower) !== String(req.userId)) {
+  if (!req.loan.borrower.equals(req.userId)) {
     return res.status(403).json({ message: 'Only the borrower can cancel', data: {} })
   }
   // Loan was already approved or finished -> 409
-  if (loan.status !== 'requested') {
+  if (req.loan.status !== 'requested') {
     return res.status(409).json({ message: 'Only a pending request can be cancelled', data: {} })
   }
 
-  loan.status = 'cancelled'
-  await loan.save()
-  return res.status(200).json({ message: 'OK', data: loan })
+  req.loan.status = 'cancelled'
+  await req.loan.save()
+  return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
 ratingsRoute.post(async function (req, res) {
   const body = req.body ?? {}
 
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const isOwner = String(loan.owner) === String(req.userId)
-  const isBorrower = String(loan.borrower) === String(req.userId)
+  const isOwner = req.loan.owner.equals(req.userId)
+  const isBorrower = req.loan.borrower.equals(req.userId)
   if (!isOwner && !isBorrower) {
     return res.status(403).json({ message: 'Only the owner or borrower can rate', data: {} })
   }
 
-  if (loan.status !== 'confirmed') {
+  if (req.loan.status !== 'confirmed') {
     return res.status(409).json({ message: 'Loan is not confirmed yet', data: {} })
   }
 
@@ -352,20 +301,20 @@ ratingsRoute.post(async function (req, res) {
   }
 
   // Already rated this loan -> 409
-  if (await Rating.exists({ loan: loan._id, rater: req.userId })) {
+  if (await Rating.exists({ loan: req.loan._id, rater: req.userId })) {
     return res.status(409).json({ message: 'You already rated this loan', data: {} })
   }
 
   let ratee = null
   if (isOwner) {
-    ratee = loan.borrower
+    ratee = req.loan.borrower
   } else {
-    ratee = loan.owner
+    ratee = req.loan.owner
   }
   let newRating
   try {
     newRating = await Rating.create({
-      loan: loan._id,
+      loan: req.loan._id,
       rater: req.userId,
       ratee: ratee,
       score: body.score,
@@ -382,23 +331,14 @@ ratingsRoute.post(async function (req, res) {
 })
 
 ratingsRoute.get(async function (req, res) {
-  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  const loan = await Loan.findById(req.params.id)
-  if (!loan) {
-    return res.status(404).json({ message: 'Loan not found', data: {} })
-  }
-
-  if (String(loan.owner) !== String(req.userId) && String(loan.borrower) !== String(req.userId)) {
+  if (!req.loan.owner.equals(req.userId) && !req.loan.borrower.equals(req.userId)) {
     return res
       .status(403)
       .json({ message: 'Only the owner or borrower can view ratings', data: {} })
   }
-  const ratings = await Rating.find({ loan: loan._id, rater: req.userId })
-
-  return res.status(200).json({ message: 'OK', data: ratings })
+  // Null until the caller rates this loan
+  const rating = await Rating.findOne({ loan: req.loan._id, rater: req.userId })
+  return res.status(200).json({ message: 'OK', data: rating })
 })
 
 export default router

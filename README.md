@@ -103,7 +103,7 @@ PATCH replaces the whole `photos` list and deletes any left-out photos from Clou
 
 #### Dashboard
 
-Each loan's `item` is `{ name, description, photos, deletedAt }`, with `deletedAt` set if the owner deleted the item. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
+Each loan's `item` is `{ name, description, photos, deletedAt }`, with `deletedAt` set if the owner deleted the item. `owner` and `borrower` are `{ username, displayName }`. The same applies to `GET loans/:id` and `GET loans/reminders`. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
 | `status`    | Matches                                 |
 | ----------- | --------------------------------------- |
@@ -123,7 +123,7 @@ Each loan's `item` is `{ name, description, photos, deletedAt }`, with `deletedA
 
 An item counts as on loan while a loan is `approved` or `returned`.
 
-- `requested` → `approved` (owner approves)
+- `requested` → `approved` (owner approves, only before `dueDate`)
 - `approved` → `returned` (borrower returns the item)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
@@ -132,9 +132,11 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 `POST loans/:id/ratings` takes `{ score }`, a whole number from 1 to 5. It only works once the loan is `confirmed`, and each person can rate a loan once. The owner rates the borrower and the borrower rates the owner.
 
-`GET loans/:id/ratings` returns only the rating you gave on that loan. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
+`GET loans/:id/ratings` returns only the rating you gave on that loan, or `null` if you haven't rated it. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
 
 ### Profiles
+
+`POST users` takes `{ username, displayName }`. A username is 3 to 30 letters, digits, dots or underscores, and is stored lowercase.
 
 `GET users/:username` returns `{ username, displayName, items, reputation }` in `data`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
