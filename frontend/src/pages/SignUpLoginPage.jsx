@@ -107,7 +107,12 @@ export default function SignUpLoginPage() {
           </div>
 
           {isSignUp ? (
-            <div className="auth-panel" role="tabpanel" id="panel-signup" aria-labelledby="tab-signup">
+            <div
+              className="auth-panel"
+              role="tabpanel"
+              id="panel-signup"
+              aria-labelledby="tab-signup"
+            >
               <div className="field">
                 <label htmlFor="signup-name">Full Name</label>
                 <input
@@ -146,7 +151,12 @@ export default function SignUpLoginPage() {
               </p>
             </div>
           ) : (
-            <div className="auth-panel" role="tabpanel" id="panel-login" aria-labelledby="tab-login">
+            <div
+              className="auth-panel"
+              role="tabpanel"
+              id="panel-login"
+              aria-labelledby="tab-login"
+            >
               <div className="field">
                 <label htmlFor="login-email">Email</label>
                 <input

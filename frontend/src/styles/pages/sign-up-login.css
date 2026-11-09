@@ -39,7 +39,9 @@
 
 .welcome-title {
   margin: 20px 0 14px;
-  font: 800 clamp(40px, 5vw, 60px) / 1.08 Manrope, sans-serif;
+  font:
+    800 clamp(40px, 5vw, 60px) / 1.08 Manrope,
+    sans-serif;
   letter-spacing: -3px;
   color: var(--sul-ink);
 }
@@ -109,10 +111,14 @@
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
-  font: 700 14px Manrope, sans-serif;
+  font:
+    700 14px Manrope,
+    sans-serif;
   color: var(--sul-muted);
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .auth-tab:hover {
@@ -138,7 +144,9 @@
 }
 
 .field label {
-  font: 700 12px Manrope, sans-serif;
+  font:
+    700 12px Manrope,
+    sans-serif;
   color: #294d4b;
 }
 
@@ -152,7 +160,9 @@
   background: #fbfcfb;
   border: 1px solid var(--sul-border);
   border-radius: 0.65rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .auth-card input::placeholder {
@@ -174,7 +184,7 @@
   width: 100%;
   box-sizing: border-box;
   margin-top: 0.4rem;
-  background-color: var(--sul-green)
+  background-color: var(--sul-green);
 }
 
 .switch-prompt {
