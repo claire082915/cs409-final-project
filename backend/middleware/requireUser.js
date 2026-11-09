@@ -32,6 +32,7 @@ export default async function requireUser(req, res, next) {
   if (!user) {
     return res.status(403).json({ message: 'Create a profile first', data: {} })
   }
+  req.user = user
   req.userId = user.id
   next()
 }

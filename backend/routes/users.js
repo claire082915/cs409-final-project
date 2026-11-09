@@ -34,6 +34,10 @@ router.post('/', requireIdToken, async (req, res) => {
   res.status(201).json({ message: 'OK', data: user })
 })
 
+router.get('/me', requireUser, (req, res) => {
+  res.json({ message: 'OK', data: req.user })
+})
+
 router.get('/:username', requireUser, async (req, res) => {
   const user = await User.findOne({ username: req.params.username.toLowerCase() })
   if (!user) {

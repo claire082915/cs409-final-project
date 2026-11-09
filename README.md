@@ -51,6 +51,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 |                     | DELETE | Delete an item                     |
 | `uploads/signature` | POST   | Sign a photo upload                |
 | `users`             | POST   | Create your profile                |
+| `users/me`          | GET    | View your own profile              |
 | `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
