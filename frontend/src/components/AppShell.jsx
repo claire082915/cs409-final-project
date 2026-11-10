@@ -3,7 +3,6 @@ import {
   BookOpen,
   Boxes,
   Home,
-  MessageCircle,
   Search,
   Settings,
   Star,
@@ -20,7 +19,6 @@ const navigation = [
   { label: 'Browse Items', to: '/browse', icon: Search },
   { label: 'Borrow Requests', to: '/borrow-request', icon: HandHelping, badge: '3' },
   { label: 'My Loans', to: '/loan-details', icon: BookOpen },
-  { label: 'Messages', to: '/borrow-request', icon: MessageCircle },
   { label: 'Reputation', to: '/reputation', icon: Star },
   { label: 'Settings', to: '/signup', icon: Settings },
 ]
