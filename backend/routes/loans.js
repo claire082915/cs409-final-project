@@ -196,7 +196,11 @@ approveRoute.patch(async function (req, res) {
   // The owner may adjust the proposed return date while approving.
   const body = req.body ?? {}
   if (body.dueDate !== undefined) {
-    if (!body.dueDate || isNaN(new Date(body.dueDate).getTime()) || new Date(body.dueDate) <= new Date()) {
+    if (
+      !body.dueDate ||
+      isNaN(new Date(body.dueDate).getTime()) ||
+      new Date(body.dueDate) <= new Date()
+    ) {
       return res.status(400).json({ message: 'dueDate must be a valid future date', data: {} })
     }
     req.loan.dueDate = body.dueDate
