@@ -54,7 +54,8 @@ function Sidebar() {
 }
 
 function Topbar() {
-  const profileName = localStorage.getItem('lendrDisplayName') || localStorage.getItem('lendrUsername') || 'User Name'
+  const profileName =
+    localStorage.getItem('lendrDisplayName') || localStorage.getItem('lendrUsername') || 'User Name'
   return (
     <header className="app-topbar">
       <label className="app-search">
