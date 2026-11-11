@@ -14,6 +14,7 @@ import ReminderEmailPage from './pages/ReminderEmailPage.jsx'
 import ReturnConfirmationPage from './pages/ReturnConfirmationPage.jsx'
 import ReputationPage from './pages/ReputationPage.jsx'
 import MobileResponsivePage from './pages/MobileResponsivePage.jsx'
+import SettingsPage from './pages/SettingsPage.jsx'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/return-confirmation" element={<ReturnConfirmationPage />} />
         <Route path="/reputation" element={<ReputationPage />} />
         <Route path="/mobile" element={<MobileResponsivePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<LandingPage />} />
       </Routes>
     </HashRouter>
