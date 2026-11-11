@@ -9,7 +9,7 @@ import {
   UserRound,
   HandHelping,
 } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import Logo from './Logo.jsx'
 import '../styles/components/app-shell.css'
 
@@ -20,7 +20,7 @@ const navigation = [
   { label: 'Borrow Requests', to: '/borrow-request', icon: HandHelping, badge: '3' },
   { label: 'My Loans', to: '/loan-details', icon: BookOpen },
   { label: 'Reputation', to: '/reputation', icon: Star },
-  { label: 'Settings', to: '/signup', icon: Settings },
+  { label: 'Settings', to: '/settings', icon: Settings },
 ]
 
 function Sidebar() {
@@ -54,6 +54,8 @@ function Sidebar() {
 }
 
 function Topbar() {
+  const profileName =
+    localStorage.getItem('lendrDisplayName') || localStorage.getItem('lendrUsername') || 'User Name'
   return (
     <header className="app-topbar">
       <label className="app-search">
@@ -66,12 +68,12 @@ function Topbar() {
           <Bell size={18} />
           <i />
         </button>
-        <button className="profile-button" aria-label="Your profile">
+        <Link className="profile-button" to="/settings" aria-label="Open settings">
           <span className="profile-avatar">
             <UserRound size={18} />
           </span>
-          <span className="profile-name">User Name</span>
-        </button>
+          <span className="profile-name">{profileName}</span>
+        </Link>
       </div>
     </header>
   )
