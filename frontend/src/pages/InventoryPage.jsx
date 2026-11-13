@@ -88,22 +88,20 @@ export default function InventoryPage() {
     event.preventDefault()
     if (source === 'backend') {
       setFormError(
-        'The backend does not support item photos, daily prices, or categories yet. Switch to Mock mode to preview this item.',
+        'The backend does not support item photos or categories yet. Switch to Mock mode to preview this item.',
       )
       return
     }
     const form = new FormData(event.currentTarget)
     const name = String(form.get('name') || '').trim()
-    const dailyPrice = Number(form.get('dailyPrice'))
-    if (!name || !Number.isFinite(dailyPrice) || dailyPrice < 0) {
-      setFormError('Enter an item name and a valid daily price.')
+    if (!name) {
+      setFormError('Enter an item name.')
       return
     }
     setItems((current) => [
       {
         _id: `mock-${Date.now()}`,
         name,
-        dailyPrice,
         categories: form.getAll('categories'),
         description: String(form.get('notes') || '').trim(),
         available: true,
@@ -324,21 +322,6 @@ export default function InventoryPage() {
                   Item name
                   <input name="name" placeholder="e.g. Cordless drill" required maxLength="80" />
                 </label>
-                <label className="item-form-field">
-                  Lending price per day
-                  <div className="item-price-input">
-                    <span>$</span>
-                    <input
-                      name="dailyPrice"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      required
-                    />
-                    <small>per day</small>
-                  </div>
-                </label>
                 <fieldset className="item-category-field">
                   <legend>Categories</legend>
                   <div className="item-category-options">
@@ -361,8 +344,8 @@ export default function InventoryPage() {
                 </label>
                 {source === 'backend' && (
                   <p className="item-form-note">
-                    Backend support for price, categories, and image uploads is not available yet.
-                    Switch to Mock mode to add this item to the preview.
+                    Backend support for categories and image uploads is not available yet. Switch to
+                    Mock mode to add this item to the preview.
                   </p>
                 )}
                 {formError && (

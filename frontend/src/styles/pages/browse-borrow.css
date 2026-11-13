@@ -190,12 +190,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.browse-price {
-  flex: none;
-  color: #258273;
-  font-size: 11px;
-  font-weight: 800;
-}
 .browse-owner {
   overflow: hidden;
   margin: 7px 0 5px;
@@ -342,12 +336,6 @@
   margin: 0 0 9px;
   color: #70888f;
   font-size: 14px;
-}
-.borrow-item-price {
-  margin: 0 0 14px;
-  color: #278777;
-  font-size: 16px;
-  font-weight: 750;
 }
 .borrow-item-tags {
   display: flex;

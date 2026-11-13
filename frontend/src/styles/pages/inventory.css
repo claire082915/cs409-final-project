@@ -301,8 +301,7 @@
   font-weight: 700;
 }
 .item-form-field > input,
-.item-form-field textarea,
-.item-price-input {
+.item-form-field textarea {
   width: 100%;
   border: 1px solid #dce7e9;
   border-radius: 8px;
@@ -318,39 +317,13 @@
   outline: none;
 }
 .item-form-field > input:focus,
-.item-form-field textarea:focus,
-.item-price-input:focus-within {
+.item-form-field textarea:focus {
   border-color: #5da797;
   box-shadow: 0 0 0 3px #5da7971c;
 }
 .item-form-field textarea {
   resize: vertical;
   line-height: 1.5;
-}
-.item-price-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 11px;
-}
-.item-price-input > span {
-  color: #779096;
-  font-size: 14px;
-}
-.item-price-input input {
-  min-width: 0;
-  flex: 1;
-  padding: 11px 0;
-  border: 0;
-  outline: 0;
-  color: #234a54;
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-}
-.item-price-input small {
-  color: #879a9f;
-  font-size: 10px;
 }
 .item-category-field {
   min-width: 0;

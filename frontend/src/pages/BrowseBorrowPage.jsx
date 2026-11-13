@@ -19,7 +19,6 @@ const MOCK_ITEMS = [
     _id: 'mock-laptop',
     name: 'MacBook Pro',
     description: '13-inch laptop, great for coursework and projects.',
-    dailyPrice: 8,
     category: 'Electronics',
     ownerName: 'Maya Chen',
     location: 'North Campus',
@@ -32,7 +31,6 @@ const MOCK_ITEMS = [
     _id: 'mock-tent',
     name: '2-person Camping Tent',
     description: 'Lightweight tent with rain fly. Easy to set up.',
-    dailyPrice: 5,
     category: 'Outdoor',
     ownerName: 'Jordan Lee',
     location: 'West Residence',
@@ -45,7 +43,6 @@ const MOCK_ITEMS = [
     _id: 'mock-camera',
     name: 'Mirrorless Camera',
     description: 'A compact camera with a versatile 18–55mm lens.',
-    dailyPrice: 12,
     category: 'Electronics',
     ownerName: 'Sam Rivera',
     location: 'Arts District',
@@ -58,7 +55,6 @@ const MOCK_ITEMS = [
     _id: 'mock-textbook',
     name: 'Computer Science Textbooks',
     description: 'A bundle of helpful books for introductory CS courses.',
-    dailyPrice: 0,
     category: 'Books',
     ownerName: 'Avery Patel',
     location: 'North Campus',
@@ -71,7 +67,6 @@ const MOCK_ITEMS = [
     _id: 'mock-skateboard',
     name: 'Skateboard',
     description: 'Well-maintained complete board, suitable for beginners.',
-    dailyPrice: 3,
     category: 'Sports',
     ownerName: 'Noah Brooks',
     location: 'South Quad',
@@ -84,7 +79,6 @@ const MOCK_ITEMS = [
     _id: 'mock-earbuds',
     name: 'Wireless Earbuds',
     description: 'Noise-cancelling earbuds with charging case.',
-    dailyPrice: 4,
     category: 'Electronics',
     ownerName: 'Taylor Kim',
     location: 'West Residence',
@@ -282,9 +276,6 @@ export default function BrowseBorrowPage() {
                 <div className="browse-card-body">
                   <div className="browse-card-title">
                     <h2 title={item.name}>{item.name}</h2>
-                    <span className="browse-price">
-                      {Number(item.dailyPrice) > 0 ? `$${item.dailyPrice}/day` : 'Free'}
-                    </span>
                   </div>
                   <p className="browse-owner">
                     Shared by{' '}
@@ -355,11 +346,6 @@ export default function BrowseBorrowPage() {
                       selectedItem.owner?.displayName ||
                       selectedItem.owner?.username ||
                       'Community member'}
-                  </p>
-                  <p className="borrow-item-price">
-                    {Number(selectedItem.dailyPrice) > 0
-                      ? `$${selectedItem.dailyPrice} / day`
-                      : 'Free to borrow'}
                   </p>
                   <div className="borrow-item-tags">
                     {[
