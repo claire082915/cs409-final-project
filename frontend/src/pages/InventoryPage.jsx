@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ImagePlus, MoreHorizontal, Plus, PackageOpen, X } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import { useAuth } from '../auth/AuthContext.jsx'
+import { apiFetch } from '../lib/api.js'
 import '../styles/pages/inventory.css'
 
-const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL || 'https://lendr-api.onrender.com/api'
-).replace(/\/$/, '')
 const MOCK_ITEMS = [
   {
     _id: 'mock-laptop',
@@ -75,6 +74,7 @@ const MOCK_ITEMS = [
 const CATEGORIES = ['Electronics', 'Books', 'Outdoor', 'Home', 'Sports', 'Tools', 'Other']
 
 export default function InventoryPage() {
+  const { profile } = useAuth()
   const [source, setSource] = useState(() => localStorage.getItem('lendrInventorySource') || 'mock')
   const [items, setItems] = useState(MOCK_ITEMS)
   const [tab, setTab] = useState('available')
@@ -123,27 +123,12 @@ export default function InventoryPage() {
       return
     }
 
-    const token = sessionStorage.getItem('lendrIdToken')
-    const username = localStorage.getItem('lendrUsername')
-    if (!token || !username) {
-      setItems([])
-      setError('Backend mode needs a signed-in session and a Lendr username.')
-      return
-    }
-
     let cancelled = false
     setLoading(true)
     setError('')
-    fetch(`${API_BASE}/users/${encodeURIComponent(username)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (response) => {
-        const body = await response.json()
-        if (!response.ok) throw new Error(body.message || 'Could not load your items.')
-        return body.data.items || []
-      })
+    apiFetch(`users/${profile.username}`)
       .then((data) => {
-        if (!cancelled) setItems(data)
+        if (!cancelled) setItems(data.items)
       })
       .catch((err) => {
         if (!cancelled) setError(err.message)
@@ -155,7 +140,7 @@ export default function InventoryPage() {
     return () => {
       cancelled = true
     }
-  }, [source])
+  }, [source, profile.username])
 
   const visibleItems = useMemo(
     () =>

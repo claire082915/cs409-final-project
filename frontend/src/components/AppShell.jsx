@@ -3,6 +3,7 @@ import {
   BookOpen,
   Boxes,
   Home,
+  LogOut,
   Search,
   Settings,
   Star,
@@ -10,6 +11,9 @@ import {
   HandHelping,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+import { auth } from '../lib/firebase.js'
+import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from './Logo.jsx'
 import '../styles/components/app-shell.css'
 
@@ -54,8 +58,7 @@ function Sidebar() {
 }
 
 function Topbar() {
-  const profileName =
-    localStorage.getItem('lendrDisplayName') || localStorage.getItem('lendrUsername') || 'User Name'
+  const { profile } = useAuth()
   return (
     <header className="app-topbar">
       <label className="app-search">
@@ -72,8 +75,11 @@ function Topbar() {
           <span className="profile-avatar">
             <UserRound size={18} />
           </span>
-          <span className="profile-name">{profileName}</span>
+          <span className="profile-name">{profile.displayName}</span>
         </Link>
+        <button className="icon-button" aria-label="Log out" onClick={() => signOut(auth)}>
+          <LogOut size={18} />
+        </button>
       </div>
     </header>
   )

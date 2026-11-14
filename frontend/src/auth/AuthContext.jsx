@@ -5,11 +5,11 @@ import { apiFetch } from '../lib/api.js'
 
 const AuthContext = createContext(null)
 
-// A 403 means the user signed in but has not picked a username yet
 async function loadProfile() {
   try {
     return await apiFetch('users/me')
   } catch (err) {
+    // A 403 means the user has no profile yet
     if (err.status === 403) {
       return null
     }
@@ -40,7 +40,10 @@ export function AuthProvider({ children }) {
         if (auth.currentUser?.uid !== firebaseUser?.uid) {
           return
         }
-        setProfile(nextProfile)
+        // Keep the profile sign up just created if users/me answered 403 first
+        setProfile(
+          (current) => nextProfile ?? (current?.firebaseUid === firebaseUser?.uid ? current : null),
+        )
         setError(loadError)
         setLoading(false)
       }),

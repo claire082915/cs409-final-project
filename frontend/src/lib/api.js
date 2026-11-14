@@ -11,7 +11,6 @@ export class ApiError extends Error {
   }
 }
 
-// Returns the response's data, Firebase refreshes the token when it is about to expire
 export async function apiFetch(path, { method = 'GET', body } = {}) {
   if (!auth.currentUser) {
     throw new ApiError('Not signed in', 401)

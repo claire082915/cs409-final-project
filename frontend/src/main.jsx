@@ -15,6 +15,7 @@ import ReturnConfirmationPage from './pages/ReturnConfirmationPage.jsx'
 import ReputationPage from './pages/ReputationPage.jsx'
 import MobileResponsivePage from './pages/MobileResponsivePage.jsx'
 import { AuthProvider } from './auth/AuthContext.jsx'
+import RequireAuth from './auth/RequireAuth.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 
 function App() {
@@ -24,17 +25,19 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<SignUpLoginPage />} />
         <Route path="/signup" element={<SignUpLoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/browse" element={<BrowseBorrowPage />} />
-        <Route path="/borrow-request" element={<BorrowRequestPage />} />
-        <Route path="/lending-approval" element={<LendingApprovalPage />} />
-        <Route path="/loan-details" element={<LoanDetailsPage />} />
-        <Route path="/reminder-email" element={<ReminderEmailPage />} />
-        <Route path="/return-confirmation" element={<ReturnConfirmationPage />} />
-        <Route path="/reputation" element={<ReputationPage />} />
-        <Route path="/mobile" element={<MobileResponsivePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/browse" element={<BrowseBorrowPage />} />
+          <Route path="/borrow-request" element={<BorrowRequestPage />} />
+          <Route path="/lending-approval" element={<LendingApprovalPage />} />
+          <Route path="/loan-details" element={<LoanDetailsPage />} />
+          <Route path="/reminder-email" element={<ReminderEmailPage />} />
+          <Route path="/return-confirmation" element={<ReturnConfirmationPage />} />
+          <Route path="/reputation" element={<ReputationPage />} />
+          <Route path="/mobile" element={<MobileResponsivePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
         <Route path="*" element={<LandingPage />} />
       </Routes>
     </HashRouter>

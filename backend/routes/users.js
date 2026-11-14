@@ -6,6 +6,7 @@ import { loanedItemIds, withAvailability } from '../lib/availability.js'
 import Rating from '../models/rating.js'
 
 const router = Router()
+const editableFields = ['username', 'displayName']
 
 // Null when nobody has rated the user yet
 async function reputation(userId) {
@@ -35,6 +36,22 @@ router.post('/', requireIdToken, async (req, res) => {
 })
 
 router.get('/me', requireUser, (req, res) => {
+  res.json({ message: 'OK', data: req.user })
+})
+
+// Email comes from Firebase, so it can't change here
+router.patch('/me', requireUser, async (req, res) => {
+  const body = req.body ?? {}
+  for (const field of editableFields) {
+    if (body[field] === undefined) {
+      continue
+    }
+    if (typeof body[field] !== 'string') {
+      return res.status(400).json({ message: `${field} must be a string`, data: {} })
+    }
+    req.user[field] = body[field]
+  }
+  await req.user.save()
   res.json({ message: 'OK', data: req.user })
 })
 

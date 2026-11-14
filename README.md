@@ -52,6 +52,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 | `uploads/signature` | POST   | Sign a photo upload                |
 | `users`             | POST   | Create your profile                |
 | `users/me`          | GET    | View your own profile              |
+|                     | PATCH  | Update username or display name    |
 | `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
@@ -138,6 +139,8 @@ An item counts as on loan while a loan is `approved` or `returned`.
 ### Profiles
 
 `POST users` takes `{ username, displayName }`. A username is 3 to 30 letters, digits, dots or underscores, and is stored lowercase.
+
+`PATCH users/me` takes `{ username, displayName }`, both optional. Email comes from Firebase and can't be changed here.
 
 `GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
