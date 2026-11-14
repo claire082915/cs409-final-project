@@ -14,6 +14,7 @@ import ReminderEmailPage from './pages/ReminderEmailPage.jsx'
 import ReturnConfirmationPage from './pages/ReturnConfirmationPage.jsx'
 import ReputationPage from './pages/ReputationPage.jsx'
 import MobileResponsivePage from './pages/MobileResponsivePage.jsx'
+import { AuthProvider } from './auth/AuthContext.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 
 function App() {
@@ -42,6 +43,8 @@ function App() {
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>,
 )
