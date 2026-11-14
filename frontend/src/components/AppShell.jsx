@@ -3,6 +3,7 @@ import {
   BookOpen,
   Boxes,
   Home,
+  LogOut,
   Search,
   Settings,
   Star,
@@ -10,6 +11,7 @@ import {
   HandHelping,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from './Logo.jsx'
 import '../styles/components/app-shell.css'
 
@@ -54,8 +56,7 @@ function Sidebar() {
 }
 
 function Topbar() {
-  const profileName =
-    localStorage.getItem('lendrDisplayName') || localStorage.getItem('lendrUsername') || 'User Name'
+  const { profile } = useAuth()
   return (
     <header className="app-topbar">
       <label className="app-search">
@@ -70,9 +71,12 @@ function Topbar() {
         </button>
         <Link className="profile-button" to="/settings" aria-label="Open settings">
           <span className="profile-avatar">
-            <UserRound size={18} />
+            {profile.photo ? <img src={profile.photo} alt="" /> : <UserRound size={18} />}
           </span>
-          <span className="profile-name">{profileName}</span>
+          <span className="profile-name">{profile.displayName}</span>
+        </Link>
+        <Link className="icon-button" to="/logout" aria-label="Log out">
+          <LogOut size={18} />
         </Link>
       </div>
     </header>

@@ -1,0 +1,209 @@
+/* Shared look for React Aria popovers, lists, date pickers and selects */
+
+/* Sit above page modals, which use z-index 20 */
+.field-popover {
+  z-index: 60;
+  min-width: var(--trigger-width);
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid #dfe8eb;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 8px 20px #17455114;
+}
+
+.field-list {
+  outline: 0;
+}
+
+/* Hide a popover that is open but has nothing to show yet */
+.field-popover:has(.field-list[data-empty]) {
+  display: none;
+}
+
+.field-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 5px;
+  color: #315761;
+  font-size: 12px;
+  cursor: pointer;
+  outline: 0;
+}
+
+.field-option svg {
+  flex: none;
+  color: #8a9da2;
+}
+
+.field-option[data-focused],
+.field-option[data-hovered] {
+  background: #eef5f3;
+}
+
+.field-option[data-selected] {
+  font-weight: 700;
+}
+
+/* Date picker */
+.date-picker {
+  display: grid;
+  gap: 7px;
+}
+
+.date-picker-group {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  box-sizing: border-box;
+  gap: 4px;
+  padding: 0 10px 0 4px;
+  border: 1px solid #dfe8eb;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.date-picker-group[data-focus-within] {
+  border-color: #6ba99d;
+}
+
+.date-picker-group[data-invalid] {
+  border-color: #d9826d;
+}
+
+.date-picker-input {
+  display: flex;
+  flex: 1;
+  color: #315761;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.date-picker-segment {
+  padding: 1px 2px;
+  border-radius: 3px;
+  outline: 0;
+}
+
+.date-picker-segment[data-placeholder],
+.date-picker-segment[data-type='literal'] {
+  color: #91a4a9;
+}
+
+.date-picker-segment[data-focused] {
+  color: #fff;
+  background: #357d70;
+}
+
+.date-picker-button,
+.calendar-nav {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  color: #648087;
+  background: transparent;
+  cursor: pointer;
+  outline: 0;
+}
+
+.date-picker-button[data-hovered],
+.calendar-nav[data-hovered] {
+  background: #eef5f3;
+}
+
+.date-picker-button[data-focus-visible],
+.calendar-nav[data-focus-visible] {
+  box-shadow: 0 0 0 2px #6ba99d;
+}
+
+.date-picker-dialog {
+  padding: 6px;
+  outline: 0;
+}
+
+/* Calendar */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.calendar-heading {
+  margin: 0;
+  color: #214954;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.calendar-grid {
+  border-collapse: collapse;
+}
+
+.calendar-grid th {
+  padding-bottom: 4px;
+  color: #8a9da2;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-cell {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: #315761;
+  font-size: 12px;
+  cursor: pointer;
+  outline: 0;
+}
+
+/* Keep the cell so the week grid stays aligned */
+.calendar-cell[data-outside-month] {
+  visibility: hidden;
+}
+
+.calendar-cell[data-hovered] {
+  background: #eef5f3;
+}
+
+.calendar-cell[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px #6ba99d;
+}
+
+.calendar-cell[data-selected] {
+  color: #fff;
+  background: #0c5865;
+}
+
+.calendar-cell[data-disabled],
+.calendar-cell[data-unavailable] {
+  color: #c4d0d3;
+  background: transparent;
+  cursor: default;
+}
+
+/* Select */
+.select-menu-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  color: #45656c;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: 0;
+}
+
+.select-menu-button[data-focus-visible] {
+  text-decoration: underline;
+}

@@ -1,19 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  CalendarDays,
-  Check,
-  MapPin,
-  PackageOpen,
-  Search,
-  SlidersHorizontal,
-  X,
-} from 'lucide-react'
+import { Check, MapPin, PackageOpen, Search, SlidersHorizontal, X } from 'lucide-react'
+import { getLocalTimeZone, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import DatePickerField from '../components/DatePickerField.jsx'
+import SelectMenu from '../components/SelectMenu.jsx'
+import { apiFetch } from '../lib/api.js'
 import '../styles/pages/browse-borrow.css'
 
-const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL || 'https://lendr-api.onrender.com/api'
-).replace(/\/$/, '')
 const MOCK_ITEMS = [
   {
     _id: 'mock-laptop',
@@ -92,16 +85,10 @@ const CATEGORIES = ['All items', 'Electronics', 'Books', 'Outdoor', 'Sports', 'H
 
 async function loadBrowseItems(source) {
   if (source === 'mock') return MOCK_ITEMS
-  const token = sessionStorage.getItem('lendrIdToken')
-  if (!token) throw new Error('Sign in to load items from the backend.')
   // Public browse is not exposed by the current API yet. Keeping this request here
   // makes the source switch a one-line endpoint change when that route is ready.
-  const response = await fetch(`${API_BASE}/items/browse`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  const body = await response.json()
-  if (!response.ok) throw new Error(body.message || 'Could not load browse items.')
-  return body.data.items || body.data || []
+  const data = await apiFetch('items/browse')
+  return data.items || data
 }
 
 export default function BrowseBorrowPage() {
@@ -162,19 +149,8 @@ export default function BrowseBorrowPage() {
       setSelectedItem(null)
       return
     }
-    const token = sessionStorage.getItem('lendrIdToken')
-    if (!token) {
-      setError('Sign in before requesting an item.')
-      return
-    }
     try {
-      const response = await fetch(`${API_BASE}/loans`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ itemId: selectedItem._id, dueDate }),
-      })
-      const body = await response.json()
-      if (!response.ok) throw new Error(body.message || 'Could not send your request.')
+      await apiFetch('loans', { method: 'POST', body: { itemId: selectedItem._id, dueDate } })
       setNotice('Borrow request sent!')
       setSelectedItem(null)
     } catch (err) {
@@ -224,18 +200,15 @@ export default function BrowseBorrowPage() {
               </button>
             )}
           </label>
-          <label className="browse-category">
+          <div className="browse-category">
             <SlidersHorizontal size={16} aria-hidden="true" />
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
+            <SelectMenu
               aria-label="Filter by category"
-            >
-              {CATEGORIES.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </label>
+              options={CATEGORIES}
+              value={category}
+              onChange={setCategory}
+            />
+          </div>
         </div>
         {error && (
           <p className="browse-message error" role="alert">
@@ -373,18 +346,13 @@ export default function BrowseBorrowPage() {
                   placeholder="Hi! I’d love to borrow this. I’ll take good care of it!"
                   rows="4"
                 />
-                <label className="browse-date-label">
-                  Return by{' '}
-                  <span>
-                    <CalendarDays size={15} />
-                    <input
-                      type="date"
-                      name="dueDate"
-                      min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
-                      required
-                    />
-                  </span>
-                </label>
+                <DatePickerField
+                  label="Return by"
+                  className="browse-date-label"
+                  name="dueDate"
+                  minValue={today(getLocalTimeZone()).add({ days: 1 })}
+                  isRequired
+                />
                 <div className="browse-modal-actions">
                   <button
                     className="browse-cancel-button"

@@ -11,25 +11,8 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AppShell from '../components/AppShell.jsx'
+import { apiFetch } from '../lib/api.js'
 import '../styles/pages/dashboard.css'
-
-const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL || 'https://lendr-api.onrender.com/api'
-).replace(/\/$/, '')
-
-function readToken() {
-  // The login flow can store its Firebase ID token here; it is refreshed on every page load.
-  return window.sessionStorage.getItem('lendrIdToken')
-}
-
-async function getLoans(path, token) {
-  const response = await fetch(`${API_BASE}/loans/${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  const body = response.status === 204 ? {} : await response.json()
-  if (!response.ok) throw new Error(body.message || 'Could not load your loans.')
-  return Array.isArray(body.data) ? body.data : []
-}
 
 function personName(user) {
   return user?.displayName || (user?.username ? `@${user.username}` : 'Someone')
@@ -58,22 +41,14 @@ export default function DashboardPage() {
   const [loans, setLoans] = useState({ lent: [], borrowed: [] })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [hasToken, setHasToken] = useState(Boolean(readToken()))
 
   const load = async () => {
-    const token = readToken()
-    setHasToken(Boolean(token))
-    if (!token) {
-      setLoading(false)
-      setError('Sign in to see your lending and borrowing activity.')
-      return
-    }
     setLoading(true)
     setError('')
     try {
       const [lent, borrowed] = await Promise.all([
-        getLoans('lent', token),
-        getLoans('borrowed', token),
+        apiFetch('loans/lent'),
+        apiFetch('loans/borrowed'),
       ])
       setLoans({ lent, borrowed })
     } catch (err) {
@@ -161,7 +136,7 @@ export default function DashboardPage() {
           <button
             className="dashboard-refresh"
             onClick={load}
-            disabled={loading || !hasToken}
+            disabled={loading}
             aria-label="Refresh dashboard"
           >
             <RefreshCw size={16} /> Refresh
@@ -196,12 +171,7 @@ export default function DashboardPage() {
           {error ? (
             <div className="dashboard-message" role="status">
               <CircleAlert size={20} />
-              <span>
-                {error}
-                {!hasToken && (
-                  <small>Your signed-in session will provide access to this data.</small>
-                )}
-              </span>
+              <span>{error}</span>
             </div>
           ) : loading ? (
             <div className="dashboard-message">Loading your recent loans…</div>

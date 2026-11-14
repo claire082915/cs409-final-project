@@ -43,3 +43,12 @@ export async function deletePhotos(urls) {
   const publicIds = urls.map(publicIdFromUrl)
   await Promise.all(publicIds.map((publicId) => cloudinary.uploader.destroy(publicId)))
 }
+
+// Runs after the Mongo update, so a Cloudinary failure only leaves unused images behind
+export async function deleteUnusedPhotos(urls) {
+  try {
+    await deletePhotos(urls)
+  } catch (err) {
+    console.error('Failed to delete photos from Cloudinary', err)
+  }
+}

@@ -1,0 +1,70 @@
+.photo-picker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 17px;
+}
+
+.photo-picker-preview {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #86604b;
+  background: linear-gradient(145deg, #f3d7bf, #d7a88d);
+}
+
+.photo-picker-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-picker-actions button {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  outline: 0;
+}
+
+.photo-picker-actions button[data-focus-visible] {
+  box-shadow: 0 0 0 2px #6ba99d;
+}
+
+.photo-picker-actions button[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.photo-picker-upload {
+  border: 0;
+  color: #fff;
+  background: #0c5865;
+}
+
+.photo-picker-upload[data-hovered] {
+  background: #084653;
+}
+
+.photo-picker-remove {
+  border: 1px solid #dfe8eb;
+  color: #315761;
+  background: #fff;
+}
+
+.photo-picker-remove[data-hovered] {
+  background: #f4f8f8;
+}

@@ -52,6 +52,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 | `uploads/signature` | POST   | Sign a photo upload                |
 | `users`             | POST   | Create your profile                |
 | `users/me`          | GET    | View your own profile              |
+|                     | PATCH  | Update your profile                |
 | `users/:username`   | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
@@ -137,9 +138,11 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 ### Profiles
 
-`POST users` takes `{ username, displayName }`. A username is 3 to 30 letters, digits, dots or underscores, and is stored lowercase.
+`POST users` takes `{ username, displayName }`. A username is 3 to 20 characters, using only letters, digits, dots or underscores, and is stored lowercase.
 
-`GET users/:username` returns `{ username, displayName, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
+`PATCH users/me` takes `{ username, displayName, city, zipCode, photo }`, all optional. `zipCode` is a 5 digit US ZIP code. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
+
+`GET users/:username` returns `{ username, displayName, photo, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
 ### Photos
 

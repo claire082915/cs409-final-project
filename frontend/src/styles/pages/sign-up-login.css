@@ -187,6 +187,50 @@
   background-color: var(--sul-green);
 }
 
+/* The global .button is styled for links, so reset the native button look */
+.auth-panel button.button {
+  border: 0;
+  cursor: pointer;
+}
+
+.auth-panel button.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+.auth-panel button.auth-google {
+  margin-top: 0;
+  color: var(--sul-ink);
+  background: #fff;
+  border: 1px solid var(--sul-border);
+}
+
+.auth-heading {
+  margin: 0;
+  font:
+    800 20px Manrope,
+    sans-serif;
+  color: var(--sul-ink);
+}
+
+.auth-message {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.65rem;
+  font-size: 13px;
+}
+
+.auth-error {
+  color: #a5402a;
+  background: #fdeee7;
+}
+
+.auth-notice {
+  color: var(--sul-green);
+  background: var(--sul-green-soft);
+}
+
 .switch-prompt {
   margin: 0;
   text-align: center;

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
+import { Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
+import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import DatePickerField from '../components/DatePickerField.jsx'
+import { apiFetch } from '../lib/api.js'
 import '../styles/pages/borrow-request.css'
 
-const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL || 'https://lendr-api.onrender.com/api'
-).replace(/\/$/, '')
 const MOCK_REQUESTS = [
   {
     _id: 'mock-request-1',
@@ -80,20 +80,9 @@ export default function BorrowRequestPage() {
       setRequests(MOCK_REQUESTS)
       return
     }
-    const token = sessionStorage.getItem('lendrIdToken')
-    if (!token) {
-      setRequests([])
-      setError('Sign in to review borrower requests.')
-      return
-    }
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE}/loans/lent?status=requested`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const body = await response.json()
-      if (!response.ok) throw new Error(body.message || 'Could not load borrow requests.')
-      setRequests(Array.isArray(body.data) ? body.data : [])
+      setRequests(await apiFetch('loans/lent?status=requested'))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -114,14 +103,10 @@ export default function BorrowRequestPage() {
     setError('')
     try {
       if (source === 'backend') {
-        const token = sessionStorage.getItem('lendrIdToken')
-        const response = await fetch(`${API_BASE}/loans/${selected._id}/${decision}`, {
+        await apiFetch(`loans/${selected._id}/${decision}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          ...(decision === 'approve' ? { body: JSON.stringify({ dueDate }) } : {}),
+          body: decision === 'approve' ? { dueDate } : undefined,
         })
-        const body = response.status === 204 ? {} : await response.json()
-        if (!response.ok) throw new Error(body.message || `Could not ${decision} this request.`)
       }
       setRequests((current) => current.filter((request) => request._id !== selected._id))
       setNotice(
@@ -287,19 +272,14 @@ export default function BorrowRequestPage() {
                 </div>
               </div>
               <form onSubmit={(event) => handleDecision('approve', event)}>
-                <label className="approval-date-label">
-                  Set return date
-                  <span>
-                    <CalendarDays size={17} />
-                    <input
-                      name="dueDate"
-                      type="date"
-                      defaultValue={String(selected.dueDate).slice(0, 10)}
-                      min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
-                      required
-                    />
-                  </span>
-                </label>
+                <DatePickerField
+                  label="Set return date"
+                  className="approval-date-label"
+                  name="dueDate"
+                  defaultValue={parseDate(String(selected.dueDate).slice(0, 10))}
+                  minValue={today(getLocalTimeZone()).add({ days: 1 })}
+                  isRequired
+                />
                 <div className="approval-condition">
                   <h3>Item condition at lending</h3>
                   <p>Listing photos for reference. Condition photo uploads aren’t supported yet.</p>

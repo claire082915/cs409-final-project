@@ -73,15 +73,15 @@
   gap: 14px;
   padding-top: 17px;
 }
+.settings-fields .settings-field-wide {
+  grid-column: 1 / -1;
+}
 .settings-fields label {
   display: grid;
   gap: 6px;
   color: #45656c;
   font-size: 10px;
   font-weight: 750;
-}
-.settings-fields label:last-child {
-  grid-column: 1 / -1;
 }
 .settings-fields input {
   width: 100%;
@@ -243,11 +243,16 @@
 .settings-save-panel > button:hover {
   background: #084653;
 }
-.settings-saved {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #287565;
+.settings-save-panel > button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.settings-fields input:read-only {
+  color: #82979c;
+  background: #f6f9f9;
+}
+.settings-error {
+  color: #a5402a;
   font-size: 10px;
   font-weight: 700;
 }
@@ -273,9 +278,6 @@
   }
   .settings-fields {
     grid-template-columns: 1fr;
-  }
-  .settings-fields label:last-child {
-    grid-column: auto;
   }
   .settings-save-panel {
     grid-template-columns: 1fr;
