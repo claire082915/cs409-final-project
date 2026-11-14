@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ComboBox,
   Group,
@@ -16,6 +16,7 @@ import '../styles/components/topbar-search.css'
 
 // Wait for a pause in typing so each keystroke doesn't send a request
 const DEBOUNCE_MS = 300
+const IS_MAC = navigator.userAgent.includes('Mac')
 const MOCK_ITEMS = [
   { _id: 'mock-laptop', name: 'MacBook Pro', ownerName: 'Maya Chen', photos: [] },
   { _id: 'mock-tent', name: '2-person Camping Tent', ownerName: 'Jordan Lee', photos: [] },
@@ -83,10 +84,22 @@ function PersonOption({ person }) {
   )
 }
 
-// Results open lightweight placeholders until full profile and item pages are ready
 export default function TopbarSearch() {
+  const inputRef = useRef(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
+
+  useEffect(() => {
+    const focusSearch = (event) => {
+      const hasShortcutModifier = IS_MAC ? event.metaKey : event.ctrlKey
+      if (hasShortcutModifier && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', focusSearch)
+    return () => window.removeEventListener('keydown', focusSearch)
+  }, [])
 
   useEffect(() => {
     const trimmed = query.trim()
@@ -133,11 +146,10 @@ export default function TopbarSearch() {
       allowsCustomValue
       allowsEmptyCollection
     >
-      {/* The dropdown lines up with the group, so it spans the whole search box */}
       <Group className="app-search-field">
         <Search size={16} aria-hidden="true" />
-        <Input placeholder="Search items or people..." />
-        <kbd>⌘ K</kbd>
+        <Input ref={inputRef} placeholder="Search items or people..." />
+        <kbd>{IS_MAC ? '⌘ K' : 'Ctrl K'}</kbd>
       </Group>
       <Popover className="field-popover search-popover" placement="bottom start">
         <ListBox

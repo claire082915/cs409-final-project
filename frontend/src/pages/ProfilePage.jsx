@@ -16,7 +16,6 @@ function MockDetailPage({ label, value }) {
   )
 }
 
-// Placeholders until profiles and items have full detail pages
 export default function ProfilePage() {
   const { displayName } = useParams()
   return <MockDetailPage label="Profile" value={displayName} />
