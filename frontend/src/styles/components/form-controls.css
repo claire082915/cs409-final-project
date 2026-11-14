@@ -16,9 +16,16 @@
   outline: 0;
 }
 
-/* Hide a popover that is open but has nothing to show yet */
-.field-popover:has(.field-list[data-empty]) {
+/* Hide a popover that is open but has nothing to show yet, unless it shows an empty message */
+.field-popover:has(.field-list[data-empty]):not(:has(.field-empty)) {
   display: none;
+}
+
+.field-empty {
+  margin: 0;
+  padding: 10px 9px;
+  color: #7d959c;
+  font-size: 12px;
 }
 
 .field-option {
@@ -206,4 +213,70 @@
 
 .select-menu-button[data-focus-visible] {
   text-decoration: underline;
+}
+
+/* Distance slider */
+.distance-slider {
+  display: grid;
+  gap: 8px;
+  min-width: 190px;
+  padding: 0 4px;
+}
+
+.distance-slider-header {
+  display: flex;
+  justify-content: space-between;
+  color: #45656c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.distance-slider-header output {
+  color: #315761;
+  font-weight: 750;
+}
+
+/* A taller hit area around the thin visible rail */
+.distance-slider-track {
+  position: relative;
+  height: 18px;
+}
+
+.distance-slider-track::before,
+.distance-slider-fill {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.distance-slider-track::before {
+  right: 0;
+  background: #dfe8eb;
+}
+
+.distance-slider-fill {
+  background: #357d70;
+}
+
+.distance-slider-thumb {
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #0c5865;
+  box-shadow: 0 1px 4px #17455140;
+  cursor: grab;
+}
+
+.distance-slider-thumb[data-dragging] {
+  cursor: grabbing;
+}
+
+.distance-slider-thumb[data-focus-visible] {
+  box-shadow: 0 0 0 3px #6ba99d;
 }

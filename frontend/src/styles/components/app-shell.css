@@ -1,9 +1,25 @@
 /* Shared application shell and scaffold styles. */
 /* Shared application shell used by the signed-in screens. */
+html:has(.app-shell),
+body:has(.app-shell) {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body:has(.app-shell) {
+  position: fixed;
+  inset: 0;
+}
+body:has(.app-shell) #root {
+  height: 100%;
+}
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 246px minmax(0, 1fr);
+  overflow: hidden;
   background: #f5f8fa;
 }
 .app-shell-no-sidebar {
@@ -99,9 +115,16 @@
   font-size: 9px;
 }
 .app-main {
+  height: 100%;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
 }
 .app-topbar {
+  position: sticky;
+  z-index: 5;
+  top: 0;
   height: 75px;
   display: flex;
   align-items: center;
@@ -113,6 +136,8 @@
 }
 .app-search {
   width: min(390px, 55%);
+}
+.app-search-field {
   height: 39px;
   display: flex;
   align-items: center;
@@ -150,6 +175,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
+}
+.app-topbar-no-search .topbar-actions {
+  margin-left: auto;
 }
 .icon-button,
 .profile-button {
@@ -223,6 +251,8 @@
   }
   .app-search {
     width: 100%;
+  }
+  .app-search-field {
     height: 36px;
   }
   .app-search kbd,

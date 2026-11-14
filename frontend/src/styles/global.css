@@ -19,11 +19,13 @@
 }
 html {
   scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overscroll-behavior: none;
 }
 a {
   color: inherit;
@@ -55,20 +57,8 @@ a {
 .logo-mark {
   width: 22px;
   height: 22px;
-  position: relative;
-  display: inline-block;
-  transform: rotate(-14deg);
-  background: linear-gradient(140deg, #1e9881 0 53%, #f58b50 54%);
-  clip-path: polygon(0 0, 100% 20%, 78% 100%, 15% 78%);
-}
-.logo-mark span {
-  position: absolute;
-  width: 8px;
-  height: 10px;
-  left: 5px;
-  top: 6px;
-  background: #f9fbf8;
-  border-radius: 8px 0 8px 0;
+  display: block;
+  flex: none;
 }
 .header-nav {
   margin-left: 100px;

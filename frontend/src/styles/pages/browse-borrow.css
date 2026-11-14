@@ -235,6 +235,16 @@
   color: #315c65;
   font-size: 14px;
 }
+.browse-empty a {
+  margin-top: 4px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  color: #fff;
+  background: #0c5865;
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+}
 .browse-message {
   display: flex;
   align-items: center;

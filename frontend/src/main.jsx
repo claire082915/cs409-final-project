@@ -19,6 +19,7 @@ import { AuthProvider } from './auth/AuthContext.jsx'
 import RequireAuth from './auth/RequireAuth.jsx'
 import LogOutRoute from './auth/LogOutRoute.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import ProfilePage, { ItemPage } from './pages/ProfilePage.jsx'
 
 // A data router so pages like Settings can block navigation with useBlocker
 const router = createHashRouter(
@@ -40,6 +41,8 @@ const router = createHashRouter(
         <Route path="/reputation" element={<ReputationPage />} />
         <Route path="/mobile" element={<MobileResponsivePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile/:displayName" element={<ProfilePage />} />
+        <Route path="/item/:itemName" element={<ItemPage />} />
       </Route>
       <Route path="*" element={<LandingPage />} />
     </>,

@@ -10,24 +10,6 @@ import { uploadPhoto } from '../lib/uploadPhoto.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import '../styles/pages/settings.css'
 
-const DEFAULT_PREFERENCES = {
-  borrowRequests: true,
-  dueDateReminders: true,
-  communityUpdates: false,
-  showProfile: true,
-}
-
-function readPreferences() {
-  try {
-    return {
-      ...DEFAULT_PREFERENCES,
-      ...JSON.parse(localStorage.getItem('lendrPreferences') || '{}'),
-    }
-  } catch {
-    return DEFAULT_PREFERENCES
-  }
-}
-
 // City and ZIP code are missing on profiles created before they existed
 function formFromProfile(profile) {
   return {
@@ -51,8 +33,8 @@ function hasChanges(current, saved) {
 export default function SettingsPage() {
   const { profile, setProfile } = useAuth()
   const [form, setForm] = useState(() => formFromProfile(profile))
-  const [preferences, setPreferences] = useState(readPreferences)
-  const [savedPreferences, setSavedPreferences] = useState(readPreferences)
+  // Defaults for preferences come from the backend, so every profile has each one
+  const [preferences, setPreferences] = useState(() => ({ ...profile.preferences }))
   // A picked photo stays in the browser until Save uploads it
   const [pendingPhoto, setPendingPhoto] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -60,7 +42,7 @@ export default function SettingsPage() {
 
   const hasUnsavedChanges =
     hasChanges(form, formFromProfile(profile)) ||
-    hasChanges(preferences, savedPreferences) ||
+    hasChanges(preferences, profile.preferences) ||
     pendingPhoto !== null
 
   const setField = (name, value) => setForm((current) => ({ ...current, [name]: value }))
@@ -74,8 +56,6 @@ export default function SettingsPage() {
     event.preventDefault()
     setSaving(true)
     setError('')
-    localStorage.setItem('lendrPreferences', JSON.stringify(preferences))
-    setSavedPreferences(preferences)
     try {
       const photo = pendingPhoto ? await uploadPhoto(pendingPhoto) : form.photo
       const updated = await apiFetch('users/me', {
@@ -86,10 +66,12 @@ export default function SettingsPage() {
           city: form.city.trim(),
           zipCode: form.zipCode.trim(),
           photo,
+          preferences,
         },
       })
       setProfile(updated)
       setForm(formFromProfile(updated))
+      setPreferences({ ...updated.preferences })
       setPendingPhoto(null)
       toast.success('Settings saved')
     } catch (err) {
@@ -210,12 +192,6 @@ export default function SettingsPage() {
                   onChange={() => togglePreference('dueDateReminders')}
                 />
                 <SettingToggle
-                  label="Community updates"
-                  description="Hear about new features and community activity."
-                  checked={preferences.communityUpdates}
-                  onChange={() => togglePreference('communityUpdates')}
-                />
-                <SettingToggle
                   label="Show my profile in the community"
                   description="Let other members see your name and username on listings."
                   checked={preferences.showProfile}
@@ -227,7 +203,7 @@ export default function SettingsPage() {
           <aside className="settings-save-panel">
             <div>
               <strong>Save your changes</strong>
-              <p>Your profile is saved to your account, preferences stay on this device.</p>
+              <p>Your profile and preferences are saved to your account.</p>
             </div>
             <button type="submit" disabled={saving || !hasUnsavedChanges}>
               <Save size={16} />

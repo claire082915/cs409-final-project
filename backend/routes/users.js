@@ -8,6 +8,24 @@ import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 
 const router = Router()
 const editableFields = ['username', 'displayName', 'city', 'zipCode', 'photo']
+const preferenceNames = ['borrowRequests', 'dueDateReminders', 'showProfile']
+
+// Copies the preferences that were sent, returns an error message when one isn't a boolean
+function applyPreferences(user, preferences) {
+  if (typeof preferences !== 'object' || preferences === null) {
+    return 'preferences must be an object'
+  }
+  for (const name of preferenceNames) {
+    if (preferences[name] === undefined) {
+      continue
+    }
+    if (typeof preferences[name] !== 'boolean') {
+      return `preferences.${name} must be true or false`
+    }
+    user.preferences[name] = preferences[name]
+  }
+  return null
+}
 
 // Null when nobody has rated the user yet
 async function reputation(userId) {
@@ -53,6 +71,12 @@ router.patch('/me', requireUser, async (req, res) => {
     }
     req.user[field] = body[field]
   }
+  if (body.preferences !== undefined) {
+    const preferencesError = applyPreferences(req.user, body.preferences)
+    if (preferencesError) {
+      return res.status(400).json({ message: preferencesError, data: {} })
+    }
+  }
   await req.user.save()
   // Delete the replaced or removed photo so it doesn't sit unused in Cloudinary
   if (oldPhoto && oldPhoto !== req.user.photo) {
@@ -63,7 +87,9 @@ router.patch('/me', requireUser, async (req, res) => {
 
 router.get('/:username', requireUser, async (req, res) => {
   const user = await User.findOne({ username: req.params.username.toLowerCase() })
-  if (!user) {
+  // A hidden profile looks the same as a missing one to everyone but its owner
+  const isHidden = user && !user._id.equals(req.userId) && !user.preferences.showProfile
+  if (!user || isHidden) {
     return res.status(404).json({ message: 'User not found', data: {} })
   }
   const items = await Item.find({ owner: user._id, deletedAt: null }).sort({ createdAt: -1 })
