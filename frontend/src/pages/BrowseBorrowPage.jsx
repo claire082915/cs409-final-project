@@ -207,7 +207,7 @@ export default function BrowseBorrowPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell withSearch={false}>
       <main className="browse-page">
         <header className="browse-heading">
           <div>

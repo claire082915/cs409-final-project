@@ -113,6 +113,8 @@
 }
 .app-search {
   width: min(390px, 55%);
+}
+.app-search-field {
   height: 39px;
   display: flex;
   align-items: center;
@@ -150,6 +152,9 @@
   display: flex;
   align-items: center;
   gap: 20px;
+}
+.app-topbar-no-search .topbar-actions {
+  margin-left: auto;
 }
 .icon-button,
 .profile-button {
@@ -223,6 +228,8 @@
   }
   .app-search {
     width: 100%;
+  }
+  .app-search-field {
     height: 36px;
   }
   .app-search kbd,

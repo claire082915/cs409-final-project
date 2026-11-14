@@ -16,9 +16,16 @@
   outline: 0;
 }
 
-/* Hide a popover that is open but has nothing to show yet */
-.field-popover:has(.field-list[data-empty]) {
+/* Hide a popover that is open but has nothing to show yet, unless it shows an empty message */
+.field-popover:has(.field-list[data-empty]):not(:has(.field-empty)) {
   display: none;
+}
+
+.field-empty {
+  margin: 0;
+  padding: 10px 9px;
+  color: #7d959c;
+  font-size: 12px;
 }
 
 .field-option {

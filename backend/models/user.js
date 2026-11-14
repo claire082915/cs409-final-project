@@ -40,6 +40,12 @@ const userSchema = new mongoose.Schema(
         message: 'Profile photo must be uploaded by you',
       },
     },
+    // Notification and privacy choices from Settings
+    preferences: {
+      borrowRequests: { type: Boolean, default: true },
+      dueDateReminders: { type: Boolean, default: true },
+      showProfile: { type: Boolean, default: true },
+    },
   },
   { timestamps: true },
 )

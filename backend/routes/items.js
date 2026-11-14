@@ -6,6 +6,7 @@ import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
+import { publicOwner } from '../lib/publicProfile.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'photos']
@@ -70,7 +71,15 @@ function nearbyOwners(user, miles) {
         query: { _id: { $ne: user._id } },
       },
     },
-    { $project: { username: 1, displayName: 1, photo: 1, distance: 1 } },
+    {
+      $project: {
+        username: 1,
+        displayName: 1,
+        photo: 1,
+        'preferences.showProfile': 1,
+        distance: 1,
+      },
+    },
   ])
 }
 
@@ -96,11 +105,11 @@ router.get('/nearby', async (req, res) => {
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const nearbyItems = []
   for (const item of items) {
-    const { distance, ...owner } = ownersById.get(String(item.owner))
+    const owner = ownersById.get(String(item.owner))
     nearbyItems.push({
       ...withAvailability(item, !loanedIds.has(item.id)),
-      owner,
-      distanceMiles: Math.round((distance / METERS_PER_MILE) * 10) / 10,
+      owner: publicOwner(owner),
+      distanceMiles: Math.round((owner.distance / METERS_PER_MILE) * 10) / 10,
     })
   }
   nearbyItems.sort((a, b) => a.distanceMiles - b.distanceMiles)

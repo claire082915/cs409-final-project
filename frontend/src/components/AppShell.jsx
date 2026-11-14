@@ -13,6 +13,7 @@ import {
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from './Logo.jsx'
+import TopbarSearch from './TopbarSearch.jsx'
 import '../styles/components/app-shell.css'
 
 const navigation = [
@@ -55,15 +56,11 @@ function Sidebar() {
   )
 }
 
-function Topbar() {
+function Topbar({ withSearch }) {
   const { profile } = useAuth()
   return (
-    <header className="app-topbar">
-      <label className="app-search">
-        <Search size={16} aria-hidden="true" />
-        <input aria-label="Search items or people" placeholder="Search items or people..." />
-        <kbd>⌘ K</kbd>
-      </label>
+    <header className={`app-topbar${withSearch ? '' : ' app-topbar-no-search'}`}>
+      {withSearch && <TopbarSearch />}
       <div className="topbar-actions">
         <button className="icon-button notification-button" aria-label="Notifications">
           <Bell size={18} />
@@ -83,12 +80,12 @@ function Topbar() {
   )
 }
 
-export default function AppShell({ children, withSidebar = true }) {
+export default function AppShell({ children, withSidebar = true, withSearch = true }) {
   return (
     <div className={`app-shell${withSidebar ? '' : ' app-shell-no-sidebar'}`}>
       {withSidebar && <Sidebar />}
       <div className="app-main">
-        <Topbar />
+        <Topbar withSearch={withSearch} />
         <div className="app-content">{children}</div>
       </div>
       {withSidebar && (
