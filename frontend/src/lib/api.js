@@ -11,6 +11,10 @@ export class ApiError extends Error {
   }
 }
 
+export function warmApi() {
+  return fetch(`${API_BASE}/health`).catch(() => null)
+}
+
 export async function apiFetch(path, { method = 'GET', body } = {}) {
   if (!auth.currentUser) {
     throw new ApiError('Not signed in', 401)

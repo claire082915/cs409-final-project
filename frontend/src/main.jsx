@@ -20,6 +20,9 @@ import RequireAuth from './auth/RequireAuth.jsx'
 import LogOutRoute from './auth/LogOutRoute.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import ProfilePage, { ItemPage } from './pages/ProfilePage.jsx'
+import { warmApi } from './lib/api.js'
+
+warmApi()
 
 // A data router so pages like Settings can block navigation with useBlocker
 const router = createHashRouter(
