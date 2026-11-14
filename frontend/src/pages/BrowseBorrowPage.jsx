@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  CalendarDays,
-  Check,
-  MapPin,
-  PackageOpen,
-  Search,
-  SlidersHorizontal,
-  X,
-} from 'lucide-react'
+import { Check, MapPin, PackageOpen, Search, SlidersHorizontal, X } from 'lucide-react'
+import { getLocalTimeZone, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import DatePickerField from '../components/DatePickerField.jsx'
+import SelectMenu from '../components/SelectMenu.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/browse-borrow.css'
 
@@ -205,18 +200,15 @@ export default function BrowseBorrowPage() {
               </button>
             )}
           </label>
-          <label className="browse-category">
+          <div className="browse-category">
             <SlidersHorizontal size={16} aria-hidden="true" />
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
+            <SelectMenu
               aria-label="Filter by category"
-            >
-              {CATEGORIES.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </label>
+              options={CATEGORIES}
+              value={category}
+              onChange={setCategory}
+            />
+          </div>
         </div>
         {error && (
           <p className="browse-message error" role="alert">
@@ -354,18 +346,13 @@ export default function BrowseBorrowPage() {
                   placeholder="Hi! I’d love to borrow this. I’ll take good care of it!"
                   rows="4"
                 />
-                <label className="browse-date-label">
-                  Return by{' '}
-                  <span>
-                    <CalendarDays size={15} />
-                    <input
-                      type="date"
-                      name="dueDate"
-                      min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
-                      required
-                    />
-                  </span>
-                </label>
+                <DatePickerField
+                  label="Return by"
+                  className="browse-date-label"
+                  name="dueDate"
+                  minValue={today(getLocalTimeZone()).add({ days: 1 })}
+                  isRequired
+                />
                 <div className="browse-modal-actions">
                   <button
                     className="browse-cancel-button"

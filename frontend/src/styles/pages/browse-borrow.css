@@ -100,16 +100,6 @@
 .browse-category {
   padding: 0 11px;
 }
-.browse-category select {
-  max-width: 150px;
-  border: 0;
-  outline: 0;
-  color: #45656c;
-  background: transparent;
-  font: inherit;
-  font-size: 11px;
-  cursor: pointer;
-}
 .browse-results-label {
   display: flex;
   align-items: baseline;
@@ -392,8 +382,7 @@
   font-size: 12px;
   line-height: 1.5;
 }
-.borrow-request-form textarea:focus,
-.browse-date-label input:focus {
+.borrow-request-form textarea:focus {
   border-color: #6ba99d;
 }
 .borrow-request-form textarea::placeholder {
@@ -434,25 +423,6 @@
   color: #45656c;
   font-size: 11px;
   font-weight: 700;
-}
-.browse-date-label span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 10px;
-  border: 1px solid #dfe8eb;
-  border-radius: 7px;
-  color: #789197;
-}
-.browse-date-label input {
-  flex: 1;
-  border: 0;
-  outline: 0;
-  color: #315761;
-  background: transparent;
-  font: inherit;
-  font-weight: 500;
 }
 .browse-modal-actions {
   display: flex;

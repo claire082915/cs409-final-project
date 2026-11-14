@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@internationalized/date": "^3.12.4",
     "@vitejs/plugin-react": "^6.1.1",
     "firebase": "^13.3.0",
     "lucide-react": "^0.468.0",
     "react": "^19.2.8",
+    "react-aria-components": "^1.22.1",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
     "vite": "^8.3.0"

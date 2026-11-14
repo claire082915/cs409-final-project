@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
+import { Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
+import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import DatePickerField from '../components/DatePickerField.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/borrow-request.css'
 
@@ -270,19 +272,14 @@ export default function BorrowRequestPage() {
                 </div>
               </div>
               <form onSubmit={(event) => handleDecision('approve', event)}>
-                <label className="approval-date-label">
-                  Set return date
-                  <span>
-                    <CalendarDays size={17} />
-                    <input
-                      name="dueDate"
-                      type="date"
-                      defaultValue={String(selected.dueDate).slice(0, 10)}
-                      min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
-                      required
-                    />
-                  </span>
-                </label>
+                <DatePickerField
+                  label="Set return date"
+                  className="approval-date-label"
+                  name="dueDate"
+                  defaultValue={parseDate(String(selected.dueDate).slice(0, 10))}
+                  minValue={today(getLocalTimeZone()).add({ days: 1 })}
+                  isRequired
+                />
                 <div className="approval-condition">
                   <h3>Item condition at lending</h3>
                   <p>Listing photos for reference. Condition photo uploads aren’t supported yet.</p>
