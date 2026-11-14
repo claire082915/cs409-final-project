@@ -4,9 +4,10 @@ import User from '../models/user.js'
 import requireUser, { requireIdToken } from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
 import Rating from '../models/rating.js'
+import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 
 const router = Router()
-const editableFields = ['username', 'displayName']
+const editableFields = ['username', 'displayName', 'city', 'zipCode', 'photo']
 
 // Null when nobody has rated the user yet
 async function reputation(userId) {
@@ -42,6 +43,7 @@ router.get('/me', requireUser, (req, res) => {
 // Email comes from Firebase, so it can't change here
 router.patch('/me', requireUser, async (req, res) => {
   const body = req.body ?? {}
+  const oldPhoto = req.user.photo
   for (const field of editableFields) {
     if (body[field] === undefined) {
       continue
@@ -52,6 +54,10 @@ router.patch('/me', requireUser, async (req, res) => {
     req.user[field] = body[field]
   }
   await req.user.save()
+  // Delete the replaced or removed photo so it doesn't sit unused in Cloudinary
+  if (oldPhoto && oldPhoto !== req.user.photo) {
+    await deleteUnusedPhotos([oldPhoto])
+  }
   res.json({ message: 'OK', data: req.user })
 })
 
@@ -66,6 +72,7 @@ router.get('/:username', requireUser, async (req, res) => {
   const profile = {
     username: user.username,
     displayName: user.displayName,
+    photo: user.photo,
     items: itemsWithAvailability,
     reputation: await reputation(user._id),
   }

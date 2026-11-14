@@ -3,10 +3,12 @@ import { Navigate, useLocation } from 'react-router-dom'
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  deleteUser,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  validatePassword,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase.js'
 import { apiFetch } from '../lib/api.js'
@@ -20,7 +22,8 @@ const FIREBASE_ERRORS = {
   'auth/invalid-email': 'Enter a valid email.',
   'auth/missing-email': 'Enter your email first.',
   'auth/missing-password': 'Enter your password.',
-  'auth/weak-password': 'Password must be at least 6 characters.',
+  'auth/weak-password': 'Password is too weak.',
+  'auth/password-does-not-meet-requirements': 'Password does not meet the requirements.',
   'auth/popup-closed-by-user': 'Google sign in was closed before it finished.',
   'auth/popup-blocked': 'Allow pop-ups for this site to sign in with Google.',
   'auth/too-many-requests': 'Too many attempts. Try again in a few minutes.',
@@ -28,7 +31,7 @@ const FIREBASE_ERRORS = {
   'auth/network-request-failed': 'Could not reach the server. Check your connection.',
 }
 // Same rule as the backend's user model
-const USERNAME_PATTERN = /^[a-z0-9._]{3,30}$/
+const USERNAME_PATTERN = /^[a-z0-9._]{3,20}$/
 
 function errorMessage(err) {
   if (FIREBASE_ERRORS[err.code]) {
@@ -45,9 +48,33 @@ function profileFieldsError({ username, displayName }) {
     return 'Enter your name.'
   }
   if (!USERNAME_PATTERN.test(username.trim().toLowerCase())) {
-    return 'Username must be 3 to 30 letters, digits, dots or underscores.'
+    return 'Username must be 3 to 20 characters, using only letters, digits, dots or underscores.'
   }
   return null
+}
+
+// Status fields are only false for rules the Firebase password policy turns on
+function passwordPolicyError(status) {
+  const { minPasswordLength, maxPasswordLength } = status.passwordPolicy.customStrengthOptions
+  if (status.meetsMinPasswordLength === false) {
+    return `Password must be at least ${minPasswordLength} characters.`
+  }
+  if (status.meetsMaxPasswordLength === false) {
+    return `Password must be at most ${maxPasswordLength} characters.`
+  }
+  if (status.containsLowercaseLetter === false) {
+    return 'Password needs a lowercase letter.'
+  }
+  if (status.containsUppercaseLetter === false) {
+    return 'Password needs an uppercase letter.'
+  }
+  if (status.containsNumericCharacter === false) {
+    return 'Password needs a number.'
+  }
+  if (status.containsNonAlphanumericCharacter === false) {
+    return 'Password needs a symbol.'
+  }
+  return 'Password does not meet the requirements.'
 }
 
 function EyeIcon({ off = false }) {
@@ -116,7 +143,7 @@ function ProfileFields({ form, update }) {
           id="profile-username"
           name="username"
           placeholder="Pick a username"
-          autoComplete="username"
+          autoComplete="nickname"
           value={form.username}
           onChange={update}
         />
@@ -134,7 +161,7 @@ function EmailPasswordFields({ form, update, passwordAutoComplete }) {
           id="auth-email"
           name="email"
           placeholder="Enter your email"
-          autoComplete="email"
+          autoComplete="username"
           value={form.email}
           onChange={update}
         />
@@ -192,13 +219,15 @@ export default function SignUpLoginPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [creatingAccount, setCreatingAccount] = useState(false)
   const { user, profile, setProfile, loading, error: profileError } = useAuth()
 
   if (user && profile) {
     return <Navigate to="/dashboard" replace />
   }
   const isSignUp = mode === 'signup'
-  const needsProfile = user && !loading && !profileError
+  // Stay on the sign up form while its new account has no profile yet
+  const needsProfile = user && !loading && !profileError && !creatingAccount
 
   const update = (event) => setForm({ ...form, [event.target.name]: event.target.value })
 
@@ -226,9 +255,32 @@ export default function SignUpLoginPage() {
     if (fieldsError) {
       throw new Error(fieldsError)
     }
-    await createUserWithEmailAndPassword(auth, form.email, form.password)
-    await createProfile()
+    const passwordStatus = await validatePassword(auth, form.password)
+    if (!passwordStatus.isValid) {
+      throw new Error(passwordPolicyError(passwordStatus))
+    }
+    setCreatingAccount(true)
+    try {
+      const { user: newUser } = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password,
+      )
+      await createProfileOrDeleteUser(newUser)
+    } finally {
+      setCreatingAccount(false)
+    }
   })
+
+  // Delete the new Firebase account when the profile is rejected, like a taken username
+  const createProfileOrDeleteUser = async (newUser) => {
+    try {
+      await createProfile()
+    } catch (err) {
+      await deleteUser(newUser)
+      throw err
+    }
+  }
 
   const logIn = run(() => signInWithEmailAndPassword(auth, form.email, form.password))
 

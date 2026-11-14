@@ -37,8 +37,8 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ message: firstError.message, data: {} })
   }
   if (isDuplicateKeyError(err)) {
-    const field = Object.keys(err.keyValue)[0]
-    return res.status(409).json({ message: `${field} is already taken`, data: {} })
+    const value = Object.values(err.keyValue)[0]
+    return res.status(409).json({ message: `${value} is already taken`, data: {} })
   }
   if (err.status) {
     return res.status(err.status).json({ message: err.message, data: {} })

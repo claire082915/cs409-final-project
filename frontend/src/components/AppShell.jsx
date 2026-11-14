@@ -11,8 +11,6 @@ import {
   HandHelping,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
-import { signOut } from 'firebase/auth'
-import { auth } from '../lib/firebase.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from './Logo.jsx'
 import '../styles/components/app-shell.css'
@@ -73,13 +71,13 @@ function Topbar() {
         </button>
         <Link className="profile-button" to="/settings" aria-label="Open settings">
           <span className="profile-avatar">
-            <UserRound size={18} />
+            {profile.photo ? <img src={profile.photo} alt="" /> : <UserRound size={18} />}
           </span>
           <span className="profile-name">{profile.displayName}</span>
         </Link>
-        <button className="icon-button" aria-label="Log out" onClick={() => signOut(auth)}>
+        <Link className="icon-button" to="/logout" aria-label="Log out">
           <LogOut size={18} />
-        </button>
+        </Link>
       </div>
     </header>
   )

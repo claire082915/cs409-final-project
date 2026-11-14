@@ -1,6 +1,13 @@
 import { useState } from 'react'
-import { Bell, Check, LockKeyhole, Save, UserRound } from 'lucide-react'
+import { Bell, LockKeyhole, Save, UserRound } from 'lucide-react'
+import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
+import CityInput from '../components/CityInput.jsx'
+import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx'
+import { useAuth } from '../auth/AuthContext.jsx'
+import { apiFetch } from '../lib/api.js'
+import { uploadPhoto } from '../lib/uploadPhoto.js'
+import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import '../styles/pages/settings.css'
 
 const DEFAULT_PREFERENCES = {
@@ -21,44 +28,79 @@ function readPreferences() {
   }
 }
 
+// City and ZIP code are missing on profiles created before they existed
+function formFromProfile(profile) {
+  return {
+    displayName: profile.displayName,
+    username: profile.username,
+    city: profile.city ?? '',
+    zipCode: profile.zipCode ?? '',
+    photo: profile.photo ?? '',
+  }
+}
+
+function hasChanges(current, saved) {
+  for (const key of Object.keys(current)) {
+    if (current[key] !== saved[key]) {
+      return true
+    }
+  }
+  return false
+}
+
 export default function SettingsPage() {
-  const [profile, setProfile] = useState({
-    displayName: localStorage.getItem('lendrDisplayName') || '',
-    username: localStorage.getItem('lendrUsername') || '',
-    email: localStorage.getItem('lendrEmail') || '',
-  })
+  const { profile, setProfile } = useAuth()
+  const [form, setForm] = useState(() => formFromProfile(profile))
   const [preferences, setPreferences] = useState(readPreferences)
-  const [saved, setSaved] = useState(false)
+  const [savedPreferences, setSavedPreferences] = useState(readPreferences)
+  // A picked photo stays in the browser until Save uploads it
+  const [pendingPhoto, setPendingPhoto] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
-  const updateProfile = (event) => {
-    const { name, value } = event.target
-    setProfile((current) => ({ ...current, [name]: value }))
-    setSaved(false)
-  }
+  const hasUnsavedChanges =
+    hasChanges(form, formFromProfile(profile)) ||
+    hasChanges(preferences, savedPreferences) ||
+    pendingPhoto !== null
 
-  const togglePreference = (key) => {
+  const setField = (name, value) => setForm((current) => ({ ...current, [name]: value }))
+
+  const updateForm = (event) => setField(event.target.name, event.target.value)
+
+  const togglePreference = (key) =>
     setPreferences((current) => ({ ...current, [key]: !current[key] }))
-    setSaved(false)
-  }
 
-  const saveSettings = (event) => {
+  const saveSettings = async (event) => {
     event.preventDefault()
-    const displayName = profile.displayName.trim()
-    const username = profile.username.trim().replace(/^@/, '')
-    const email = profile.email.trim()
-    if (displayName) localStorage.setItem('lendrDisplayName', displayName)
-    else localStorage.removeItem('lendrDisplayName')
-    if (username) localStorage.setItem('lendrUsername', username)
-    else localStorage.removeItem('lendrUsername')
-    if (email) localStorage.setItem('lendrEmail', email)
-    else localStorage.removeItem('lendrEmail')
+    setSaving(true)
+    setError('')
     localStorage.setItem('lendrPreferences', JSON.stringify(preferences))
-    setProfile({ displayName, username, email })
-    setSaved(true)
+    setSavedPreferences(preferences)
+    try {
+      const photo = pendingPhoto ? await uploadPhoto(pendingPhoto) : form.photo
+      const updated = await apiFetch('users/me', {
+        method: 'PATCH',
+        body: {
+          displayName: form.displayName.trim(),
+          username: form.username.trim().replace(/^@/, ''),
+          city: form.city.trim(),
+          zipCode: form.zipCode.trim(),
+          photo,
+        },
+      })
+      setProfile(updated)
+      setForm(formFromProfile(updated))
+      setPendingPhoto(null)
+      toast.success('Settings saved')
+    } catch (err) {
+      setError(err.message)
+    }
+    setSaving(false)
   }
 
   return (
     <AppShell>
+      <UnsavedChangesPrompt when={hasUnsavedChanges} />
       <main className="settings-page">
         <header className="settings-heading">
           <div>
@@ -79,13 +121,23 @@ export default function SettingsPage() {
                   <p>These details help your community know who they’re lending to.</p>
                 </div>
               </div>
+              <ProfilePhotoPicker
+                photo={form.photo}
+                file={pendingPhoto}
+                onSelect={setPendingPhoto}
+                onRemove={() => {
+                  setPendingPhoto(null)
+                  setField('photo', '')
+                }}
+                isDisabled={saving}
+              />
               <div className="settings-fields">
                 <label>
                   Display name
                   <input
                     name="displayName"
-                    value={profile.displayName}
-                    onChange={updateProfile}
+                    value={form.displayName}
+                    onChange={updateForm}
                     placeholder="Your name"
                     autoComplete="name"
                   />
@@ -96,28 +148,42 @@ export default function SettingsPage() {
                     <span>@</span>
                     <input
                       name="username"
-                      value={profile.username}
-                      onChange={updateProfile}
+                      value={form.username}
+                      onChange={updateForm}
                       placeholder="yourusername"
                       autoComplete="username"
                     />
                   </div>
                 </label>
                 <label>
-                  Email address
-                  <input
-                    name="email"
-                    type="email"
-                    value={profile.email}
-                    onChange={updateProfile}
-                    placeholder="you@example.com"
-                    autoComplete="email"
+                  City
+                  <CityInput
+                    aria-label="City"
+                    name="city"
+                    value={form.city}
+                    onChange={(city) => setField('city', city)}
+                    autoComplete="off"
                   />
+                </label>
+                <label>
+                  ZIP code
+                  <input
+                    name="zipCode"
+                    value={form.zipCode}
+                    onChange={updateForm}
+                    inputMode="numeric"
+                    maxLength={5}
+                    autoComplete="postal-code"
+                  />
+                </label>
+                <label className="settings-field-wide">
+                  Email address
+                  <input name="email" type="email" value={profile.email} readOnly />
                 </label>
               </div>
               <p className="settings-note">
                 <LockKeyhole size={14} />
-                Profile details are saved in this browser for now.
+                Your email comes from your sign in account and can't be changed here.
               </p>
             </section>
             <section className="settings-card" aria-labelledby="notifications-heading">
@@ -161,16 +227,15 @@ export default function SettingsPage() {
           <aside className="settings-save-panel">
             <div>
               <strong>Save your changes</strong>
-              <p>Your profile and preferences stay on this device.</p>
+              <p>Your profile is saved to your account, preferences stay on this device.</p>
             </div>
-            <button type="submit">
+            <button type="submit" disabled={saving || !hasUnsavedChanges}>
               <Save size={16} />
-              Save settings
+              {saving ? 'Saving...' : 'Save settings'}
             </button>
-            {saved && (
-              <span className="settings-saved" role="status">
-                <Check size={15} />
-                Settings saved
+            {error && (
+              <span className="settings-error" role="alert">
+                {error}
               </span>
             )}
           </aside>

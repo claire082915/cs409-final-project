@@ -189,9 +189,15 @@
   height: 32px;
   display: grid;
   place-items: center;
+  overflow: hidden;
   border-radius: 50%;
   color: #86604b;
   background: linear-gradient(145deg, #f3d7bf, #d7a88d);
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .app-content {
   max-width: 1440px;
@@ -246,6 +252,11 @@
   .scaffold-panel {
     min-height: 260px;
     padding: 28px 20px;
+  }
+  /* Lift toasts above the fixed mobile nav, which is 65px tall plus a 16px gap */
+  :root:has(.mobile-nav) [data-sonner-toaster][data-y-position='bottom'] {
+    --offset-bottom: 81px !important;
+    --mobile-offset-bottom: 81px !important;
   }
   .mobile-nav {
     position: fixed;

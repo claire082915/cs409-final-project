@@ -1,0 +1,75 @@
+.unsaved-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #0f2f3666;
+}
+
+/* Only the panel counts as inside, so clicking the backdrop closes it */
+.unsaved-wrap {
+  width: min(100%, 380px);
+}
+
+.unsaved-panel {
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid #e3ebed;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 20px 40px #1745512e;
+  outline: 0;
+}
+
+.unsaved-title {
+  margin: 0;
+  color: #214954;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.unsaved-text {
+  margin: 8px 0 0;
+  color: #627a80;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.unsaved-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.unsaved-actions button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.unsaved-stay {
+  border: 1px solid #dfe8eb;
+  color: #315761;
+  background: #fff;
+}
+
+.unsaved-stay[data-hovered] {
+  background: #f4f8f8;
+}
+
+.unsaved-leave {
+  border: 0;
+  color: #fff;
+  background: #b4482f;
+}
+
+.unsaved-leave[data-hovered] {
+  background: #9c3c26;
+}

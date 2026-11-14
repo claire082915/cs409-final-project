@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import Item from '../models/item.js'
 import Loan from '../models/loan.js'
 import requireUser from '../middleware/requireUser.js'
-import { deletePhotos } from '../lib/cloudinary.js'
+import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 
 // Owner can't be changed
@@ -27,15 +27,6 @@ function requireOwner(req, res, next) {
     return res.status(403).json({ message: 'Only the owner can change this item', data: {} })
   }
   next()
-}
-
-// Runs after the Mongo update, so a Cloudinary failure only leaves unused images behind
-async function deleteUnusedPhotos(urls) {
-  try {
-    await deletePhotos(urls)
-  } catch (err) {
-    console.error('Failed to delete photos from Cloudinary', err)
-  }
 }
 
 router.post('/', async (req, res) => {
