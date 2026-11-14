@@ -46,6 +46,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 | `health`            | GET    | Check the server is up             |
 | `items`             | POST   | Create an item                     |
 | `items?owner=:id`   | GET    | List a user's items, newest first  |
+| `items/nearby`      | GET    | List items near you, nearest first |
 | `items/:id`         | GET    | Get an item                        |
 |                     | PATCH  | Update name, description or photos |
 |                     | DELETE | Delete an item                     |
@@ -79,6 +80,8 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 | `photos`      | string[] | Cloudinary URLs   |
 
 Item responses also include `available`, which is `false` while the item is on loan.
+
+`GET items/nearby?miles=10` lists other users' items within `miles` of you, nearest first. `miles` is 5 to 100 and defaults to 10. Each item also has `owner` as `{ username, displayName, photo }` and `distanceMiles`. Distance is measured between ZIP code centers, so it needs your `zipCode` set, and returns 400 until it is.
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
 
@@ -140,7 +143,7 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 `POST users` takes `{ username, displayName }`. A username is 3 to 20 characters, using only letters, digits, dots or underscores, and is stored lowercase.
 
-`PATCH users/me` takes `{ username, displayName, city, zipCode, photo }`, all optional. `zipCode` is a 5 digit US ZIP code. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
+`PATCH users/me` takes `{ username, displayName, city, zipCode, photo }`, all optional. `zipCode` is a 5 digit US ZIP code, and saving it also stores the center of that ZIP code as `location` for nearby searches. An unknown ZIP code returns 400. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
 
 `GET users/:username` returns `{ username, displayName, photo, items, reputation }`. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
