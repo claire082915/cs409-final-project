@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import AppLoader from '../components/AppLoader.jsx'
+import PendingLabel from '../components/PendingLabel.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/borrow-request.css'
@@ -183,7 +185,7 @@ export default function BorrowRequestPage() {
             </p>
           )}
           {loading ? (
-            <div className="requests-empty">Loading requests…</div>
+            <AppLoader inline label="Loading requests…" />
           ) : requests.length === 0 ? (
             <div className="requests-empty">
               <Check size={27} />
@@ -306,10 +308,14 @@ export default function BorrowRequestPage() {
                     disabled={acting}
                     onClick={(event) => handleDecision('reject', event)}
                   >
-                    {acting ? 'Please wait…' : 'Decline'}
+                    <PendingLabel pending={acting} pendingText="Please wait…">
+                      Decline
+                    </PendingLabel>
                   </button>
                   <button type="submit" className="approval-approve" disabled={acting}>
-                    {acting ? 'Please wait…' : 'Approve'}
+                    <PendingLabel pending={acting} pendingText="Please wait…">
+                      Approve
+                    </PendingLabel>
                   </button>
                 </div>
               </form>

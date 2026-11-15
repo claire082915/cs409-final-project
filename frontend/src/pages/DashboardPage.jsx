@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AppShell from '../components/AppShell.jsx'
+import AppLoader from '../components/AppLoader.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/dashboard.css'
 
@@ -174,7 +175,7 @@ export default function DashboardPage() {
               <span>{error}</span>
             </div>
           ) : loading ? (
-            <div className="dashboard-message">Loading your recent loans…</div>
+            <AppLoader inline label="Loading your recent loans…" />
           ) : activity.length === 0 ? (
             <div className="dashboard-empty">
               <Package size={25} />

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '../lib/firebase.js'
 import { apiFetch } from '../lib/api.js'
+import AppLoader from '../components/AppLoader.jsx'
 
 const AuthContext = createContext(null)
 
@@ -50,7 +51,11 @@ export function AuthProvider({ children }) {
     [],
   )
 
-  return <AuthContext value={{ user, profile, setProfile, loading, error }}>{children}</AuthContext>
+  return (
+    <AuthContext value={{ user, profile, setProfile, loading, error }}>
+      {loading ? <AppLoader /> : children}
+    </AuthContext>
+  )
 }
 
 export function useAuth() {

@@ -3,6 +3,8 @@ import { Check, MapPin, PackageOpen, Search, SlidersHorizontal, X } from 'lucide
 import { Link } from 'react-router-dom'
 import { getLocalTimeZone, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import AppLoader from '../components/AppLoader.jsx'
+import PendingLabel from '../components/PendingLabel.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import DistanceSlider, { MAX_MILES } from '../components/DistanceSlider.jsx'
 import SelectMenu from '../components/SelectMenu.jsx'
@@ -138,6 +140,7 @@ export default function BrowseBorrowPage() {
   const [miles, setMiles] = useState(10)
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [requesting, setRequesting] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   // Nearby search needs a ZIP code, so skip the request until there is one
@@ -197,6 +200,7 @@ export default function BrowseBorrowPage() {
       setSelectedItem(null)
       return
     }
+    setRequesting(true)
     try {
       await apiFetch('loans', { method: 'POST', body: { itemId: selectedItem._id, dueDate } })
       setNotice('Borrow request sent!')
@@ -204,6 +208,7 @@ export default function BrowseBorrowPage() {
     } catch (err) {
       setError(err.message)
     }
+    setRequesting(false)
   }
 
   return (
@@ -280,7 +285,7 @@ export default function BrowseBorrowPage() {
           </small>
         </div>
         {loading ? (
-          <div className="browse-empty">Loading items…</div>
+          <AppLoader inline label="Loading items…" />
         ) : visibleItems.length ? (
           <section className="browse-grid" aria-label="Available items">
             {visibleItems.map((item) => (
@@ -410,8 +415,10 @@ export default function BrowseBorrowPage() {
                   >
                     Cancel
                   </button>
-                  <button className="browse-request-button" type="submit">
-                    Send request
+                  <button className="browse-request-button" type="submit" disabled={requesting}>
+                    <PendingLabel pending={requesting} pendingText="Sending…">
+                      Send request
+                    </PendingLabel>
                   </button>
                 </div>
               </form>

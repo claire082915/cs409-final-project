@@ -3,6 +3,7 @@ import { Bell, LockKeyhole, Save, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import CityInput from '../components/CityInput.jsx'
+import PendingLabel from '../components/PendingLabel.jsx'
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -91,7 +92,8 @@ export default function SettingsPage() {
             <p>Manage your profile and how Lendr keeps you updated.</p>
           </div>
         </header>
-        <form className="settings-layout" onSubmit={saveSettings}>
+        {/* Clear the last save error once any field changes */}
+        <form className="settings-layout" onSubmit={saveSettings} onChange={() => setError('')}>
           <div className="settings-sections">
             <section className="settings-card" aria-labelledby="profile-settings-heading">
               <div className="settings-card-heading">
@@ -207,7 +209,9 @@ export default function SettingsPage() {
             </div>
             <button type="submit" disabled={saving || !hasUnsavedChanges}>
               <Save size={16} />
-              {saving ? 'Saving...' : 'Save settings'}
+              <PendingLabel pending={saving} pendingText="Saving...">
+                Save settings
+              </PendingLabel>
             </button>
             {error && (
               <span className="settings-error" role="alert">

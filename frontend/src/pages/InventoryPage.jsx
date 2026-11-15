@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ImagePlus, MoreHorizontal, Plus, PackageOpen, X } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import AppLoader from '../components/AppLoader.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/inventory.css'
@@ -219,7 +220,7 @@ export default function InventoryPage() {
           </p>
         )}
         {loading ? (
-          <div className="inventory-empty">Loading your items…</div>
+          <AppLoader inline label="Loading your items…" />
         ) : visibleItems.length ? (
           <section className="inventory-grid" aria-label={`${tab} items`}>
             {visibleItems.map((item) => (

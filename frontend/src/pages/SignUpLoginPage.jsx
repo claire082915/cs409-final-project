@@ -14,6 +14,7 @@ import { auth } from '../lib/firebase.js'
 import { apiFetch } from '../lib/api.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from '../components/Logo.jsx'
+import PendingLabel from '../components/PendingLabel.jsx'
 import '../styles/pages/sign-up-login.css'
 
 const FIREBASE_ERRORS = {
@@ -229,7 +230,10 @@ export default function SignUpLoginPage() {
   // Stay on the sign up form while its new account has no profile yet
   const needsProfile = user && !loading && !profileError && !creatingAccount
 
-  const update = (event) => setForm({ ...form, [event.target.name]: event.target.value })
+  const update = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value })
+    setError('')
+  }
 
   const run = (action) => async (event) => {
     event.preventDefault()
@@ -365,7 +369,7 @@ export default function SignUpLoginPage() {
               <ProfileFields form={form} update={update} />
               {messages}
               <button type="submit" className="button button-primary" disabled={submitting}>
-                Continue
+                <PendingLabel pending={submitting}>Continue</PendingLabel>
               </button>
               <p className="switch-prompt">
                 <button type="button" className="switch-link" onClick={() => signOut(auth)}>
@@ -392,7 +396,7 @@ export default function SignUpLoginPage() {
                   />
                   {messages}
                   <button type="submit" className="button button-primary" disabled={submitting}>
-                    Sign Up
+                    <PendingLabel pending={submitting}>Sign Up</PendingLabel>
                   </button>
                   {googleButton}
                   <p className="switch-prompt">

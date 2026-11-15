@@ -39,6 +39,10 @@ a {
   padding: 24px;
   background: radial-gradient(circle at center, #eef8f4 0, #f8faf8 46%, #f5f8fa 100%);
 }
+.app-loader-inline {
+  min-height: 260px;
+  background: none;
+}
 .app-loader-content {
   display: grid;
   justify-items: center;
