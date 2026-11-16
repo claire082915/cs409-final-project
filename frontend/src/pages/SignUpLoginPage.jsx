@@ -14,6 +14,7 @@ import { auth } from '../lib/firebase.js'
 import { apiFetch } from '../lib/api.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Logo from '../components/Logo.jsx'
+import AppLoader from '../components/AppLoader.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import '../styles/pages/sign-up-login.css'
 
@@ -226,9 +227,12 @@ export default function SignUpLoginPage() {
   if (user && profile) {
     return <Navigate to="/dashboard" replace />
   }
+  // Show the loader while a new sign in loads its profile or sign up saves one
+  if (user && (loading || creatingAccount)) {
+    return <AppLoader />
+  }
   const isSignUp = mode === 'signup'
-  // Stay on the sign up form while its new account has no profile yet
-  const needsProfile = user && !loading && !profileError && !creatingAccount
+  const needsProfile = user && !profileError
 
   const update = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value })

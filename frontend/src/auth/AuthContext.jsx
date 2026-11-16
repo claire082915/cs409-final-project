@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(
@@ -47,13 +48,15 @@ export function AuthProvider({ children }) {
         )
         setError(loadError)
         setLoading(false)
+        setReady(true)
       }),
     [],
   )
 
   return (
     <AuthContext value={{ user, profile, setProfile, loading, error }}>
-      {loading ? <AppLoader /> : children}
+      {/* Cover the app only on first load, later sign ins keep the page mounted so it keeps its state */}
+      {ready ? children : <AppLoader />}
     </AuthContext>
   )
 }
