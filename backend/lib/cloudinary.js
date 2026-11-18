@@ -14,6 +14,13 @@ export function signUpload(userId) {
   return { cloudName: cloud_name, apiKey: api_key, timestamp, folder, signature }
 }
 
+// For JPEGs made on the server, like crops of a room photo
+export async function uploadPhoto(image, userId) {
+  const dataUri = `data:image/jpeg;base64,${image.toString('base64')}`
+  const result = await cloudinary.uploader.upload(dataUri, { folder: userFolder(userId) })
+  return result.secure_url
+}
+
 function uploadUrlPrefix() {
   const { cloud_name } = cloudinary.config()
   return `https://res.cloudinary.com/${cloud_name}/image/upload/`
