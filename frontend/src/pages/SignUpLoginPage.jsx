@@ -112,7 +112,7 @@ function PasswordField({ id, ...inputProps }) {
         aria-label={visible ? 'Hide password' : 'Show password'}
         aria-pressed={visible}
       >
-        <EyeIcon off={visible} />
+        <EyeIcon off={!visible} />
       </button>
     </div>
   )
