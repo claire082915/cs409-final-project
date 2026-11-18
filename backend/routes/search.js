@@ -16,7 +16,7 @@ async function searchItems(pattern, userId) {
   const items = await Item.find({ name: pattern, owner: { $ne: userId }, deletedAt: null })
     .sort({ createdAt: -1 })
     .limit(RESULTS_PER_SECTION)
-    .populate('owner', 'username displayName photo preferences.showProfile')
+    .populate('owner', 'username displayName photo campusArea preferences.showProfile')
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const matchingItems = []
   for (const item of items) {

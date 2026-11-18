@@ -130,8 +130,8 @@ export default function BorrowRequestPage() {
       <main className="requests-page">
         <header className="requests-heading page-heading">
           <div>
-            <h1>Borrow requests</h1>
-            <p>Review requests from your community and decide what works for you.</p>
+            <h1>Borrow Requests</h1>
+            <p>Approve or decline requests for your items.</p>
           </div>
           <div className="requests-heading-actions">
             <div className="requests-source" aria-label="Request data source">

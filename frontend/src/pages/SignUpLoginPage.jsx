@@ -115,10 +115,14 @@ function PasswordField({ id, ...inputProps }) {
   )
 }
 
-function Field({ id, label, children }) {
+// Action sits at the right end of the label row, like Forgot password
+function Field({ id, label, action, children }) {
   return (
     <div className="field">
-      <label htmlFor={id}>{label}</label>
+      <div className="field-label-row">
+        <label htmlFor={id}>{label}</label>
+        {action}
+      </div>
       {children}
     </div>
   )
@@ -151,7 +155,7 @@ function ProfileFields({ form, update }) {
   )
 }
 
-function EmailPasswordFields({ form, update, updateNetId, passwordAutoComplete }) {
+function EmailPasswordFields({ form, update, updateNetId, passwordAutoComplete, passwordAction }) {
   return (
     <>
       <Field id="auth-email" label="NetID">
@@ -172,7 +176,7 @@ function EmailPasswordFields({ form, update, updateNetId, passwordAutoComplete }
           </span>
         </div>
       </Field>
-      <Field id="auth-password" label="Password">
+      <Field id="auth-password" label="Password" action={passwordAction}>
         <PasswordField
           id="auth-password"
           name="password"
@@ -502,6 +506,11 @@ export default function SignUpLoginPage() {
                     update={update}
                     updateNetId={updateNetId}
                     passwordAutoComplete="current-password"
+                    passwordAction={
+                      <button type="button" className="switch-link" onClick={resetPassword}>
+                        Forgot password?
+                      </button>
+                    }
                   />
                   {messages}
                   <button type="submit" className="button button-primary" disabled={submitting}>
@@ -509,8 +518,9 @@ export default function SignUpLoginPage() {
                   </button>
                   {googleButton}
                   <p className="switch-prompt">
-                    <button type="button" className="switch-link" onClick={resetPassword}>
-                      Forgot password?
+                    Don&apos;t have an account?{' '}
+                    <button type="button" className="switch-link" onClick={() => setMode('signup')}>
+                      Sign up
                     </button>
                   </p>
                 </form>

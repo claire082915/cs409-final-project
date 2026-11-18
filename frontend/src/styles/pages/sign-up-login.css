@@ -130,10 +130,26 @@
   gap: 1.1rem;
 }
 
+/* More room between fields than between the buttons, so each label reads as part of its own field */
+.auth-panel .field + .field {
+  margin-top: 0.4rem;
+}
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 8px;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.field-label-row .switch-link {
+  font-size: 12px;
 }
 
 .field label {
@@ -431,4 +447,13 @@
 
 .visual-card-status.is-on-loan {
   color: var(--sul-orange);
+}
+
+.visual-card-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  color: var(--sul-muted);
 }

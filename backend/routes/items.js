@@ -10,8 +10,7 @@ import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.j
 import { publicOwner } from '../lib/publicProfile.js'
 
 // Owner can't be changed
-const editableFields = ['name', 'description', 'photos']
-// Range of the Browse distance slider
+const editableFields = ['name', 'description', 'category', 'photos']
 
 const router = Router()
 router.use(requireUser)
@@ -48,7 +47,12 @@ router.post('/', async (req, res) => {
 async function draftItem(image, detectedItem, userId) {
   const crop = await cropBox(image, detectedItem.box_2d)
   const photoUrl = await uploadPhoto(crop, userId)
-  return { name: detectedItem.name, description: detectedItem.description, photos: [photoUrl] }
+  return {
+    name: detectedItem.name,
+    description: detectedItem.description,
+    category: detectedItem.category,
+    photos: [photoUrl],
+  }
 }
 
 // Drafts items from a room photo, the user sends the ones they keep to POST items
@@ -118,7 +122,7 @@ router.get('/', async (req, res) => {
 router.get('/browse', async (req, res) => {
   const items = await Item.find({ owner: { $ne: req.user._id }, deletedAt: null })
     .sort({ createdAt: -1 })
-    .populate('owner', 'username displayName photo preferences.showProfile')
+    .populate('owner', 'username displayName photo campusArea preferences.showProfile')
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const browseItems = []
   for (const item of items) {

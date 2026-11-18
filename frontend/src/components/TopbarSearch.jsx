@@ -154,7 +154,7 @@ export default function TopbarSearch() {
     >
       <Group className="app-search-field">
         <Search size={16} aria-hidden="true" />
-        <Input ref={inputRef} placeholder="Search items or people..." />
+        <Input ref={inputRef} placeholder="Search items or people" />
         <kbd>{IS_MAC ? '⌘ K' : 'Ctrl K'}</kbd>
       </Group>
       <Popover className="field-popover search-popover" placement="bottom start">

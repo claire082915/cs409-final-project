@@ -8,5 +8,6 @@ export function publicOwner(user) {
     username: user.username,
     displayName: user.displayName,
     photo: user.photo,
+    campusArea: user.campusArea,
   }
 }

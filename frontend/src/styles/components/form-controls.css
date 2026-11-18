@@ -56,6 +56,36 @@
   font-weight: 700;
 }
 
+.filter-menu-popover {
+  min-width: 190px;
+}
+
+.filter-menu-separator {
+  height: 1px;
+  margin: 4px 0;
+  border: 0;
+  background: #e3ebed;
+}
+
+/* Holds the check's space even when unticked so names line up */
+.filter-menu-check {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  color: #318675;
+}
+
+.field-option.is-danger,
+.field-option.is-danger svg {
+  color: #b4482f;
+}
+
+.field-option[data-disabled],
+.field-option[data-disabled] svg {
+  color: #b5c3c6;
+  cursor: default;
+}
+
 /* Date picker */
 .date-picker {
   display: grid;

@@ -1,4 +1,4 @@
-.unsaved-backdrop {
+.confirm-backdrop {
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -9,11 +9,11 @@
 }
 
 /* Only the panel counts as inside, so clicking the backdrop closes it */
-.unsaved-wrap {
+.confirm-wrap {
   width: min(100%, 380px);
 }
 
-.unsaved-panel {
+.confirm-panel {
   box-sizing: border-box;
   padding: 22px;
   border: 1px solid #e3ebed;
@@ -23,28 +23,28 @@
   outline: 0;
 }
 
-.unsaved-title {
+.confirm-title {
   margin: 0;
   color: #214954;
   font-size: 15px;
   font-weight: 750;
 }
 
-.unsaved-text {
+.confirm-text {
   margin: 8px 0 0;
   color: #627a80;
   font-size: 12px;
   line-height: 1.55;
 }
 
-.unsaved-actions {
+.confirm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 20px;
 }
 
-.unsaved-actions button {
+.confirm-actions button {
   min-height: 36px;
   padding: 0 14px;
   border-radius: 7px;
@@ -54,22 +54,32 @@
   cursor: pointer;
 }
 
-.unsaved-stay {
+.confirm-cancel {
   border: 1px solid #dfe8eb;
   color: #315761;
   background: #fff;
 }
 
-.unsaved-stay[data-hovered] {
+.confirm-cancel[data-hovered] {
   background: #f4f8f8;
 }
 
-.unsaved-leave {
+.confirm-danger {
   border: 0;
   color: #fff;
   background: #b4482f;
 }
 
-.unsaved-leave[data-hovered] {
+.confirm-danger[data-hovered] {
   background: #9c3c26;
+}
+
+.confirm-danger[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirm-actions button[data-focus-visible] {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
 }

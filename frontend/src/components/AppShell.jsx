@@ -1,12 +1,12 @@
 import {
   ArrowLeftRight,
   Bell,
-  Boxes,
   CircleUserRound,
   Compass,
   Home,
   Inbox,
   LogOut,
+  Package,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
@@ -22,7 +22,7 @@ import '../styles/components/app-shell.css'
 const navigation = [
   { label: 'Home', mobileLabel: 'Home', to: '/dashboard', icon: Home },
   { label: 'Browse Items', mobileLabel: 'Browse', to: '/browse', icon: Compass },
-  { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Boxes },
+  { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Package },
   { label: 'My Loans', to: '/loan-details', icon: ArrowLeftRight },
   {
     label: 'Borrow Requests',

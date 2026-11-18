@@ -15,15 +15,15 @@
   border-radius: 8px;
   padding: 11px 16px;
   color: white;
-  background: #f47a3f;
-  box-shadow: 0 5px 13px #f47a3f30;
+  background: #c4521f;
+  box-shadow: 0 5px 13px #c4521f30;
   font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 .inventory-add-button:hover {
-  background: #df6932;
+  background: #a9461a;
 }
 .inventory-toolbar {
   display: flex;
@@ -126,14 +126,20 @@
   margin: auto;
   color: #9bb0b2;
 }
-.inventory-photo button {
+/* Centers the 24px category tag on the 28px menu button beside it */
+.inventory-photo .category-tag {
+  bottom: calc(10px + (28px - 24px) / 2);
+}
+.item-menu-button {
   position: absolute;
-  right: 9px;
-  bottom: 8px;
+  right: 10px;
+  bottom: 10px;
   display: grid;
   place-items: center;
-  width: 29px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0;
   border: 1px solid #e5ecee;
   border-radius: 7px;
   color: #54737a;
@@ -209,6 +215,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 20px;
 }
 .item-modal-heading h2 {
   margin: 5px 0 0;
@@ -223,15 +230,9 @@
   height: 34px;
   border: 1px solid #e2eaec;
   border-radius: 8px;
-  color: #638088;
+  color: #587076;
   background: #fff;
   cursor: pointer;
-}
-.item-modal-intro {
-  margin: 9px 0 20px;
-  color: #80949a;
-  font-size: 12px;
-  line-height: 1.6;
 }
 .item-form {
   display: grid;
@@ -240,7 +241,7 @@
 .item-photo-upload {
   position: relative;
   display: flex;
-  min-height: 130px;
+  aspect-ratio: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -254,11 +255,42 @@
 }
 .item-photo-upload > strong {
   color: #315d65;
-  font-size: 12px;
+  font-size: 14px;
 }
-.item-photo-upload > span {
-  color: #899da1;
-  font-size: 10px;
+/* The dashed outline only invites a first photo */
+.item-photo-upload:has(img) {
+  border: 0;
+}
+/* Photo on the left, name and category beside it */
+.item-form-top {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+.item-form-main {
+  display: grid;
+  gap: 16px;
+}
+/* Match the shared menu button to the text inputs beside it */
+.item-select .select-menu-button {
+  width: 100%;
+  height: 40px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #afbec2;
+  border-radius: 8px;
+  color: #173f4b;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 400;
+}
+.item-select .select-menu-button[data-focus-visible],
+.item-select .select-menu-button[data-pressed] {
+  border-color: #318675;
+  box-shadow: 0 0 0 3px #3186752a;
+  text-decoration: none;
 }
 .item-photo-upload input {
   position: absolute;
@@ -276,87 +308,53 @@
 }
 .item-form-field {
   display: grid;
-  gap: 7px;
-  color: #365d66;
-  font-size: 11px;
-  font-weight: 700;
+  gap: 8px;
+  color: #3f5f66;
+  font-size: 13px;
+  font-weight: 500;
 }
 .item-form-field > input,
 .item-form-field textarea {
   width: 100%;
-  border: 1px solid #dce7e9;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #afbec2;
   border-radius: 8px;
-  color: #234a54;
-  background: #fbfdfd;
+  outline: none;
+  color: #173f4b;
+  background: #fff;
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
 }
-.item-form-field > input,
-.item-form-field textarea {
-  padding: 11px 12px;
-  outline: none;
+.item-form-field > input {
+  height: 40px;
+}
+.item-form-field > input::placeholder,
+.item-form-field textarea::placeholder {
+  color: #587076;
 }
 .item-form-field > input:focus,
 .item-form-field textarea:focus {
-  border-color: #5da797;
-  box-shadow: 0 0 0 3px #5da7971c;
+  border-color: #318675;
+  box-shadow: 0 0 0 3px #3186752a;
+}
+.item-required {
+  color: #a5402a;
+}
+.item-field-hint {
+  color: #587076;
 }
 .item-form-field textarea {
+  padding: 10px 12px;
   resize: vertical;
   line-height: 1.5;
 }
-.item-category-field {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.item-category-field legend {
-  margin-bottom: 9px;
-  color: #365d66;
-  font-size: 11px;
-  font-weight: 700;
-}
-.item-category-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-.item-category-options label input {
-  position: absolute;
-  opacity: 0;
-}
-.item-category-options label span {
-  display: block;
-  padding: 7px 10px;
-  border: 1px solid #dce7e9;
-  border-radius: 20px;
-  color: #6e858b;
-  background: white;
-  font-size: 10px;
-  cursor: pointer;
-}
-.item-category-options label input:checked + span {
-  border-color: #8cc4b4;
-  color: #176f64;
-  background: #eaf6f1;
-}
-.item-category-options label input:focus-visible + span {
-  outline: 2px solid #398e7d;
-  outline-offset: 2px;
-}
-.item-form-note,
 .item-form-error {
   margin: -4px 0 0;
-  font-size: 11px;
+  color: #a5402a;
+  font-size: 13px;
   line-height: 1.5;
-}
-.item-form-note {
-  color: #7b8f94;
-}
-.item-form-error {
-  color: #b64e38;
 }
 .item-form-actions {
   display: flex;
@@ -364,16 +362,52 @@
   gap: 9px;
   padding-top: 3px;
 }
-.item-cancel-button {
-  border: 1px solid #dce7e9;
+.item-cancel-button,
+.item-save-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
   border-radius: 8px;
-  padding: 10px 15px;
-  color: #607b81;
-  background: #fff;
   font: inherit;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+}
+.item-cancel-button {
+  color: #3f5f66;
+  background: #eef3f4;
+}
+.item-cancel-button:hover:not(:disabled) {
+  background: #e2eaec;
+}
+.item-save-button {
+  color: #fff;
+  background: #0c5865;
+}
+.item-save-button:hover:not(:disabled) {
+  background: #084653;
+}
+.item-cancel-button:disabled,
+.item-save-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.item-modal button:focus-visible,
+.item-photo-upload:has(input:focus-visible) {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
+/* Shows that clicking an existing photo picks a new one */
+.item-photo-upload .item-photo-change {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: #315761;
+  background: #ffffffed;
+  font-size: 13px;
+  font-weight: 600;
 }
 @media (max-width: 900px) {
   .inventory-grid {
@@ -385,6 +419,12 @@
   }
 }
 @media (max-width: 540px) {
+  .item-form-top {
+    grid-template-columns: 1fr;
+  }
+  .item-photo-upload {
+    aspect-ratio: 16 / 9;
+  }
   .inventory-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -428,4 +468,11 @@
     padding: 21px 18px;
     border-radius: 15px;
   }
+}
+.item-menu-button[data-hovered] {
+  background: #fff;
+}
+.item-menu-button[data-focus-visible] {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
 }

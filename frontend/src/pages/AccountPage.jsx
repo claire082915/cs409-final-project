@@ -9,6 +9,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
+import { hasChanges } from '../lib/hasChanges.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import '../styles/pages/account.css'
 
@@ -23,15 +24,6 @@ function formFromProfile(profile) {
     campusArea: profile.campusArea ?? '',
     photo: profile.photo ?? '',
   }
-}
-
-function hasChanges(current, saved) {
-  for (const key of Object.keys(current)) {
-    if (current[key] !== saved[key]) {
-      return true
-    }
-  }
-  return false
 }
 
 export default function AccountPage() {
@@ -103,7 +95,7 @@ export default function AccountPage() {
         <header className="account-heading page-heading">
           <div>
             <h1>Account</h1>
-            <p>Manage your profile and how Lendr keeps you updated.</p>
+            <p>Manage your profile and how we keep you updated.</p>
           </div>
         </header>
         {/* Clear the last save error once any field changes */}

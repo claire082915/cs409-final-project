@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, PackageOpen, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Check, MapPin, PackageOpen, Search, X } from 'lucide-react'
 import { getLocalTimeZone, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import Avatar from '../components/Avatar.jsx'
+import CategoryTag from '../components/CategoryTag.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
-import SelectMenu from '../components/SelectMenu.jsx'
+import FilterMenu, { describeSelection } from '../components/FilterMenu.jsx'
+import { CAMPUS_AREAS } from '../lib/campusAreas.js'
+import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/browse-borrow.css'
 
@@ -15,7 +19,12 @@ const MOCK_ITEMS = [
     name: 'MacBook Pro',
     description: '13-inch laptop, great for coursework and projects.',
     category: 'Electronics',
-    ownerName: 'Maya Chen',
+    owner: {
+      displayName: 'Maya Chen',
+      username: 'maya-chen',
+      photo: '',
+      campusArea: 'Ikenberry Commons (Ike)',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80',
@@ -26,7 +35,12 @@ const MOCK_ITEMS = [
     name: '2-person Camping Tent',
     description: 'Lightweight tent with rain fly. Easy to set up.',
     category: 'Outdoor',
-    ownerName: 'Jordan Lee',
+    owner: {
+      displayName: 'Jordan Lee',
+      username: 'jordan-lee',
+      photo: '',
+      campusArea: 'Campustown',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=900&q=80',
@@ -37,7 +51,12 @@ const MOCK_ITEMS = [
     name: 'Mirrorless Camera',
     description: 'A compact camera with a versatile 18–55mm lens.',
     category: 'Electronics',
-    ownerName: 'Sam Rivera',
+    owner: {
+      displayName: 'Sam Rivera',
+      username: 'sam-rivera',
+      photo: '',
+      campusArea: 'Illinois Street (ISR)',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80',
@@ -48,7 +67,12 @@ const MOCK_ITEMS = [
     name: 'Computer Science Textbooks',
     description: 'A bundle of helpful books for introductory CS courses.',
     category: 'Books',
-    ownerName: 'Avery Patel',
+    owner: {
+      displayName: 'Avery Patel',
+      username: 'avery-patel',
+      photo: '',
+      campusArea: 'Urbana',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=900&q=80',
@@ -59,7 +83,12 @@ const MOCK_ITEMS = [
     name: 'Skateboard',
     description: 'Well-maintained complete board, suitable for beginners.',
     category: 'Sports',
-    ownerName: 'Noah Brooks',
+    owner: {
+      displayName: 'Noah Brooks',
+      username: 'noah-brooks',
+      photo: '',
+      campusArea: 'Pennsylvania Avenue (PAR)',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=900&q=80',
@@ -70,14 +99,18 @@ const MOCK_ITEMS = [
     name: 'Wireless Earbuds',
     description: 'Noise-cancelling earbuds with charging case.',
     category: 'Electronics',
-    ownerName: 'Taylor Kim',
+    owner: {
+      displayName: 'Taylor Kim',
+      username: 'taylor-kim',
+      photo: '',
+      campusArea: '',
+    },
     available: true,
     photos: [
       'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=900&q=80',
     ],
   },
 ]
-const CATEGORIES = ['All items', 'Electronics', 'Books', 'Outdoor', 'Sports', 'Home', 'Tools']
 
 async function loadBrowseItems(source) {
   if (source === 'mock') {
@@ -86,8 +119,34 @@ async function loadBrowseItems(source) {
   return apiFetch('items/browse')
 }
 
+// Owner is null when they hid their profile
+function OwnerDetails({ owner }) {
+  return (
+    <div className="browse-owner-details">
+      <p className="browse-owner">
+        {owner && (
+          <Avatar
+            photo={owner.photo}
+            name={owner.displayName}
+            username={owner.username}
+            className="browse-owner-avatar"
+          />
+        )}
+        <span>{owner?.displayName || 'Community member'}</span>
+      </p>
+      {owner?.campusArea && (
+        <p className="browse-location">
+          <MapPin size={12} aria-hidden="true" />
+          {/* A span so a long area name can end in an ellipsis inside the flex row */}
+          <span>{owner.campusArea}</span>
+        </p>
+      )}
+    </div>
+  )
+}
+
 // Tells an empty catalog apart from filters that match nothing
-function BrowseEmptyState({ noItems }) {
+function BrowseEmptyState({ noItems, onClearFilters }) {
   if (noItems) {
     return (
       <div className="browse-empty">
@@ -100,8 +159,10 @@ function BrowseEmptyState({ noItems }) {
   return (
     <div className="browse-empty">
       <PackageOpen size={30} />
-      <strong>No items found</strong>
-      <span>Try another search or category.</span>
+      <strong>No matching items</strong>
+      <button type="button" className="browse-clear-filters" onClick={onClearFilters}>
+        Clear filters
+      </button>
     </div>
   )
 }
@@ -110,7 +171,8 @@ export default function BrowseBorrowPage() {
   const [source, setSource] = useState(() => localStorage.getItem('lendrBrowseSource') || 'mock')
   const [items, setItems] = useState([])
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('All items')
+  const [selectedCategories, setSelectedCategories] = useState(new Set())
+  const [selectedAreas, setSelectedAreas] = useState(new Set())
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [requesting, setRequesting] = useState(false)
@@ -140,20 +202,33 @@ export default function BrowseBorrowPage() {
     }
   }, [source])
 
+  // The date picker's calendar handles its own Escape first and stops it, so that closes before the popup
+  useEffect(() => {
+    if (!selectedItem) {
+      return
+    }
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedItem(null)
+      }
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [selectedItem])
+
   const visibleItems = useMemo(
     () =>
       items.filter((item) => {
-        const matchesQuery =
-          `${item.name} ${item.description || ''} ${item.ownerName || item.owner?.displayName || ''}`
-            .toLowerCase()
-            .includes(query.toLowerCase())
+        const matchesQuery = `${item.name} ${item.description}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
         const matchesCategory =
-          category === 'All items' ||
-          item.category === category ||
-          item.categories?.includes(category)
-        return item.available !== false && matchesQuery && matchesCategory
+          selectedCategories.size === 0 || selectedCategories.has(item.category)
+        // Owners with no area or a hidden profile only show under All areas
+        const matchesArea = selectedAreas.size === 0 || selectedAreas.has(item.owner?.campusArea)
+        return item.available !== false && matchesQuery && matchesCategory && matchesArea
       }),
-    [items, query, category],
+    [items, query, selectedCategories, selectedAreas],
   )
 
   const requestBorrow = async (event) => {
@@ -161,7 +236,7 @@ export default function BrowseBorrowPage() {
     const form = new FormData(event.currentTarget)
     const dueDate = String(form.get('dueDate') || '')
     if (source === 'mock') {
-      setNotice(`Request sent to ${selectedItem.ownerName || 'the owner'}!`)
+      setNotice(`Request sent to ${selectedItem.owner?.displayName || 'the owner'}!`)
       setSelectedItem(null)
       return
     }
@@ -182,7 +257,7 @@ export default function BrowseBorrowPage() {
         <header className="browse-heading page-heading">
           <div>
             <h1>Browse Items</h1>
-            <p>Find something useful from people in your community.</p>
+            <p>Borrow from people on campus.</p>
           </div>
           <div className="browse-source" aria-label="Browse data source">
             <span>Data</span>
@@ -208,24 +283,31 @@ export default function BrowseBorrowPage() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search items or people…"
-              aria-label="Search items or people"
+              placeholder="Search items"
+              aria-label="Search items"
             />
             {query && (
               <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
                 <X size={15} />
               </button>
             )}
-          </label>
-          <div className="browse-category">
-            <SlidersHorizontal size={16} aria-hidden="true" />
-            <SelectMenu
-              aria-label="Filter by category"
-              options={CATEGORIES}
-              value={category}
-              onChange={setCategory}
+            <FilterMenu
+              options={ITEM_CATEGORIES}
+              selected={selectedCategories}
+              onChange={setSelectedCategories}
+              allLabel="All categories"
+              pluralLabel="categories"
+              label="category"
             />
-          </div>
+            <FilterMenu
+              options={CAMPUS_AREAS}
+              selected={selectedAreas}
+              onChange={setSelectedAreas}
+              allLabel="All areas"
+              pluralLabel="areas"
+              label="area"
+            />
+          </label>
         </div>
         {error && (
           <p className="browse-message error" role="alert">
@@ -242,7 +324,11 @@ export default function BrowseBorrowPage() {
           </p>
         )}
         <div className="browse-results-label">
-          <span>{category === 'All items' ? 'Available near you' : category}</span>
+          <span>
+            {selectedCategories.size === 0
+              ? 'Available now'
+              : describeSelection(selectedCategories, 'All categories', 'categories')}
+          </span>
           <small>
             {visibleItems.length} {visibleItems.length === 1 ? 'item' : 'items'}
           </small>
@@ -259,37 +345,38 @@ export default function BrowseBorrowPage() {
                   ) : (
                     <PackageOpen size={35} aria-hidden="true" />
                   )}
-                  <span className="browse-category-tag">
-                    {item.category || item.categories?.[0] || 'Shared item'}
-                  </span>
+                  <CategoryTag category={item.category} />
                 </div>
                 <div className="browse-card-body">
-                  <div className="browse-card-title">
-                    <h2 title={item.name}>{item.name}</h2>
-                  </div>
-                  <p className="browse-owner">
-                    Shared by{' '}
-                    {item.ownerName ||
-                      item.owner?.displayName ||
-                      item.owner?.username ||
-                      'Community member'}
-                  </p>
-                  <button
-                    className="browse-request-button"
-                    type="button"
-                    onClick={() => {
-                      setError('')
-                      setSelectedItem(item)
-                    }}
-                  >
-                    Request to borrow
-                  </button>
+                  <h2 className="browse-card-title">
+                    {/* Its click area covers the whole card, so the card opens the request */}
+                    <button
+                      className="browse-card-open"
+                      type="button"
+                      title={item.name}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        setError('')
+                        setSelectedItem(item)
+                      }}
+                    >
+                      {item.name}
+                    </button>
+                  </h2>
+                  <OwnerDetails owner={item.owner} />
                 </div>
               </article>
             ))}
           </section>
         ) : (
-          <BrowseEmptyState noItems={items.length === 0} />
+          <BrowseEmptyState
+            noItems={items.length === 0}
+            onClearFilters={() => {
+              setQuery('')
+              setSelectedCategories(new Set())
+              setSelectedAreas(new Set())
+            }}
+          />
         )}
         {selectedItem && (
           <div
@@ -322,46 +409,35 @@ export default function BrowseBorrowPage() {
                 </div>
                 <div className="borrow-item-details">
                   <h2 id="borrow-modal-title">{selectedItem.name}</h2>
-                  <p className="borrow-item-owner">
-                    Listed by{' '}
-                    {selectedItem.ownerName ||
-                      selectedItem.owner?.displayName ||
-                      selectedItem.owner?.username ||
-                      'Community member'}
-                  </p>
-                  <div className="borrow-item-tags">
-                    {[
-                      selectedItem.category || selectedItem.categories?.[0],
-                      selectedItem.subcategory,
-                    ]
-                      .filter(Boolean)
-                      .map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                  </div>
-                  <p className="borrow-item-description">
-                    {selectedItem.description || 'A useful item shared with the community.'}
-                  </p>
+                  <OwnerDetails owner={selectedItem.owner} />
+                  {selectedItem.category && (
+                    <p className="borrow-item-tag">{selectedItem.category}</p>
+                  )}
+                  {selectedItem.description && (
+                    <p className="borrow-item-description">{selectedItem.description}</p>
+                  )}
                 </div>
               </div>
               <form className="borrow-request-form" onSubmit={requestBorrow}>
-                <h3>Send a Borrow Request</h3>
-                <label className="borrow-message-label" htmlFor="borrow-message">
-                  Message <span>(optional)</span>
-                </label>
-                <textarea
-                  id="borrow-message"
-                  name="message"
-                  placeholder="Hi! I’d love to borrow this. I’ll take good care of it!"
-                  rows="4"
-                />
                 <DatePickerField
-                  label="Return by"
+                  label={
+                    <>
+                      Return by{' '}
+                      {/* Hidden from screen readers since isRequired already announces it */}
+                      <span className="borrow-required" aria-hidden="true">
+                        *
+                      </span>
+                    </>
+                  }
                   className="browse-date-label"
                   name="dueDate"
                   minValue={today(getLocalTimeZone()).add({ days: 1 })}
                   isRequired
                 />
+                <label className="borrow-message-label" htmlFor="borrow-message">
+                  Message <span className="borrow-field-hint">(optional)</span>
+                </label>
+                <textarea id="borrow-message" name="message" rows="4" />
                 <div className="browse-modal-actions">
                   <button
                     className="browse-cancel-button"

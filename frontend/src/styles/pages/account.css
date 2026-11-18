@@ -1,10 +1,10 @@
-/* Muted text passes 4.5:1 and control edges pass 3:1 on white */
+/* Muted text passes 4.5:1 and both toggle colors pass 3:1 on white, field outlines are lighter at 1.9:1 */
 .account-page {
   --account-ink: #173f4b;
   --account-text: #3f5f66;
   --account-muted: #587076;
   --account-line: #e3ebed;
-  --account-field-border: #7f9599;
+  --account-field-border: #afbec2;
   --account-accent: #0c5865;
   --account-accent-hover: #084653;
   --account-focus: #318675;
@@ -177,7 +177,7 @@
   width: 40px;
   height: 24px;
   border-radius: 12px;
-  background: var(--account-field-border);
+  background: #7f9599;
   transition: background 0.16s;
 }
 .account-toggle-row i::after {
@@ -192,7 +192,7 @@
   transition: transform 0.16s;
 }
 .account-toggle-row input:checked + i {
-  background: var(--account-focus);
+  background: #c4521f;
 }
 .account-toggle-row input:checked + i::after {
   transform: translateX(16px);

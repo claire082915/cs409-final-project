@@ -32,6 +32,9 @@ body:has(.app-shell) #root {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Labels stay on one line and get clipped while the width animates, instead of wrapping */
+  overflow: hidden;
+  white-space: nowrap;
   padding: 25px 15px 18px;
   color: #d9e9e8;
   background: linear-gradient(165deg, #0d4853, #073943 75%, #07343f);
@@ -84,7 +87,7 @@ body:has(.app-shell) #root {
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: #f47742;
+  background: #c4521f;
   font-size: 10px;
 }
 .sidebar-toggle {
