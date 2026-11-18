@@ -18,7 +18,8 @@ import { AuthProvider } from './auth/AuthContext.jsx'
 import RequireAuth from './auth/RequireAuth.jsx'
 import LogOutRoute from './auth/LogOutRoute.jsx'
 import AccountPage from './pages/AccountPage.jsx'
-import ProfilePage, { ItemPage } from './pages/ProfilePage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import SearchPage from './pages/SearchPage.jsx'
 import { warmApi } from './lib/api.js'
 
 warmApi()
@@ -42,8 +43,8 @@ const router = createHashRouter(
         <Route path="/return-confirmation" element={<ReturnConfirmationPage />} />
         <Route path="/mobile" element={<MobileResponsivePage />} />
         <Route path="/account" element={<AccountPage />} />
-        <Route path="/profile/:displayName" element={<ProfilePage />} />
-        <Route path="/item/:itemName" element={<ItemPage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="/search" element={<SearchPage />} />
       </Route>
       <Route path="*" element={<LandingPage />} />
     </>,

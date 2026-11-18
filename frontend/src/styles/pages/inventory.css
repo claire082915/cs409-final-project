@@ -30,34 +30,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid #dfe8eb;
   margin-bottom: 22px;
-}
-.inventory-tabs {
-  display: flex;
-  gap: 8px;
-}
-.inventory-tabs button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  color: #789097;
-  background: none;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.inventory-tabs button.selected {
-  border-color: #197a6b;
-  color: #176f64;
-}
-.inventory-tabs button span {
-  color: #8da1a5;
-  font-size: 10px;
 }
 .inventory-source {
   display: flex;
@@ -95,6 +68,7 @@
   gap: 20px;
 }
 .inventory-card {
+  position: relative;
   overflow: hidden;
   border: 1px solid #e4ecee;
   border-radius: 10px;
@@ -107,6 +81,30 @@
 .inventory-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 9px 22px #17455112;
+}
+.inventory-card:has(.inventory-card-open:focus-visible) {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
+.inventory-card-open {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.inventory-card-open::after {
+  position: absolute;
+  inset: 0;
+  content: '';
 }
 .inventory-photo {
   position: relative;
@@ -126,26 +124,6 @@
   margin: auto;
   color: #9bb0b2;
 }
-/* Centers the 24px category tag on the 28px menu button beside it */
-.inventory-photo .category-tag {
-  bottom: calc(10px + (28px - 24px) / 2);
-}
-.item-menu-button {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  box-sizing: border-box;
-  padding: 0;
-  border: 1px solid #e5ecee;
-  border-radius: 7px;
-  color: #54737a;
-  background: #ffffffeb;
-  cursor: pointer;
-}
 .inventory-card-copy {
   display: grid;
   gap: 7px;
@@ -157,14 +135,6 @@
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.inventory-card-copy span {
-  color: #278777;
-  font-size: 11px;
-  font-weight: 700;
-}
-.inventory-card-copy span.lent-status {
-  color: #cf7544;
 }
 .inventory-error {
   margin: -7px 0 20px;
@@ -362,6 +332,7 @@
   gap: 9px;
   padding-top: 3px;
 }
+.item-delete-button,
 .item-cancel-button,
 .item-save-button {
   min-height: 40px;
@@ -372,6 +343,15 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+/* Tinted orange and pushed left, away from Save */
+.item-delete-button {
+  margin-right: auto;
+  color: #a9461a;
+  background: #fbede6;
+}
+.item-delete-button:hover:not(:disabled) {
+  background: #f7dfd3;
 }
 .item-cancel-button {
   color: #3f5f66;
@@ -387,6 +367,7 @@
 .item-save-button:hover:not(:disabled) {
   background: #084653;
 }
+.item-delete-button:disabled,
 .item-cancel-button:disabled,
 .item-save-button:disabled {
   opacity: 0.6;
@@ -442,14 +423,6 @@
   .inventory-source {
     align-self: flex-end;
   }
-  .inventory-tabs {
-    width: 100%;
-  }
-  .inventory-tabs button {
-    flex: 1;
-    justify-content: center;
-    padding: 11px 4px;
-  }
   .inventory-grid {
     gap: 11px;
   }
@@ -468,11 +441,4 @@
     padding: 21px 18px;
     border-radius: 15px;
   }
-}
-.item-menu-button[data-hovered] {
-  background: #fff;
-}
-.item-menu-button[data-focus-visible] {
-  outline: 2px solid #318675;
-  outline-offset: 2px;
 }

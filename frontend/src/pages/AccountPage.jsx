@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Bell, Save, Star, UserRound } from 'lucide-react'
+import { Bell, Save, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
+import Reputation from '../components/Reputation.jsx'
 import SelectMenu from '../components/SelectMenu.jsx'
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
@@ -113,7 +114,7 @@ export default function AccountPage() {
                   photo={form.photo}
                   name={form.displayName || profile.displayName}
                   username={profile.username}
-                  caption={<ReputationSummary reputation={profile.reputation} />}
+                  caption={<Reputation reputation={profile.reputation} />}
                   file={pendingPhoto}
                   onSelect={setPendingPhoto}
                   onRemove={() => {
@@ -135,13 +136,16 @@ export default function AccountPage() {
                   </label>
                   <label>
                     Username
-                    <input
-                      name="username"
-                      value={form.username}
-                      onChange={updateForm}
-                      placeholder="yourusername"
-                      autoComplete="username"
-                    />
+                    <span className="account-username">
+                      <span aria-hidden="true">@</span>
+                      <input
+                        name="username"
+                        value={form.username}
+                        onChange={updateForm}
+                        placeholder="yourusername"
+                        autoComplete="username"
+                      />
+                    </span>
                   </label>
                   <div className="account-field">
                     <span id="campus-area-label">Campus area</span>
@@ -218,19 +222,6 @@ export default function AccountPage() {
 }
 
 // Read only, since ratings come from the people the user lent to or borrowed from
-function ReputationSummary({ reputation }) {
-  if (!reputation) {
-    return <p className="account-reputation">No ratings yet</p>
-  }
-  const { average, count } = reputation
-  return (
-    <p className="account-reputation">
-      <Star size={14} aria-hidden="true" />
-      {average.toFixed(1)} · {count} {count === 1 ? 'rating' : 'ratings'}
-    </p>
-  )
-}
-
 function SettingToggle({ label, description, checked, onChange }) {
   return (
     <label className="account-toggle-row">

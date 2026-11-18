@@ -49,7 +49,7 @@
 
 .field-option[data-focused],
 .field-option[data-hovered] {
-  background: #eef5f3;
+  background: #fbede6;
 }
 
 .field-option[data-selected] {
@@ -72,12 +72,11 @@
   display: grid;
   place-items: center;
   width: 14px;
-  color: #318675;
 }
 
-.field-option.is-danger,
-.field-option.is-danger svg {
-  color: #b4482f;
+/* Orange tick, more specific than the grey menu icon rule */
+.field-option .filter-menu-check svg {
+  color: #c4521f;
 }
 
 .field-option[data-disabled],

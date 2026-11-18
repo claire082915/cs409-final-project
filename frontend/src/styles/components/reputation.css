@@ -1,0 +1,13 @@
+.reputation {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #587076;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.reputation svg {
+  color: #f47742;
+  fill: currentColor;
+}

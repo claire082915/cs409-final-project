@@ -46,20 +46,6 @@
   font-size: 16px;
   font-weight: 600;
 }
-.account-reputation {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  color: var(--account-muted);
-  font-size: 13px;
-  line-height: 18px;
-  white-space: nowrap;
-}
-.account-reputation svg {
-  color: #f47742;
-  fill: currentColor;
-}
 /* Photo on the left, fields beside it */
 .account-profile {
   display: grid;
@@ -99,6 +85,25 @@
 }
 .account-fields input::placeholder {
   color: var(--account-muted);
+}
+/* Grey @ inside the box so the username reads like it does everywhere else */
+.account-username {
+  position: relative;
+  display: block;
+}
+.account-username span {
+  position: absolute;
+  /* The @ hangs below the baseline in this font, so lift it 1px to sit level with the text */
+  top: -1px;
+  left: 12px;
+  color: var(--account-muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 40px;
+  pointer-events: none;
+}
+.account-fields .account-username input {
+  padding-left: 27px;
 }
 .account-fields input:focus {
   border-color: var(--account-focus);

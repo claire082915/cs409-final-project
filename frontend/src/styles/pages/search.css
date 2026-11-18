@@ -1,0 +1,131 @@
+.search-page {
+  color: #173f4b;
+}
+.search-section + .search-section {
+  margin-top: 36px;
+}
+.search-section-heading {
+  margin: 0 0 16px;
+}
+.search-section:not([data-expanded]) .search-section-heading {
+  margin-bottom: 0;
+}
+/* Same look as the results labels on Browse, the chevron turns down when open */
+.search-section-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  color: #315761;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  outline: 0;
+}
+.search-section-toggle small {
+  color: #587076;
+  font-size: 13px;
+  font-weight: 500;
+}
+.search-section-toggle[data-focus-visible] {
+  border-radius: 4px;
+  outline: 2px solid #318675;
+  outline-offset: 3px;
+}
+.search-section-chevron {
+  align-self: center;
+  margin-right: -3px;
+  color: #c4521f;
+  transition: transform 0.16s;
+}
+.search-section[data-expanded] .search-section-chevron {
+  transform: rotate(90deg);
+}
+.search-item-lent {
+  margin: 0;
+  color: #a9461a;
+  font-size: 13px;
+}
+.search-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
+  gap: 20px 32px;
+}
+.search-person {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #e4ecee;
+  border-radius: 11px;
+  color: inherit;
+  background: #fff;
+  box-shadow: 0 4px 15px #17455108;
+  text-decoration: none;
+  transition: box-shadow 0.18s;
+}
+.search-person:hover {
+  box-shadow: 0 9px 22px #17455112;
+}
+.search-person:focus-visible {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
+.search-person-photo {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  font-size: 28px;
+}
+.search-person-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.search-person-text .reputation {
+  font-size: 13px;
+}
+.search-person-text strong {
+  color: #214954;
+  font-size: 15px;
+}
+.search-person-text small {
+  color: #587076;
+  font-size: 13px;
+}
+.search-person-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search-person-area {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.search-person-area svg {
+  flex: none;
+}
+.search-empty {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px dashed #cbdadc;
+  border-radius: 12px;
+  color: #587076;
+  font-size: 14px;
+}
+.search-empty svg {
+  color: #8ca5a9;
+}
+.search-empty strong {
+  color: #315c65;
+  font-size: 15px;
+}

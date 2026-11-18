@@ -10,33 +10,19 @@ import {
   Popover,
 } from 'react-aria-components'
 import { Package, Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { apiFetch } from '../lib/api.js'
+import { MOCK_ITEMS } from '../lib/mockItems.js'
+import { mockResults } from '../lib/mockSearch.js'
 import Avatar from './Avatar.jsx'
+import BorrowItemDialog from './BorrowItemDialog.jsx'
 import '../styles/components/form-controls.css'
 import '../styles/components/topbar-search.css'
 
 // Wait for a pause in typing so each keystroke doesn't send a request
 const DEBOUNCE_MS = 300
 const IS_MAC = navigator.userAgent.includes('Mac')
-const MOCK_ITEMS = [
-  { _id: 'mock-laptop', name: 'MacBook Pro', ownerName: 'Maya Chen', photos: [] },
-  { _id: 'mock-tent', name: '2-person Camping Tent', ownerName: 'Jordan Lee', photos: [] },
-  { _id: 'mock-camera', name: 'Mirrorless Camera', ownerName: 'Sam Rivera', photos: [] },
-  {
-    _id: 'mock-textbook',
-    name: 'Computer Science Textbooks',
-    ownerName: 'Avery Patel',
-    photos: [],
-  },
-  { _id: 'mock-skateboard', name: 'Skateboard', ownerName: 'Noah Brooks', photos: [] },
-  { _id: 'mock-earbuds', name: 'Wireless Earbuds', ownerName: 'Taylor Kim', photos: [] },
-]
-const MOCK_PEOPLE = MOCK_ITEMS.map((item) => ({
-  _id: `person-${item._id}`,
-  displayName: item.ownerName,
-  username: item.ownerName.toLowerCase().replaceAll(' ', '-'),
-  photo: '',
-}))
 
 function ItemThumb({ photo }) {
   return (
@@ -47,21 +33,15 @@ function ItemThumb({ photo }) {
 }
 
 function ItemOption({ item }) {
-  const ownerName =
-    item.ownerName || item.owner?.displayName || item.owner?.username || 'Community member'
+  const ownerName = item.owner?.displayName || item.owner?.username || 'Community member'
   return (
-    <ListBoxItem
-      id={`item-${item._id}`}
-      textValue={item.name}
-      href={`#/item/${encodeURIComponent(item.name)}`}
-      className="field-option"
-    >
+    <ListBoxItem id={`item-${item._id}`} textValue={item.name} className="field-option">
       <ItemThumb photo={item.photos[0]} />
       <span className="search-text">
         <strong>{item.name}</strong>
         <small>
           {ownerName}
-          {item.available === false && ' · On loan'}
+          {item.available === false && ' · Lent'}
         </small>
       </span>
     </ListBoxItem>
@@ -71,9 +51,9 @@ function ItemOption({ item }) {
 function PersonOption({ person }) {
   return (
     <ListBoxItem
-      id={`person-${person._id}`}
+      id={`person-${person.username}`}
       textValue={person.displayName}
-      href={`#/profile/${encodeURIComponent(person.displayName)}`}
+      href={`#/profile/${encodeURIComponent(person.username)}`}
       className="field-option"
     >
       <Avatar
@@ -91,9 +71,21 @@ function PersonOption({ person }) {
 }
 
 export default function TopbarSearch() {
+  const navigate = useNavigate()
   const inputRef = useRef(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
+
+  // Enter with no result highlighted opens the full results page instead
+  const openResultsPage = (event) => {
+    const hasHighlightedResult = event.currentTarget.getAttribute('aria-activedescendant')
+    if (event.key !== 'Enter' || !query.trim() || hasHighlightedResult) {
+      return
+    }
+    navigate(`/search?q=${encodeURIComponent(query.trim())}`)
+    event.currentTarget.blur()
+  }
 
   useEffect(() => {
     const focusSearch = (event) => {
@@ -127,66 +119,81 @@ export default function TopbarSearch() {
   // Results for older text stay hidden until the latest search comes back
   const trimmedQuery = query.trim()
   const currentResults = results?.query === trimmedQuery ? results : null
-  const mockItems = trimmedQuery
-    ? MOCK_ITEMS.filter((item) =>
-        `${item.name} ${item.ownerName}`.toLowerCase().includes(trimmedQuery.toLowerCase()),
-      )
-    : []
-  const mockPeople = trimmedQuery
-    ? MOCK_PEOPLE.filter((person) =>
-        `${person.displayName} ${person.username}`
-          .toLowerCase()
-          .includes(trimmedQuery.toLowerCase()),
-      )
-    : []
-  const items = [...mockItems, ...(currentResults?.items ?? [])]
-  const people = [...mockPeople, ...(currentResults?.people ?? [])]
+  // Mock results show alongside real ones, like on the search page
+  const mock = trimmedQuery ? mockResults(trimmedQuery) : { items: [], people: [] }
+  const items = [...mock.items, ...(currentResults?.items ?? [])]
+  const people = [...mock.people, ...(currentResults?.people ?? [])]
+
+  // Picking an item opens the borrow popup, people are links so they open on their own
+  const openItem = (key) => {
+    const item = items.find((candidate) => `item-${candidate._id}` === key)
+    if (item) {
+      setSelectedItem(item)
+      setQuery('')
+    }
+  }
 
   return (
-    <ComboBox
-      className="app-search"
-      aria-label="Search items or people"
-      inputValue={query}
-      onInputChange={setQuery}
-      selectedKey={null}
-      allowsCustomValue
-      allowsEmptyCollection
-    >
-      <Group className="app-search-field">
-        <Search size={16} aria-hidden="true" />
-        <Input ref={inputRef} placeholder="Search items or people" />
-        <kbd>{IS_MAC ? '⌘ K' : 'Ctrl K'}</kbd>
-      </Group>
-      <Popover className="field-popover search-popover" placement="bottom start">
-        <ListBox
-          className="field-list"
-          renderEmptyState={() =>
-            currentResults && (
-              <p className="field-empty">
-                {currentResults.error?.message ??
-                  `No items or people match "${currentResults.query}"`}
-              </p>
-            )
-          }
-        >
-          {items.length > 0 && (
-            <ListBoxSection>
-              <Header className="search-heading">Items</Header>
-              {items.map((item) => (
-                <ItemOption key={item._id} item={item} />
-              ))}
-            </ListBoxSection>
-          )}
-          {people.length > 0 && (
-            <ListBoxSection>
-              <Header className="search-heading">People</Header>
-              {people.map((person) => (
-                <PersonOption key={person._id} person={person} />
-              ))}
-            </ListBoxSection>
-          )}
-        </ListBox>
-      </Popover>
-    </ComboBox>
+    <>
+      <ComboBox
+        className="app-search"
+        aria-label="Search items or people"
+        inputValue={query}
+        onInputChange={setQuery}
+        selectedKey={null}
+        onSelectionChange={openItem}
+        // Results are already filtered by the search
+        defaultFilter={() => true}
+        allowsCustomValue
+        allowsEmptyCollection
+      >
+        <Group className="app-search-field">
+          <Search size={16} aria-hidden="true" />
+          <Input ref={inputRef} placeholder="Search items or people" onKeyDown={openResultsPage} />
+          <kbd>{IS_MAC ? '⌘ K' : 'Ctrl K'}</kbd>
+        </Group>
+        <Popover className="field-popover search-popover" placement="bottom start">
+          <ListBox
+            className="field-list"
+            renderEmptyState={() =>
+              currentResults && (
+                <p className="field-empty">
+                  {currentResults.error?.message ??
+                    `No items or people match "${currentResults.query}"`}
+                </p>
+              )
+            }
+          >
+            {items.length > 0 && (
+              <ListBoxSection>
+                <Header className="search-heading">Items</Header>
+                {items.map((item) => (
+                  <ItemOption key={item._id} item={item} />
+                ))}
+              </ListBoxSection>
+            )}
+            {people.length > 0 && (
+              <ListBoxSection>
+                <Header className="search-heading">People</Header>
+                {people.map((person) => (
+                  <PersonOption key={person.username} person={person} />
+                ))}
+              </ListBoxSection>
+            )}
+          </ListBox>
+        </Popover>
+      </ComboBox>
+      {selectedItem && (
+        <BorrowItemDialog
+          item={selectedItem}
+          isMock={MOCK_ITEMS.includes(selectedItem)}
+          onClose={() => setSelectedItem(null)}
+          onSent={(message) => {
+            toast.success(message)
+            setSelectedItem(null)
+          }}
+        />
+      )}
+    </>
   )
 }

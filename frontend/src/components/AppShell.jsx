@@ -15,6 +15,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
+import { usePendingRequestCount } from '../lib/pendingRequestCount.js'
 import TopbarSearch from './TopbarSearch.jsx'
 import '../styles/components/app-shell.css'
 
@@ -29,7 +30,7 @@ const navigation = [
     mobileLabel: 'Requests',
     to: '/borrow-request',
     icon: Inbox,
-    badge: '3',
+    showsRequestCount: true,
   },
   { label: 'Account', to: '/account', icon: CircleUserRound },
 ]
@@ -38,6 +39,7 @@ const COLLAPSED_KEY = 'sidebarCollapsed'
 
 function Sidebar({ collapsed, onToggle }) {
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
+  const pendingRequestCount = usePendingRequestCount()
   return (
     <aside className="app-sidebar" aria-label="Main sidebar">
       <div className="sidebar-brand">
@@ -54,7 +56,7 @@ function Sidebar({ collapsed, onToggle }) {
         </button>
       </div>
       <nav className="sidebar-nav" aria-label="Main navigation">
-        {navigation.map(({ label, to, icon: Icon, badge }) => (
+        {navigation.map(({ label, to, icon: Icon, showsRequestCount }) => (
           <NavLink
             key={label}
             to={to}
@@ -63,7 +65,9 @@ function Sidebar({ collapsed, onToggle }) {
           >
             <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
             <span className="sidebar-label">{label}</span>
-            {badge && <span className="sidebar-badge">{badge}</span>}
+            {showsRequestCount && pendingRequestCount > 0 && (
+              <span className="sidebar-badge">{pendingRequestCount}</span>
+            )}
           </NavLink>
         ))}
       </nav>

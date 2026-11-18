@@ -40,22 +40,15 @@
   cursor: default;
 }
 
-.photo-picker-upload {
-  border: 0;
-  color: #fff;
-  background: #0c5865;
-}
-
-.photo-picker-upload[data-hovered] {
-  background: #084653;
-}
-
+/* Outlined like Remove so it doesn't outweigh the fields beside it */
+.photo-picker-upload,
 .photo-picker-remove {
   border: 1px solid #7f9599;
   color: #3f5f66;
   background: #fff;
 }
 
+.photo-picker-upload[data-hovered],
 .photo-picker-remove[data-hovered] {
   background: #f4f8f8;
 }

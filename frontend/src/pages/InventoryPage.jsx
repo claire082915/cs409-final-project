@@ -5,7 +5,6 @@ import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import CategoryTag from '../components/CategoryTag.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
-import ItemMenu from '../components/ItemMenu.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -13,83 +12,10 @@ import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
 import SelectMenu from '../components/SelectMenu.jsx'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
+import { MOCK_INVENTORY } from '../lib/mockInventory.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
+import ViewSwitch from '../components/ViewSwitch.jsx'
 import '../styles/pages/inventory.css'
-
-const MOCK_ITEMS = [
-  {
-    _id: 'mock-laptop',
-    name: 'MacBook Pro',
-    category: 'Electronics',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-tent',
-    name: 'Tent',
-    category: 'Outdoor',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-textbook',
-    name: 'Textbook (CS)',
-    category: 'Books',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-camera',
-    name: 'Camera',
-    category: 'Electronics',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-skateboard',
-    name: 'Skateboard',
-    category: 'Sports',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-earbuds',
-    name: 'AirPods',
-    category: 'Electronics',
-    available: true,
-    photos: [
-      'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-projector',
-    name: 'Projector',
-    category: 'Electronics',
-    available: false,
-    photos: [
-      'https://images.unsplash.com/photo-1535016120720-40c646be5580?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-  {
-    _id: 'mock-drill',
-    name: 'Power drill',
-    category: 'Tools',
-    available: false,
-    photos: [
-      'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80',
-    ],
-  },
-]
 
 // Matches the backend's default for items saved without one
 const DEFAULT_CATEGORY = 'Other'
@@ -106,7 +32,7 @@ function formFromItem(item) {
 export default function InventoryPage() {
   const { profile } = useAuth()
   const [source, setSource] = useState(() => localStorage.getItem('lendrInventorySource') || 'mock')
-  const [items, setItems] = useState(MOCK_ITEMS)
+  const [items, setItems] = useState(MOCK_INVENTORY)
   const [tab, setTab] = useState('available')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -208,6 +134,7 @@ export default function InventoryPage() {
         await apiFetch(`items/${deletingItem._id}`, { method: 'DELETE' })
       }
       setItems((current) => current.filter((item) => item._id !== deletingItem._id))
+      setIsFormOpen(false)
       toast.success(`${deletingItem.name} deleted`)
     } catch (err) {
       toast.error(err.message)
@@ -220,7 +147,7 @@ export default function InventoryPage() {
   useEffect(() => {
     localStorage.setItem('lendrInventorySource', source)
     if (source !== 'backend') {
-      setItems(MOCK_ITEMS)
+      setItems(MOCK_INVENTORY)
       setError('')
       return
     }
@@ -244,9 +171,9 @@ export default function InventoryPage() {
     }
   }, [source, profile.username])
 
-  // Escape while saving would leave the save running with the form gone, and the discard dialog handles its own Escape
+  // Escape mid-save would drop the form with the save still running, and confirm dialogs handle their own Escape
   useEffect(() => {
-    if (!isFormOpen || saving || isDiscardOpen) {
+    if (!isFormOpen || saving || isDiscardOpen || deletingItem) {
       return
     }
     const closeOnEscape = (event) => {
@@ -256,7 +183,7 @@ export default function InventoryPage() {
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [isFormOpen, saving, isDiscardOpen, hasUnsavedChanges])
+  }, [isFormOpen, saving, isDiscardOpen, deletingItem, hasUnsavedChanges])
 
   const visibleItems = useMemo(
     () =>
@@ -282,26 +209,29 @@ export default function InventoryPage() {
         </div>
 
         <div className="inventory-toolbar">
-          <div className="inventory-tabs" role="tablist" aria-label="Filter items">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === 'available'}
-              className={tab === 'available' ? 'selected' : ''}
-              onClick={() => setTab('available')}
-            >
-              Available <span>{availableCount}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === 'lent'}
-              className={tab === 'lent' ? 'selected' : ''}
-              onClick={() => setTab('lent')}
-            >
-              Lent Out <span>{lentCount}</span>
-            </button>
-          </div>
+          <ViewSwitch
+            label="Items to show"
+            options={[
+              {
+                id: 'available',
+                label: (
+                  <>
+                    Available<small>{availableCount}</small>
+                  </>
+                ),
+              },
+              {
+                id: 'lent',
+                label: (
+                  <>
+                    Lent<small>{lentCount}</small>
+                  </>
+                ),
+              },
+            ]}
+            selected={tab}
+            onChange={setTab}
+          />
           <div className="inventory-source" aria-label="Inventory data source">
             <span>Data</span>
             <button
@@ -339,17 +269,20 @@ export default function InventoryPage() {
                     <PackageOpen size={34} />
                   )}
                   <CategoryTag category={item.category} />
-                  <ItemMenu
-                    item={item}
-                    onEdit={() => openForm(item)}
-                    onDelete={() => setDeletingItem(item)}
-                  />
                 </div>
                 <div className="inventory-card-copy">
-                  <strong title={item.name}>{item.name}</strong>
-                  <span className={item.available === false ? 'lent-status' : ''}>
-                    {item.available === false ? 'Lent out' : 'Available'}
-                  </span>
+                  <strong>
+                    {/* Its click area covers the whole card, like on Browse */}
+                    <button
+                      className="inventory-card-open"
+                      type="button"
+                      title={item.name}
+                      aria-haspopup="dialog"
+                      onClick={() => openForm(item)}
+                    >
+                      {item.name}
+                    </button>
+                  </strong>
                 </div>
               </article>
             ))}
@@ -357,7 +290,7 @@ export default function InventoryPage() {
         ) : (
           <div className="inventory-empty">
             <PackageOpen size={28} />
-            <strong>No {tab === 'available' ? 'available' : 'lent out'} items</strong>
+            <strong>No {tab === 'available' ? 'available' : 'lent'} items</strong>
             <span>Your items will appear here.</span>
           </div>
         )}
@@ -461,6 +394,17 @@ export default function InventoryPage() {
                   </p>
                 )}
                 <div className="item-form-actions">
+                  {/* The backend refuses to delete an item while it's on loan */}
+                  {editingItem && editingItem.available !== false && (
+                    <button
+                      type="button"
+                      className="item-delete-button"
+                      disabled={saving}
+                      onClick={() => setDeletingItem(editingItem)}
+                    >
+                      Delete
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="item-cancel-button"

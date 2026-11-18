@@ -10,7 +10,7 @@
 
 /* Only the panel counts as inside, so clicking the backdrop closes it */
 .confirm-wrap {
-  width: min(100%, 380px);
+  width: min(100%, 400px);
 }
 
 .confirm-panel {
@@ -25,15 +25,15 @@
 
 .confirm-title {
   margin: 0;
-  color: #214954;
-  font-size: 15px;
-  font-weight: 750;
+  color: #173f4b;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .confirm-text {
   margin: 8px 0 0;
-  color: #627a80;
-  font-size: 12px;
+  color: #587076;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -45,23 +45,23 @@
 }
 
 .confirm-actions button {
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 7px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
   font: inherit;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .confirm-cancel {
-  border: 1px solid #dfe8eb;
-  color: #315761;
-  background: #fff;
+  border: 0;
+  color: #3f5f66;
+  background: #eef3f4;
 }
 
 .confirm-cancel[data-hovered] {
-  background: #f4f8f8;
+  background: #e2eaec;
 }
 
 .confirm-danger {
@@ -82,4 +82,19 @@
 .confirm-actions button[data-focus-visible] {
   outline: 2px solid #318675;
   outline-offset: 2px;
+}
+
+.confirm-primary {
+  border: 0;
+  color: #fff;
+  background: #0c5865;
+}
+
+.confirm-primary[data-hovered] {
+  background: #084653;
+}
+
+.confirm-primary[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
 }

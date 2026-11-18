@@ -18,7 +18,7 @@ body:has(.app-shell) #root {
   height: 100vh;
   height: 100dvh;
   display: grid;
-  grid-template-columns: 246px minmax(0, 1fr);
+  grid-template-columns: 224px minmax(0, 1fr);
   overflow: hidden;
   transition: grid-template-columns 0.2s ease;
   background: #f5f8fa;

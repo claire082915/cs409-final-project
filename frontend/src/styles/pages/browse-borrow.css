@@ -220,6 +220,28 @@
   align-items: center;
   gap: 6px;
 }
+/* Sits above the card's stretched click area so the name opens the profile instead */
+.browse-owner-link {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.browse-owner-link:hover {
+  color: #214954;
+}
+.browse-owner-link:hover > span:last-child {
+  text-decoration: underline;
+}
+.browse-owner-link:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
 .browse-owner-avatar {
   width: 24px;
   height: 24px;
@@ -230,7 +252,8 @@
   flex: none;
   width: 24px;
 }
-.browse-owner > span:last-child,
+.browse-owner-link > span:last-child,
+.browse-owner > span,
 .browse-location > span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -595,4 +618,9 @@
   .borrow-request-form {
     padding: 17px 4px 3px;
   }
+}
+.borrow-form-error {
+  margin: 0;
+  color: #b4482f;
+  font-size: 13px;
 }

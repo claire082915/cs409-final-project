@@ -178,7 +178,7 @@ export default function LandingPage() {
       <footer className="site-footer">
         <Logo light />
         <span>Borrow a little. Share a lot.</span>
-        <span>© 2025 Lendr</span>
+        <span>© Lendr</span>
       </footer>
     </div>
   )

@@ -5,15 +5,16 @@ import { Router } from 'express'
 import requireUser from '../middleware/requireUser.js'
 import Rating from '../models/rating.js'
 import { isDuplicateKeyError } from '../lib/duplicateKey.js'
-import { isOnLoan } from '../lib/availability.js'
+import { isOnLoan, loanedItemIds } from '../lib/availability.js'
+import { reputationsByUser } from '../lib/reputation.js'
 
 // Loans due within this many days count as due soon
 const dueSoonDays = 3
 const msPerDay = 24 * 60 * 60 * 1000
 // Read routes show the item and both users instead of bare ids
 const loanDetails = [
-  { path: 'item', select: 'name description photos deletedAt' },
-  { path: 'owner', select: 'username displayName photo' },
+  { path: 'item', select: 'name description category photos deletedAt' },
+  { path: 'owner', select: 'username displayName photo campusArea' },
   { path: 'borrower', select: 'username displayName photo' },
 ]
 
@@ -124,6 +125,7 @@ loansRoute.post(async function (req, res) {
       owner: item.owner,
       borrower: req.userId,
       dueDate: body.dueDate,
+      message: body.message,
     })
   } catch (err) {
     // A second request from this user landed after the check above
@@ -135,6 +137,18 @@ loansRoute.post(async function (req, res) {
   return res.status(201).json({ message: 'OK', data: newLoan })
 })
 
+// Requests can wait while their item is lent, so lists say whether it's available
+async function withItemAvailability(loans) {
+  const loanedIds = await loanedItemIds(loans.map((loan) => loan.item._id))
+  const loansWithAvailability = []
+  for (const loan of loans) {
+    const json = loan.toJSON()
+    json.item.available = !loanedIds.has(String(loan.item._id))
+    loansWithAvailability.push(json)
+  }
+  return loansWithAvailability
+}
+
 lentRoute.get(async function (req, res) {
   const filter = statusFilter(req.query.status)
   if (!filter) {
@@ -143,7 +157,14 @@ lentRoute.get(async function (req, res) {
   filter.owner = req.userId
   const loans = await Loan.find(filter).sort({ createdAt: -1 }).populate(loanDetails)
 
-  return res.status(200).json({ message: 'OK', data: loans })
+  // Owners see each borrower's rating so they can decide on a request
+  const borrowerIds = loans.map((loan) => loan.borrower._id)
+  const reputations = await reputationsByUser(borrowerIds)
+  const loansWithDetails = await withItemAvailability(loans)
+  for (const loan of loansWithDetails) {
+    loan.borrower.reputation = reputations.get(String(loan.borrower._id)) ?? null
+  }
+  return res.status(200).json({ message: 'OK', data: loansWithDetails })
 })
 
 borrowedRoute.get(async function (req, res) {
@@ -153,7 +174,7 @@ borrowedRoute.get(async function (req, res) {
   }
   filter.borrower = req.userId
   const loans = await Loan.find(filter).sort({ createdAt: -1 }).populate(loanDetails)
-  return res.status(200).json({ message: 'OK', data: loans })
+  return res.status(200).json({ message: 'OK', data: await withItemAvailability(loans) })
 })
 
 // Soonest due first, since these are the ones to return next
