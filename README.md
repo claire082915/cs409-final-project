@@ -29,7 +29,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI`, `CLOUDINARY_URL` and `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) values in `.env`.
+Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`.
 
 ### Auth
 
@@ -41,21 +41,23 @@ Every request except `health` needs an `Authorization: Bearer <Firebase ID token
 
 Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
 
-| Endpoint            | Method | Action                             |
-| ------------------- | ------ | ---------------------------------- |
-| `health`            | GET    | Check the server is up             |
-| `items`             | POST   | Create an item                     |
-| `items?owner=:id`   | GET    | List a user's items, newest first  |
-| `items/nearby`      | GET    | List items near you, nearest first |
-| `items/:id`         | GET    | Get an item                        |
-|                     | PATCH  | Update name, description or photos |
-|                     | DELETE | Delete an item                     |
-| `search?q=:text`    | GET    | Search items and people            |
-| `uploads/signature` | POST   | Sign a photo upload                |
-| `users`             | POST   | Create your profile                |
-| `users/me`          | GET    | View your own profile              |
-|                     | PATCH  | Update your profile                |
-| `users/:username`   | GET    | View a user's profile              |
+| Endpoint               | Method | Action                             |
+| ---------------------- | ------ | ---------------------------------- |
+| `health`               | GET    | Check the server is up             |
+| `items`                | POST   | Create an item                     |
+| `items?owner=:id`      | GET    | List a user's items, newest first  |
+| `items/detect`         | POST   | Draft items from a room photo      |
+| `items/detect/discard` | POST   | Delete the photos of unkept drafts |
+| `items/nearby`         | GET    | List items near you, nearest first |
+| `items/:id`            | GET    | Get an item                        |
+|                        | PATCH  | Update name, description or photos |
+|                        | DELETE | Delete an item                     |
+| `search?q=:text`       | GET    | Search items and people            |
+| `uploads/signature`    | POST   | Sign a photo upload                |
+| `users`                | POST   | Create your profile                |
+| `users/me`             | GET    | View your own profile              |
+|                        | PATCH  | Update your profile                |
+| `users/:username`      | GET    | View a user's profile              |
 
 | Endpoint            | Method | Action                                |
 | ------------------- | ------ | ------------------------------------- |
@@ -85,6 +87,10 @@ Item responses also include `available`, which is `false` while the item is on l
 `GET items/nearby?miles=10` lists other users' items within `miles` of you, nearest first. `miles` is 5 to 100 and defaults to 10. Each item also has `owner` as `{ username, displayName, photo }`, or `null` when the owner turned off `showProfile`, and `distanceMiles`. Distance is measured between ZIP code centers, so it needs your `zipCode` set, and returns 400 until it is.
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
+
+`POST items/detect` takes `{ photoUrl }`, a photo of a room uploaded to your folder (see [Photos](#photos)). Gemini finds up to 20 items worth lending, most lendable first, and each one is cropped out and uploaded to your folder. It returns drafts as `{ name, description, photos }` without saving them, so send the ones the user keeps to `POST items`. It can take a while, so show a loader. It returns 429 once the day's Gemini requests are used up. The room photo is deleted once it has been read, so upload it again to retry.
+
+`POST items/detect/discard` takes `{ photos }`, the photos of the drafts the user didn't keep, and deletes them from Cloudinary. It returns 204, or 409 without deleting anything if one of the photos belongs to an item or your profile.
 
 PATCH replaces the whole `photos` list and deletes any left-out photos from Cloudinary, so always send the full list.
 

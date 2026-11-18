@@ -4,7 +4,9 @@ import Item from '../models/item.js'
 import Loan from '../models/loan.js'
 import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
-import { deleteUnusedPhotos } from '../lib/cloudinary.js'
+import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
+import { detectItems } from '../lib/detectItems.js'
+import { cropBox, hasArea, uprightJpeg } from '../lib/photoCrops.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
 
@@ -46,6 +48,63 @@ router.post('/', async (req, res) => {
   const item = await Item.create({ ...fields, owner: req.userId })
   // A new item has no loans yet
   res.status(201).json({ message: 'OK', data: withAvailability(item, true) })
+})
+
+async function draftItem(image, detectedItem, userId) {
+  const crop = await cropBox(image, detectedItem.box_2d)
+  const photoUrl = await uploadPhoto(crop, userId)
+  return { name: detectedItem.name, description: detectedItem.description, photos: [photoUrl] }
+}
+
+// Drafts items from a room photo, the user sends the ones they keep to POST items
+router.post('/detect', async (req, res) => {
+  const photoUrl = req.body?.photoUrl
+  if (!isUserPhotoUrl(photoUrl, req.userId)) {
+    return res.status(400).json({ message: 'photoUrl must be a photo you uploaded', data: {} })
+  }
+  const response = await fetch(photoUrl)
+  if (!response.ok) {
+    return res.status(400).json({ message: "Couldn't download the photo", data: {} })
+  }
+  const image = await uprightJpeg(Buffer.from(await response.arrayBuffer()))
+  // The room photo is only needed for this request
+  await deleteUnusedPhotos([photoUrl])
+  let detectedItems
+  try {
+    detectedItems = await detectItems(image)
+  } catch (err) {
+    // Gemini caps requests per day for the whole project
+    if (err.status === 429) {
+      return res
+        .status(429)
+        .json({ message: 'Item detection is used up for today, try again tomorrow', data: {} })
+    }
+    // Drop Gemini's status so the error handler sends a 500 instead of passing it on
+    throw new Error('Gemini request failed', { cause: err })
+  }
+  const boxedItems = detectedItems.filter((item) => hasArea(item.box_2d))
+  const drafts = await Promise.all(boxedItems.map((item) => draftItem(image, item, req.userId)))
+  res.json({ message: 'OK', data: drafts })
+})
+
+// No owner filter needed since only the owner's items hold photos from their folder
+async function isPhotoInUse(photos, user) {
+  return photos.includes(user.photo) || Boolean(await Item.exists({ photos: { $in: photos } }))
+}
+
+// Deletes the crops of drafts the user didn't keep
+router.post('/detect/discard', async (req, res) => {
+  const photos = req.body?.photos
+  if (!Array.isArray(photos) || !photos.every((url) => isUserPhotoUrl(url, req.userId))) {
+    return res.status(400).json({ message: 'photos must be photos you uploaded', data: {} })
+  }
+  if (await isPhotoInUse(photos, req.user)) {
+    return res
+      .status(409)
+      .json({ message: 'Some photos belong to an item or your profile', data: {} })
+  }
+  await deletePhotos(photos)
+  res.status(204).end()
 })
 
 router.get('/', async (req, res) => {
