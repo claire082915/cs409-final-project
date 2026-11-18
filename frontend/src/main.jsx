@@ -32,6 +32,8 @@ const router = createHashRouter(
       <Route path="/login" element={<SignUpLoginPage />} />
       <Route path="/signup" element={<SignUpLoginPage />} />
       <Route path="/logout" element={<LogOutRoute />} />
+      {/* TEMP: dev preview of the verify email panel */}
+      {import.meta.env.DEV && <Route path="/preview-verify" element={<SignUpLoginPage />} />}
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/inventory" element={<InventoryPage />} />

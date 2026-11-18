@@ -47,7 +47,7 @@
 }
 
 .welcome-title span {
-  color: var(--sul-green);
+  color: var(--sul-orange);
 }
 
 .welcome-text {
@@ -65,13 +65,6 @@
   width: min(100%, 24rem);
   aspect-ratio: 1;
   margin-top: 2rem;
-}
-
-.welcome-image {
-  position: relative;
-  width: 72%;
-  height: auto;
-  border-radius: 1.25rem;
 }
 
 .spark-a {
@@ -126,8 +119,8 @@
 }
 
 .auth-tab.is-active {
-  color: var(--sul-green);
-  border-bottom-color: var(--sul-green);
+  color: var(--sul-orange);
+  border-bottom-color: var(--sul-orange);
 }
 
 /* Form */
@@ -199,7 +192,8 @@
   transform: none;
 }
 
-.auth-panel button.auth-google {
+/* White outlined buttons like Google sign in and resend email */
+.auth-panel button.button-light {
   margin-top: 0;
   color: var(--sul-ink);
   background: #fff;
@@ -212,6 +206,19 @@
     800 20px Manrope,
     sans-serif;
   color: var(--sul-ink);
+}
+
+.auth-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sul-text);
+}
+
+/* Own line so the address is easy to check for typos */
+.auth-text-email {
+  display: block;
+  color: color-mix(in srgb, var(--sul-ink), var(--sul-text));
 }
 
 .auth-message {
@@ -260,6 +267,45 @@
 }
 
 /* Password show/hide toggle */
+/* Fixed school domain as a gray segment joined to the NetID input */
+.netid-wrap {
+  display: flex;
+  border-radius: 0.65rem;
+  transition: box-shadow 0.15s ease;
+}
+
+.netid-wrap:focus-within {
+  box-shadow: 0 0 0 4px #357d7022;
+}
+
+.netid-wrap input {
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* The ring sits on the wrap so it goes around the segment too */
+.netid-wrap input:focus {
+  box-shadow: none;
+}
+
+.netid-suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  font-size: 14px;
+  color: var(--sul-muted);
+  background: #f1f5f2;
+  border: 1px solid var(--sul-border);
+  border-left: 0;
+  border-radius: 0 0.65rem 0.65rem 0;
+  transition: border-color 0.15s ease;
+}
+
+.netid-wrap:focus-within .netid-suffix {
+  border-color: var(--sul-green);
+}
+
 .password-wrap {
   position: relative;
 }
@@ -319,4 +365,70 @@
   .auth-card {
     padding: 1.25rem;
   }
+}
+
+/* Sample item cards in the welcome visual */
+.visual-cards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.visual-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 72%;
+  padding: 0.9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--sul-border);
+  border-radius: 1rem;
+  box-shadow: 0 14px 28px #244c3d1a;
+}
+
+.visual-card:nth-child(1) {
+  top: 8%;
+  left: 0;
+  transform: rotate(-4deg);
+}
+
+.visual-card:nth-child(2) {
+  top: 38%;
+  right: 0;
+  transform: rotate(3deg);
+}
+
+.visual-card:nth-child(3) {
+  top: 68%;
+  left: 8%;
+  transform: rotate(-2deg);
+}
+
+.visual-card-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  color: var(--sul-green);
+  background: var(--sul-green-soft);
+}
+
+.visual-card-name {
+  margin: 0;
+  font:
+    700 15px Manrope,
+    sans-serif;
+}
+
+.visual-card-status {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  color: var(--sul-muted);
+}
+
+.visual-card-status.is-on-loan {
+  color: var(--sul-orange);
 }
