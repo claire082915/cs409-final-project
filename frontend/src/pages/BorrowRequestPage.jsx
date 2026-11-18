@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Check, Clock3, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
+import { Check, Clock3, PackageOpen, RefreshCw, X } from 'lucide-react'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import Avatar from '../components/Avatar.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -127,9 +128,8 @@ export default function BorrowRequestPage() {
   return (
     <AppShell>
       <main className="requests-page">
-        <header className="requests-heading">
+        <header className="requests-heading page-heading">
           <div>
-            <p className="requests-eyebrow">YOUR LENDING</p>
             <h1>Borrow requests</h1>
             <p>Review requests from your community and decide what works for you.</p>
           </div>
@@ -196,9 +196,12 @@ export default function BorrowRequestPage() {
             <div className="request-list">
               {requests.map((request) => (
                 <article className="request-card" key={request._id}>
-                  <div className="request-person-avatar">
-                    <UserRound size={23} />
-                  </div>
+                  <Avatar
+                    photo={request.borrower?.photo}
+                    name={request.borrower?.displayName ?? ''}
+                    username={request.borrower?.username ?? ''}
+                    className="request-person-avatar"
+                  />
                   <div className="request-card-main">
                     <div className="request-card-top">
                       <div>
@@ -261,11 +264,13 @@ export default function BorrowRequestPage() {
                 <X size={18} />
               </button>
               <div className="approval-borrower">
-                <div className="request-person-avatar large">
-                  <UserRound size={27} />
-                </div>
+                <Avatar
+                  photo={selected.borrower?.photo}
+                  name={selected.borrower?.displayName ?? ''}
+                  username={selected.borrower?.username ?? ''}
+                  className="request-person-avatar large"
+                />
                 <div>
-                  <p className="requests-eyebrow">BORROW REQUEST</p>
                   <h2 id="approval-title">{borrowerName(selected.borrower)}</h2>
                   <p>
                     Wants to borrow your <strong>{selected.item?.name || 'item'}</strong>

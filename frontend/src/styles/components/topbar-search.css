@@ -22,8 +22,10 @@
   background: #eef5f3;
 }
 
-.search-thumb.is-person {
-  border-radius: 50%;
+.search-person-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
 }
 
 .search-thumb img {

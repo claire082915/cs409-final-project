@@ -226,13 +226,7 @@ export default function SignUpLoginPage() {
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [creatingAccount, setCreatingAccount] = useState(false)
-  const authState = useAuth()
-  // TEMP: show the verify panel with a sample user on the dev preview route
-  const isVerifyPreview = import.meta.env.DEV && pathname === '/preview-verify'
-  const { profile, setProfile, refreshUser, loading, error: profileError } = authState
-  const user = isVerifyPreview
-    ? { email: 'jsmith4@illinois.edu', emailVerified: false }
-    : authState.user
+  const { user, profile, setProfile, refreshUser, loading, error: profileError } = useAuth()
 
   if (user && profile && user.emailVerified) {
     return <Navigate to="/dashboard" replace />

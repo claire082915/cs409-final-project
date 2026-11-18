@@ -6,7 +6,7 @@ function MockDetailPage({ label, value }) {
   return (
     <AppShell>
       <main className="screen-scaffold">
-        <div className="screen-heading">
+        <div className="screen-heading page-heading">
           <h1>
             {label} for {value}
           </h1>

@@ -13,8 +13,8 @@ const msPerDay = 24 * 60 * 60 * 1000
 // Read routes show the item and both users instead of bare ids
 const loanDetails = [
   { path: 'item', select: 'name description photos deletedAt' },
-  { path: 'owner', select: 'username displayName' },
-  { path: 'borrower', select: 'username displayName' },
+  { path: 'owner', select: 'username displayName photo' },
+  { path: 'borrower', select: 'username displayName photo' },
 ]
 
 const router = Router()

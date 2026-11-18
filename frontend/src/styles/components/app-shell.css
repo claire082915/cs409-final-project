@@ -20,6 +20,7 @@ body:has(.app-shell) #root {
   display: grid;
   grid-template-columns: 246px minmax(0, 1fr);
   overflow: hidden;
+  transition: grid-template-columns 0.2s ease;
   background: #f5f8fa;
 }
 .app-shell-no-sidebar {
@@ -36,7 +37,10 @@ body:has(.app-shell) #root {
   background: linear-gradient(165deg, #0d4853, #073943 75%, #07343f);
 }
 .sidebar-brand {
-  padding: 0 9px 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 31px 9px;
 }
 .app-sidebar .logo {
   color: #fff;
@@ -83,36 +87,68 @@ body:has(.app-shell) #root {
   background: #f47742;
   font-size: 10px;
 }
-.sidebar-help {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding: 13px 10px;
-  border: 1px solid #ffffff22;
-  border-radius: 9px;
-}
-.help-icon {
-  width: 24px;
-  height: 24px;
+.sidebar-toggle {
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: #ffffff20;
-  font-weight: 700;
+  border: 0;
+  border-radius: 7px;
+  color: #c0d6d7;
+  background: none;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
-.sidebar-help strong,
-.sidebar-help small {
-  display: block;
-}
-.sidebar-help strong {
+.sidebar-toggle:hover {
   color: #fff;
-  font-size: 10px;
+  background: #ffffff1c;
 }
-.sidebar-help small {
-  margin-top: 3px;
-  color: #a8c4c5;
-  font-size: 9px;
+.is-sidebar-collapsed {
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+.is-sidebar-collapsed .app-sidebar {
+  padding-inline: 12px;
+}
+/* Stack the logo mark above the toggle since the row is too narrow for both */
+.is-sidebar-collapsed .sidebar-brand {
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 0;
+}
+.is-sidebar-collapsed .logo span,
+.is-sidebar-collapsed .sidebar-label {
+  display: none;
+}
+.is-sidebar-collapsed .sidebar-link {
+  position: relative;
+  justify-content: center;
+  padding: 0;
+}
+/* Shrink the badge into a corner of the icon since the label is gone */
+.is-sidebar-collapsed .sidebar-badge {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  min-width: 15px;
+  height: 15px;
+  font-size: 8px;
+}
+/* Title and subtitle at the top of every signed-in page */
+.page-heading {
+  margin-bottom: 25px;
+}
+.page-heading h1 {
+  margin: 0 0 6px;
+  color: #123c48;
+  font-size: clamp(27px, 3vw, 35px);
+  letter-spacing: -0.04em;
+}
+.page-heading h1 + p {
+  margin: 0;
+  color: #587076;
+  font-size: 13px;
 }
 .app-main {
   height: 100%;
@@ -211,21 +247,12 @@ body:has(.app-shell) #root {
   font:
     600 11px 'DM Sans',
     sans-serif;
+  white-space: nowrap;
 }
 .profile-avatar {
   width: 32px;
   height: 32px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 50%;
-  color: #86604b;
-  background: linear-gradient(145deg, #f3d7bf, #d7a88d);
-}
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-size: 12px;
 }
 .app-content {
   max-width: 1440px;
@@ -268,12 +295,6 @@ body:has(.app-shell) #root {
   }
   .app-content {
     padding: 27px 18px 35px;
-  }
-  .screen-heading {
-    margin-bottom: 20px;
-  }
-  .screen-heading h1 {
-    font-size: 24px;
   }
   .screen-heading p {
     max-width: 420px;

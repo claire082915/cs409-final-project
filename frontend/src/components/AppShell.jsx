@@ -1,36 +1,57 @@
 import {
+  ArrowLeftRight,
   Bell,
-  BookOpen,
   Boxes,
+  CircleUserRound,
+  Compass,
   Home,
+  Inbox,
   LogOut,
-  Search,
-  Settings,
-  Star,
-  UserRound,
-  HandHelping,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
+import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
 import TopbarSearch from './TopbarSearch.jsx'
 import '../styles/components/app-shell.css'
 
+// Links with a mobile label also show in the phone bottom bar
 const navigation = [
-  { label: 'Home', to: '/dashboard', icon: Home },
-  { label: 'My Items', to: '/inventory', icon: Boxes },
-  { label: 'Browse Items', to: '/browse', icon: Search },
-  { label: 'Borrow Requests', to: '/borrow-request', icon: HandHelping, badge: '3' },
-  { label: 'My Loans', to: '/loan-details', icon: BookOpen },
-  { label: 'Reputation', to: '/reputation', icon: Star },
-  { label: 'Settings', to: '/settings', icon: Settings },
+  { label: 'Home', mobileLabel: 'Home', to: '/dashboard', icon: Home },
+  { label: 'Browse Items', mobileLabel: 'Browse', to: '/browse', icon: Compass },
+  { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Boxes },
+  { label: 'My Loans', to: '/loan-details', icon: ArrowLeftRight },
+  {
+    label: 'Borrow Requests',
+    mobileLabel: 'Requests',
+    to: '/borrow-request',
+    icon: Inbox,
+    badge: '3',
+  },
+  { label: 'Account', to: '/account', icon: CircleUserRound },
 ]
+const mobileNavigation = navigation.filter((link) => link.mobileLabel)
+const COLLAPSED_KEY = 'sidebarCollapsed'
 
-function Sidebar() {
+function Sidebar({ collapsed, onToggle }) {
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
   return (
     <aside className="app-sidebar" aria-label="Main sidebar">
       <div className="sidebar-brand">
         <Logo light />
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <ToggleIcon size={17} strokeWidth={2.1} aria-hidden="true" />
+        </button>
       </div>
       <nav className="sidebar-nav" aria-label="Main navigation">
         {navigation.map(({ label, to, icon: Icon, badge }) => (
@@ -38,20 +59,14 @@ function Sidebar() {
             key={label}
             to={to}
             className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}
+            title={collapsed ? label : undefined}
           >
             <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
-            <span>{label}</span>
+            <span className="sidebar-label">{label}</span>
             {badge && <span className="sidebar-badge">{badge}</span>}
           </NavLink>
         ))}
       </nav>
-      <div className="sidebar-help">
-        <span className="help-icon">?</span>
-        <span>
-          <strong>Need a hand?</strong>
-          <small>Visit our help center</small>
-        </span>
-      </div>
     </aside>
   )
 }
@@ -66,10 +81,13 @@ function Topbar({ withSearch }) {
           <Bell size={18} />
           <i />
         </button>
-        <Link className="profile-button" to="/settings" aria-label="Open settings">
-          <span className="profile-avatar">
-            {profile.photo ? <img src={profile.photo} alt="" /> : <UserRound size={18} />}
-          </span>
+        <Link className="profile-button" to="/account" aria-label="Open account">
+          <Avatar
+            photo={profile.photo}
+            name={profile.displayName}
+            username={profile.username}
+            className="profile-avatar"
+          />
           <span className="profile-name">{profile.displayName}</span>
         </Link>
         <Link className="icon-button" to="/logout" aria-label="Log out">
@@ -81,31 +99,38 @@ function Topbar({ withSearch }) {
 }
 
 export default function AppShell({ children, withSidebar = true, withSearch = true }) {
+  // Remember the choice since each page mounts its own shell
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === 'true')
+
+  const toggleCollapsed = () => {
+    localStorage.setItem(COLLAPSED_KEY, String(!collapsed))
+    setCollapsed(!collapsed)
+  }
+
+  let shellClass = 'app-shell'
+  if (!withSidebar) {
+    shellClass += ' app-shell-no-sidebar'
+  } else if (collapsed) {
+    shellClass += ' is-sidebar-collapsed'
+  }
+
   return (
-    <div className={`app-shell${withSidebar ? '' : ' app-shell-no-sidebar'}`}>
-      {withSidebar && <Sidebar />}
+    <div className={shellClass}>
+      {withSidebar && <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />}
       <div className="app-main">
         <Topbar withSearch={withSearch} />
         <div className="app-content">{children}</div>
       </div>
       {withSidebar && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          {navigation.slice(0, 4).map(({ label, to, icon: Icon }) => (
+          {mobileNavigation.map(({ label, mobileLabel, to, icon: Icon }) => (
             <NavLink
               key={label}
               to={to}
               className={({ isActive }) => `mobile-nav-link${isActive ? ' is-active' : ''}`}
             >
               <Icon size={19} aria-hidden="true" />
-              <span>
-                {label === 'Browse Items'
-                  ? 'Browse'
-                  : label === 'My Items'
-                    ? 'Items'
-                    : label === 'Borrow Requests'
-                      ? 'Requests'
-                      : label}
-              </span>
+              <span>{mobileLabel}</span>
             </NavLink>
           ))}
         </nav>

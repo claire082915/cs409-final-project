@@ -2,7 +2,7 @@ import { Drill, Smartphone, Tent } from 'lucide-react'
 
 const SAMPLE_ITEMS = [
   { icon: Drill, name: 'Cordless drill', status: 'Available now', onLoan: false },
-  { icon: Tent, name: 'Tent', status: 'On loan, back Friday', onLoan: true },
+  { icon: Tent, name: 'Camping tent', status: 'On loan, back Friday', onLoan: true },
   { icon: Smartphone, name: 'iClicker', status: 'Available now', onLoan: false },
 ]
 

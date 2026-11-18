@@ -128,9 +128,8 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <main className="dashboard-page">
-        <div className="dashboard-heading">
+        <div className="dashboard-heading page-heading">
           <div>
-            <p className="dashboard-eyebrow">YOUR LENDR OVERVIEW</p>
             <h1>Hi {greeting}!</h1>
             <p>Here’s what’s happening with your items.</p>
           </div>
@@ -162,7 +161,6 @@ export default function DashboardPage() {
         <section className="dashboard-activity">
           <div className="activity-heading">
             <div>
-              <p className="dashboard-eyebrow">THE LATEST</p>
               <h2>Recent activity</h2>
             </div>
             <Link to="/loan-details">

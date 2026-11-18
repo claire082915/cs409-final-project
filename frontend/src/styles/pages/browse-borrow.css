@@ -6,26 +6,6 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 25px;
-}
-.browse-eyebrow {
-  margin: 0 0 5px;
-  color: #24816e;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-}
-.browse-heading h1 {
-  margin: 0 0 6px;
-  color: #123c48;
-  font-size: clamp(27px, 3vw, 35px);
-  letter-spacing: -0.04em;
-  text-transform: capitalize;
-}
-.browse-heading p:last-child {
-  margin: 0;
-  color: #7c9197;
-  font-size: 13px;
 }
 .browse-source {
   display: flex;
@@ -182,19 +162,11 @@
 }
 .browse-owner {
   overflow: hidden;
-  margin: 7px 0 5px;
+  margin: 7px 0 13px;
   color: #71888e;
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.browse-location {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 0 13px;
-  color: #8a9da2;
-  font-size: 10px;
 }
 .browse-request-button {
   display: inline-flex;

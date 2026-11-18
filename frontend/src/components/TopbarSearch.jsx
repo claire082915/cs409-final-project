@@ -9,8 +9,9 @@ import {
   ListBoxSection,
   Popover,
 } from 'react-aria-components'
-import { Package, Search, UserRound } from 'lucide-react'
+import { Package, Search } from 'lucide-react'
 import { apiFetch } from '../lib/api.js'
+import Avatar from './Avatar.jsx'
 import '../styles/components/form-controls.css'
 import '../styles/components/topbar-search.css'
 
@@ -37,10 +38,10 @@ const MOCK_PEOPLE = MOCK_ITEMS.map((item) => ({
   photo: '',
 }))
 
-function SearchThumb({ photo, icon: Icon, isPerson }) {
+function ItemThumb({ photo }) {
   return (
-    <span className={`search-thumb${isPerson ? ' is-person' : ''}`}>
-      {photo ? <img src={photo} alt="" /> : <Icon size={15} aria-hidden="true" />}
+    <span className="search-thumb">
+      {photo ? <img src={photo} alt="" /> : <Package size={15} aria-hidden="true" />}
     </span>
   )
 }
@@ -55,7 +56,7 @@ function ItemOption({ item }) {
       href={`#/item/${encodeURIComponent(item.name)}`}
       className="field-option"
     >
-      <SearchThumb photo={item.photos[0]} icon={Package} />
+      <ItemThumb photo={item.photos[0]} />
       <span className="search-text">
         <strong>{item.name}</strong>
         <small>
@@ -75,7 +76,12 @@ function PersonOption({ person }) {
       href={`#/profile/${encodeURIComponent(person.displayName)}`}
       className="field-option"
     >
-      <SearchThumb photo={person.photo} icon={UserRound} isPerson />
+      <Avatar
+        photo={person.photo}
+        name={person.displayName}
+        username={person.username}
+        className="search-person-avatar"
+      />
       <span className="search-text">
         <strong>{person.displayName}</strong>
         <small>@{person.username}</small>

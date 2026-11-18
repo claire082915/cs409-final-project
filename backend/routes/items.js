@@ -2,7 +2,6 @@ import { Router } from 'express'
 import mongoose from 'mongoose'
 import Item from '../models/item.js'
 import Loan from '../models/loan.js'
-import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
 import { detectItems } from '../lib/detectItems.js'
@@ -13,10 +12,6 @@ import { publicOwner } from '../lib/publicProfile.js'
 // Owner can't be changed
 const editableFields = ['name', 'description', 'photos']
 // Range of the Browse distance slider
-const MIN_MILES = 5
-const MAX_MILES = 100
-const DEFAULT_MILES = 10
-const METERS_PER_MILE = 1609.344
 
 const router = Router()
 router.use(requireUser)
@@ -119,60 +114,24 @@ router.get('/', async (req, res) => {
   res.json({ message: 'OK', data: itemsWithAvailability })
 })
 
-// Owners within the radius with their distance in meters, nearest first, not counting the caller
-function nearbyOwners(user, miles) {
-  return User.aggregate([
-    {
-      $geoNear: {
-        near: { type: 'Point', coordinates: [...user.location.coordinates] },
-        distanceField: 'distance',
-        maxDistance: miles * METERS_PER_MILE,
-        query: { _id: { $ne: user._id } },
-      },
-    },
-    {
-      $project: {
-        username: 1,
-        displayName: 1,
-        photo: 1,
-        'preferences.showProfile': 1,
-        distance: 1,
-      },
-    },
-  ])
-}
-
-// Registered before /:id so "nearby" isn't read as an item id
-router.get('/nearby', async (req, res) => {
-  const miles = Number(req.query.miles ?? DEFAULT_MILES)
-  if (!(miles >= MIN_MILES && miles <= MAX_MILES)) {
-    return res
-      .status(400)
-      .json({ message: `miles must be between ${MIN_MILES} and ${MAX_MILES}`, data: {} })
-  }
-  if (!req.user.location?.coordinates) {
-    return res
-      .status(400)
-      .json({ message: 'Add your ZIP code in Settings to see items near you', data: {} })
-  }
-  const owners = await nearbyOwners(req.user, miles)
-  const ownersById = new Map(owners.map((owner) => [String(owner._id), owner]))
-  // Newest first here, then the stable sort below keeps that order within the same distance
-  const items = await Item.find({ owner: { $in: [...ownersById.keys()] }, deletedAt: null }).sort({
-    createdAt: -1,
-  })
+// Registered before /:id so "browse" isn't read as an item id
+router.get('/browse', async (req, res) => {
+  const items = await Item.find({ owner: { $ne: req.user._id }, deletedAt: null })
+    .sort({ createdAt: -1 })
+    .populate('owner', 'username displayName photo preferences.showProfile')
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
-  const nearbyItems = []
+  const browseItems = []
   for (const item of items) {
-    const owner = ownersById.get(String(item.owner))
-    nearbyItems.push({
+    // Skip items whose owner profile was deleted by hand in the database
+    if (!item.owner) {
+      continue
+    }
+    browseItems.push({
       ...withAvailability(item, !loanedIds.has(item.id)),
-      owner: publicOwner(owner),
-      distanceMiles: Math.round((owner.distance / METERS_PER_MILE) * 10) / 10,
+      owner: publicOwner(item.owner),
     })
   }
-  nearbyItems.sort((a, b) => a.distanceMiles - b.distanceMiles)
-  res.json({ message: 'OK', data: nearbyItems })
+  res.json({ message: 'OK', data: browseItems })
 })
 
 router.get('/:id', async (req, res) => {

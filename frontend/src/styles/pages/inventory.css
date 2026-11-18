@@ -6,25 +6,6 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 28px;
-}
-.inventory-heading h1 {
-  margin: 3px 0 6px;
-  color: #123c48;
-  font-size: clamp(27px, 3vw, 35px);
-  letter-spacing: -0.04em;
-}
-.inventory-heading p:last-child {
-  margin: 0;
-  color: #7c9197;
-  font-size: 13px;
-}
-.inventory-eyebrow {
-  margin: 0;
-  color: #24816e;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
 }
 .inventory-add-button {
   display: inline-flex;

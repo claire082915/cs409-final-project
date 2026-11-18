@@ -7,7 +7,7 @@ import Rating from '../models/rating.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 
 const router = Router()
-const editableFields = ['username', 'displayName', 'city', 'zipCode', 'photo']
+const editableFields = ['username', 'displayName', 'campusArea', 'photo']
 const preferenceNames = ['borrowRequests', 'dueDateReminders', 'showProfile']
 
 // Copies the preferences that were sent, returns an error message when one isn't a boolean
@@ -36,6 +36,11 @@ async function reputation(userId) {
   return result ? { average: result.average, count: result.count } : null
 }
 
+// The signed in user's own profile, with their reputation so the Account page can show it
+async function withReputation(user) {
+  return { ...user.toJSON(), reputation: await reputation(user._id) }
+}
+
 // Called once after the first Firebase sign-in to pick a username
 router.post('/', requireIdToken, async (req, res) => {
   const { username, displayName } = req.body ?? {}
@@ -54,8 +59,8 @@ router.post('/', requireIdToken, async (req, res) => {
   res.status(201).json({ message: 'OK', data: user })
 })
 
-router.get('/me', requireUser, (req, res) => {
-  res.json({ message: 'OK', data: req.user })
+router.get('/me', requireUser, async (req, res) => {
+  res.json({ message: 'OK', data: await withReputation(req.user) })
 })
 
 // Email comes from Firebase, so it can't change here
@@ -82,7 +87,7 @@ router.patch('/me', requireUser, async (req, res) => {
   if (oldPhoto && oldPhoto !== req.user.photo) {
     await deleteUnusedPhotos([oldPhoto])
   }
-  res.json({ message: 'OK', data: req.user })
+  res.json({ message: 'OK', data: await withReputation(req.user) })
 })
 
 router.get('/:username', requireUser, async (req, res) => {

@@ -156,9 +156,8 @@ export default function InventoryPage() {
   return (
     <AppShell>
       <main className="inventory-page">
-        <div className="inventory-heading">
+        <div className="inventory-heading page-heading">
           <div>
-            <p className="inventory-eyebrow">YOUR COLLECTION</p>
             <h1>My Items</h1>
             <p>Manage the things you’re happy to lend to your community.</p>
           </div>
@@ -266,7 +265,6 @@ export default function InventoryPage() {
             >
               <div className="item-modal-heading">
                 <div>
-                  <p className="inventory-eyebrow">GROW YOUR COLLECTION</p>
                   <h2 id="item-modal-title">Add an item</h2>
                 </div>
                 <button

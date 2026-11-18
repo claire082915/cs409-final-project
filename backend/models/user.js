@@ -4,6 +4,25 @@ import zipcodes from 'zipcodes'
 const ZIP_CODE_PATTERN = /^\d{5}$/
 import { isUserPhotoUrl } from '../lib/cloudinary.js'
 
+// University Housing's halls and apartments, then off campus areas
+export const CAMPUS_AREAS = [
+  'Ikenberry Commons (Ike)',
+  'Illinois Street (ISR)',
+  'Lincoln Avenue (LAR)',
+  'Allen Hall',
+  'Busey-Evans',
+  'Pennsylvania Avenue (PAR)',
+  'Florida Avenue (FAR)',
+  'Sherman Hall',
+  'Daniels Hall',
+  'Orchard Downs',
+  'Goodwin-Green',
+  'Ashton Woods',
+  'Campustown',
+  'Champaign',
+  'Urbana',
+]
+
 const userSchema = new mongoose.Schema(
   {
     firebaseUid: { type: String, required: true, unique: true },
@@ -21,6 +40,11 @@ const userSchema = new mongoose.Schema(
       ],
     },
     displayName: { type: String, required: true, trim: true },
+    // Where on campus the user is, an empty string clears it
+    campusArea: {
+      type: String,
+      enum: { values: ['', ...CAMPUS_AREAS], message: 'Pick a campus area from the list' },
+    },
     city: { type: String, trim: true },
     // Five digits is enough to look up a location for distance, so ZIP+4 is not accepted
     zipCode: { type: String, trim: true, match: [ZIP_CODE_PATTERN, 'ZIP code must be 5 digits'] },
@@ -40,7 +64,7 @@ const userSchema = new mongoose.Schema(
         message: 'Profile photo must be uploaded by you',
       },
     },
-    // Notification and privacy choices from Settings
+    // Notification and privacy choices from the Account page
     preferences: {
       borrowRequests: { type: Boolean, default: true },
       dueDateReminders: { type: Boolean, default: true },

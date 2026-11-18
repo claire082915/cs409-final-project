@@ -13,18 +13,17 @@ import LendingApprovalPage from './pages/LendingApprovalPage.jsx'
 import LoanDetailsPage from './pages/LoanDetailsPage.jsx'
 import ReminderEmailPage from './pages/ReminderEmailPage.jsx'
 import ReturnConfirmationPage from './pages/ReturnConfirmationPage.jsx'
-import ReputationPage from './pages/ReputationPage.jsx'
 import MobileResponsivePage from './pages/MobileResponsivePage.jsx'
 import { AuthProvider } from './auth/AuthContext.jsx'
 import RequireAuth from './auth/RequireAuth.jsx'
 import LogOutRoute from './auth/LogOutRoute.jsx'
-import SettingsPage from './pages/SettingsPage.jsx'
+import AccountPage from './pages/AccountPage.jsx'
 import ProfilePage, { ItemPage } from './pages/ProfilePage.jsx'
 import { warmApi } from './lib/api.js'
 
 warmApi()
 
-// A data router so pages like Settings can block navigation with useBlocker
+// A data router so pages like Account can block navigation with useBlocker
 const router = createHashRouter(
   createRoutesFromElements(
     <>
@@ -32,8 +31,6 @@ const router = createHashRouter(
       <Route path="/login" element={<SignUpLoginPage />} />
       <Route path="/signup" element={<SignUpLoginPage />} />
       <Route path="/logout" element={<LogOutRoute />} />
-      {/* TEMP: dev preview of the verify email panel */}
-      {import.meta.env.DEV && <Route path="/preview-verify" element={<SignUpLoginPage />} />}
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
@@ -43,9 +40,8 @@ const router = createHashRouter(
         <Route path="/loan-details" element={<LoanDetailsPage />} />
         <Route path="/reminder-email" element={<ReminderEmailPage />} />
         <Route path="/return-confirmation" element={<ReturnConfirmationPage />} />
-        <Route path="/reputation" element={<ReputationPage />} />
         <Route path="/mobile" element={<MobileResponsivePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="/profile/:displayName" element={<ProfilePage />} />
         <Route path="/item/:itemName" element={<ItemPage />} />
       </Route>
