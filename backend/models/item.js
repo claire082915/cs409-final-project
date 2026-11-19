@@ -16,6 +16,9 @@ export const ITEM_CATEGORIES = [
   'Other',
 ]
 
+// Facebook Marketplace's used item conditions, same list as the frontend's itemConditions.js
+export const ITEM_CONDITIONS = ['New', 'Like new', 'Good', 'Fair']
+
 // Availability comes from loans
 const itemSchema = new mongoose.Schema(
   {
@@ -26,6 +29,12 @@ const itemSchema = new mongoose.Schema(
       type: String,
       enum: { values: ITEM_CATEGORIES, message: 'Pick a category from the list' },
       default: 'Other',
+    },
+    // Null when the owner didn't say, the enum check skips it
+    condition: {
+      type: String,
+      enum: { values: ITEM_CONDITIONS, message: 'Pick a condition from the list' },
+      default: null,
     },
     // Cloudinary URLs from the owner's folder
     photos: {

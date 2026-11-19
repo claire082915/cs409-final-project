@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
 import Item from '../models/item.js'
-import Loan from '../models/loan.js'
+import Loan, { ACTIVE_STATUSES } from '../models/loan.js'
+import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
 import { detectItems } from '../lib/detectItems.js'
@@ -10,7 +11,7 @@ import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.j
 import { publicOwner } from '../lib/publicProfile.js'
 
 // Owner can't be changed
-const editableFields = ['name', 'description', 'category', 'photos']
+const editableFields = ['name', 'description', 'category', 'condition', 'photos']
 
 const router = Router()
 router.use(requireUser)
@@ -51,6 +52,7 @@ async function draftItem(image, detectedItem, userId) {
     name: detectedItem.name,
     description: detectedItem.description,
     category: detectedItem.category,
+    condition: detectedItem.condition,
     photos: [photoUrl],
   }
 }
@@ -118,24 +120,69 @@ router.get('/', async (req, res) => {
   res.json({ message: 'OK', data: itemsWithAvailability })
 })
 
+// A multiple of the 3, 2 and 1 column grids so every page fills whole rows
+const BROWSE_PAGE_SIZE = 12
+
+// A repeated query param arrives as an array, a single one as a string
+function listParam(value) {
+  if (value === undefined) {
+    return []
+  }
+  return [].concat(value)
+}
+
+// Lent items are left out since nobody can borrow them right now
+async function browseFilter(userId, query) {
+  const loanedIds = await Loan.distinct('item', { status: { $in: ACTIVE_STATUSES } })
+  const filter = { owner: { $ne: userId }, deletedAt: null, _id: { $nin: loanedIds } }
+  const text = typeof query.q === 'string' ? query.q.trim() : ''
+  if (text) {
+    // Escape so characters like "." or "(" match themselves
+    const pattern = new RegExp(RegExp.escape(text), 'i')
+    filter.$or = [{ name: pattern }, { description: pattern }]
+  }
+  const categories = listParam(query.category)
+  if (categories.length) {
+    // Older items have no category stored and read back as the default Other
+    const storedCategories = categories.includes('Other') ? [...categories, null] : categories
+    filter.category = { $in: storedCategories }
+  }
+  const areas = listParam(query.area)
+  if (areas.length) {
+    // Owners who hid their profile only show under All areas
+    const ownerIds = await User.distinct('_id', {
+      campusArea: { $in: areas },
+      'preferences.showProfile': { $ne: false },
+    })
+    filter.owner.$in = ownerIds
+  }
+  return filter
+}
+
 // Registered before /:id so "browse" isn't read as an item id
 router.get('/browse', async (req, res) => {
-  const items = await Item.find({ owner: { $ne: req.user._id }, deletedAt: null })
-    .sort({ createdAt: -1 })
-    .populate('owner', 'username displayName photo campusArea preferences.showProfile')
-  const loanedIds = await loanedItemIds(items.map((item) => item._id))
+  const skip = Number(req.query.skip ?? 0)
+  if (!Number.isInteger(skip) || skip < 0) {
+    return res.status(400).json({ message: 'skip must be a whole number', data: {} })
+  }
+  const filter = await browseFilter(req.user._id, req.query)
+  const [items, total] = await Promise.all([
+    Item.find(filter)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skip)
+      .limit(BROWSE_PAGE_SIZE)
+      .populate('owner', 'username displayName photo campusArea preferences.showProfile'),
+    Item.countDocuments(filter),
+  ])
   const browseItems = []
   for (const item of items) {
     // Skip items whose owner profile was deleted by hand in the database
     if (!item.owner) {
       continue
     }
-    browseItems.push({
-      ...withAvailability(item, !loanedIds.has(item.id)),
-      owner: publicOwner(item.owner),
-    })
+    browseItems.push({ ...withAvailability(item, true), owner: publicOwner(item.owner) })
   }
-  res.json({ message: 'OK', data: browseItems })
+  res.json({ message: 'OK', data: { items: browseItems, total } })
 })
 
 router.get('/:id', async (req, res) => {
@@ -144,6 +191,13 @@ router.get('/:id', async (req, res) => {
 
 router.patch('/:id', requireOwner, async (req, res) => {
   const body = req.body ?? {}
+  // The borrower took it in the condition it had when the loan started
+  const changesCondition = body.condition !== undefined && body.condition !== req.item.condition
+  if (changesCondition && (await isOnLoan(req.item._id))) {
+    return res
+      .status(409)
+      .json({ message: "Can't change the condition while it's on loan", data: {} })
+  }
   const oldPhotos = [...req.item.photos]
   for (const field of editableFields) {
     if (body[field] !== undefined) {

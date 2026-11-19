@@ -27,19 +27,19 @@
   outline: 0;
 }
 .search-section-toggle small {
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
 }
 .search-section-toggle[data-focus-visible] {
   border-radius: 4px;
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 3px;
 }
 .search-section-chevron {
   align-self: center;
   margin-right: -3px;
-  color: #c4521f;
+  color: var(--brand-orange);
   transition: transform 0.16s;
 }
 .search-section[data-expanded] .search-section-chevron {
@@ -47,7 +47,7 @@
 }
 .search-item-lent {
   margin: 0;
-  color: #a9461a;
+  color: var(--brand-orange-dark);
   font-size: 13px;
 }
 .search-people {
@@ -63,7 +63,7 @@
   border: 1px solid #e4ecee;
   border-radius: 11px;
   color: inherit;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 15px #17455108;
   text-decoration: none;
   transition: box-shadow 0.18s;
@@ -72,7 +72,7 @@
   box-shadow: 0 9px 22px #17455112;
 }
 .search-person:focus-visible {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 .search-person-photo {
@@ -94,7 +94,7 @@
   font-size: 15px;
 }
 .search-person-text small {
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .search-person-text small {
@@ -119,7 +119,7 @@
   gap: 9px;
   border: 1px dashed #cbdadc;
   border-radius: 12px;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 14px;
 }
 .search-empty svg {
@@ -128,4 +128,25 @@
 .search-empty strong {
   color: #315c65;
   font-size: 15px;
+}
+/* Same look as Clear filters on Browse */
+.search-show-all {
+  min-height: 40px;
+  margin-top: 18px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  color: #3f5f66;
+  background: #eef3f4;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.search-show-all:hover {
+  background: #e2eaec;
+}
+.search-show-all:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
 }

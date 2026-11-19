@@ -41,23 +41,23 @@ Every request except `health` needs an `Authorization: Bearer <Firebase ID token
 
 Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
 
-| Endpoint               | Method | Action                                       |
-| ---------------------- | ------ | -------------------------------------------- |
-| `health`               | GET    | Check the server is up                       |
-| `items`                | POST   | Create an item                               |
-| `items?owner=:id`      | GET    | List a user's items, newest first            |
-| `items/detect`         | POST   | Draft items from a room photo                |
-| `items/detect/discard` | POST   | Delete the photos of unkept drafts           |
-| `items/browse`         | GET    | List other users' items, newest first        |
-| `items/:id`            | GET    | Get an item                                  |
-|                        | PATCH  | Update name, description, category or photos |
-|                        | DELETE | Delete an item                               |
-| `search?q=:text`       | GET    | Search items and people                      |
-| `uploads/signature`    | POST   | Sign a photo upload                          |
-| `users`                | POST   | Create your profile                          |
-| `users/me`             | GET    | View your own profile                        |
-|                        | PATCH  | Update your profile                          |
-| `users/:username`      | GET    | View a user's profile                        |
+| Endpoint               | Method | Action                                                  |
+| ---------------------- | ------ | ------------------------------------------------------- |
+| `health`               | GET    | Check the server is up                                  |
+| `items`                | POST   | Create an item                                          |
+| `items?owner=:id`      | GET    | List a user's items, newest first                       |
+| `items/detect`         | POST   | Draft items from a room photo                           |
+| `items/detect/discard` | POST   | Delete the photos of unkept drafts                      |
+| `items/browse`         | GET    | List other users' items, newest first                   |
+| `items/:id`            | GET    | Get an item                                             |
+|                        | PATCH  | Update name, description, category, condition or photos |
+|                        | DELETE | Delete an item                                          |
+| `search?q=:text`       | GET    | Search items and people                                 |
+| `uploads/signature`    | POST   | Sign a photo upload                                     |
+| `users`                | POST   | Create your profile                                     |
+| `users/me`             | GET    | View your own profile                                   |
+|                        | PATCH  | Update your profile                                     |
+| `users/:username`      | GET    | View a user's profile                                   |
 
 | Endpoint            | Method | Action                                |
 | ------------------- | ------ | ------------------------------------- |
@@ -76,19 +76,21 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 
 ### Items
 
-| Field         | Type     | Notes             |
-| ------------- | -------- | ----------------- |
-| `name`        | string   | Required for POST |
-| `description` | string   | Optional          |
-| `photos`      | string[] | Cloudinary URLs   |
+| Field         | Type     | Notes                                                          |
+| ------------- | -------- | -------------------------------------------------------------- |
+| `name`        | string   | Required for POST                                              |
+| `description` | string   | Optional                                                       |
+| `category`    | string   | One of the categories in `models/item.js`, defaults to `Other` |
+| `condition`   | string   | `New`, `Like new`, `Good` or `Fair`, or `null` when not set    |
+| `photos`      | string[] | Cloudinary URLs                                                |
 
-Item responses also include `available`, which is `false` while the item is on loan.
+Item responses also include `available`, which is `false` while the item is on loan. Changing `condition` fails with 409 while the item is on loan, since the borrower took it as it was.
 
-`GET items/browse` lists other users' items, newest first, each with `available`. Each item also has `owner` as `{ username, displayName, photo, campusArea }`, or `null` when the owner turned off `showProfile`.
+`GET items/browse` returns `{ items, total }`, other users' items 12 at a time, newest first, leaving out items on loan. Pass `skip` to get the next page, and `total` counts every match. `q` matches the name or description, ignoring case. `category` and `area` filter by category and by the owner's campus area, and can repeat, like `?category=Books&category=Games`. Owners with `showProfile` off only show without an `area` filter. Each item has `owner` as `{ username, displayName, photo, campusArea }`, or `null` when the owner turned off `showProfile`.
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
 
-`POST items/detect` takes `{ photoUrl }`, a photo of a room uploaded to your folder (see [Photos](#photos)). Gemini finds up to 20 items worth lending, most lendable first, and each one is cropped out and uploaded to your folder. It returns drafts as `{ name, description, photos }` without saving them, so send the ones the user keeps to `POST items`. It can take a while, so show a loader. It returns 429 once the day's Gemini requests are used up. The room photo is deleted once it has been read, so upload it again to retry.
+`POST items/detect` takes `{ photoUrl }`, a photo of a room uploaded to your folder (see [Photos](#photos)). Gemini finds up to 20 items worth lending, most lendable first, and each one is cropped out and uploaded to your folder. It returns drafts as `{ name, description, category, condition, photos }` without saving them, so send the ones the user keeps to `POST items`. It can take a while, so show a loader. It returns 429 once the day's Gemini requests are used up. The room photo is deleted once it has been read, so upload it again to retry.
 
 `POST items/detect/discard` takes `{ photos }`, the photos of the drafts the user didn't keep, and deletes them from Cloudinary. It returns 204, or 409 without deleting anything if one of the photos belongs to an item or your profile.
 
@@ -163,7 +165,9 @@ With `showProfile` off, other users can't see your profile or find you in search
 
 ### Search
 
-`GET search?q=camera` returns `{ items, people }`, up to 5 of each, matching `q` anywhere in the text and ignoring case. `limit` asks for more, from 1 to 50, for a full results page. `items` are other users' items whose name matches, newest first, each with `available` and `owner` like `items/browse`. `people` are other users whose username or display name matches, as `{ username, displayName, photo, campusArea, reputation }`, leaving out anyone with `showProfile` off. A missing or blank `q` returns 400, and a `limit` outside 1 to 50 returns 400.
+`GET search?q=camera` returns `{ items, people, itemTotal, peopleTotal }`, up to 5 of each plus the number of matches in each, matching `q` anywhere in the text and ignoring case. `limit` asks for more, from 1 to 50, for a full results page. `items` are other users' items whose name matches, newest first, each with `available` and `owner` like `items/browse`. `people` are other users whose username or display name matches, as `{ username, displayName, photo, campusArea, reputation }`, leaving out anyone with `showProfile` off. A missing or blank `q` returns 400, and a `limit` outside 1 to 50 returns 400.
+
+Pass `skip` to get the next page of results, and `type=items` or `type=people` to fetch only one section.
 
 A `q` starting with `@` only looks up usernames that start with the rest, so `@may` finds `maya_chen` and returns no items.
 

@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useInView } from 'react-intersection-observer'
+import { useDebounce } from 'use-debounce'
+import { uniqBy } from 'lodash-es'
+import { toast } from 'sonner'
 import { Check, PackageOpen, Search, X } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
-import CategoryTag from '../components/CategoryTag.jsx'
+import ItemTags from '../components/ItemTags.jsx'
 import OwnerDetails from '../components/OwnerDetails.jsx'
 import FilterMenu, { describeSelection } from '../components/FilterMenu.jsx'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
@@ -12,11 +16,42 @@ import { apiFetch } from '../lib/api.js'
 import { MOCK_ITEMS } from '../lib/mockItems.js'
 import '../styles/pages/browse-borrow.css'
 
-async function loadBrowseItems(source) {
-  if (source === 'mock') {
-    return MOCK_ITEMS
+// Same as the backend's page size so mock data scrolls the same way
+const MOCK_PAGE_SIZE = 12
+// Waits for a pause in typing before asking the backend
+const SEARCH_DELAY_MS = 300
+
+// Mirrors the backend's browse filter for mock data
+function matchesFilters(item, { query, categories, areas }) {
+  const matchesQuery = `${item.name} ${item.description}`
+    .toLowerCase()
+    .includes(query.toLowerCase())
+  const matchesCategory = categories.size === 0 || categories.has(item.category)
+  // Owners with no area or a hidden profile only show under All areas
+  const matchesArea = areas.size === 0 || areas.has(item.owner?.campusArea)
+  return item.available !== false && matchesQuery && matchesCategory && matchesArea
+}
+
+function browseParams({ query, categories, areas }, skip) {
+  const params = new URLSearchParams({ skip })
+  if (query) {
+    params.set('q', query)
   }
-  return apiFetch('items/browse')
+  for (const category of categories) {
+    params.append('category', category)
+  }
+  for (const area of areas) {
+    params.append('area', area)
+  }
+  return params
+}
+
+async function loadBrowsePage(source, filters, skip) {
+  if (source === 'mock') {
+    const matches = MOCK_ITEMS.filter((item) => matchesFilters(item, filters))
+    return { items: matches.slice(skip, skip + MOCK_PAGE_SIZE), total: matches.length }
+  }
+  return apiFetch(`items/browse?${browseParams(filters, skip)}`)
 }
 
 // Tells an empty catalog apart from filters that match nothing
@@ -44,51 +79,68 @@ function BrowseEmptyState({ noItems, onClearFilters }) {
 export default function BrowseBorrowPage() {
   const [source, setSource] = useState(() => localStorage.getItem('lendrBrowseSource') || 'mock')
   const [items, setItems] = useState([])
+  const [total, setTotal] = useState(0)
+  // Results fetched so far, counting repeats, so paging always moves forward
+  const [nextSkip, setNextSkip] = useState(0)
   const [query, setQuery] = useState('')
+  const [debouncedQuery] = useDebounce(query.trim(), SEARCH_DELAY_MS)
   const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [selectedAreas, setSelectedAreas] = useState(new Set())
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  // Bumped on each new search so a slow page from the old one is dropped
+  const searchId = useRef(0)
+  const { ref: endRef, inView: isEndInView } = useInView({ rootMargin: '400px' })
+
+  const filters = { query: debouncedQuery, categories: selectedCategories, areas: selectedAreas }
+  const hasFilters = debouncedQuery !== '' || selectedCategories.size > 0 || selectedAreas.size > 0
 
   useEffect(() => {
     localStorage.setItem('lendrBrowseSource', source)
-    let cancelled = false
+    const id = ++searchId.current
     setLoading(true)
     setError('')
-    loadBrowseItems(source)
-      .then((data) => {
-        if (!cancelled) setItems(data)
+    loadBrowsePage(source, filters, 0)
+      .then((page) => {
+        if (id !== searchId.current) return
+        setItems(page.items)
+        setTotal(page.total)
+        setNextSkip(page.items.length)
       })
       .catch((err) => {
-        if (!cancelled) {
-          setItems([])
-          setError(err.message)
-        }
+        if (id !== searchId.current) return
+        setItems([])
+        setTotal(0)
+        setNextSkip(0)
+        setError(err.message)
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (id === searchId.current) setLoading(false)
       })
-    return () => {
-      cancelled = true
-    }
-  }, [source])
+  }, [source, debouncedQuery, selectedCategories, selectedAreas])
 
-  const visibleItems = useMemo(
-    () =>
-      items.filter((item) => {
-        const matchesQuery = `${item.name} ${item.description}`
-          .toLowerCase()
-          .includes(query.toLowerCase())
-        const matchesCategory =
-          selectedCategories.size === 0 || selectedCategories.has(item.category)
-        // Owners with no area or a hidden profile only show under All areas
-        const matchesArea = selectedAreas.size === 0 || selectedAreas.has(item.owner?.campusArea)
-        return item.available !== false && matchesQuery && matchesCategory && matchesArea
-      }),
-    [items, query, selectedCategories, selectedAreas],
-  )
+  // Runs again after each page while the end of the grid stays in view
+  useEffect(() => {
+    if (!isEndInView || loading || loadingMore || nextSkip >= total) {
+      return
+    }
+    const id = searchId.current
+    setLoadingMore(true)
+    loadBrowsePage(source, filters, nextSkip)
+      .then((page) => {
+        if (id !== searchId.current) return
+        // Skip paging can repeat an item when the list shifts mid-scroll, so keep the first copy
+        setItems((current) => uniqBy([...current, ...page.items], '_id'))
+        setNextSkip((skip) => skip + page.items.length)
+        // The list might have grown or shrunk since the first page
+        setTotal(page.total)
+      })
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoadingMore(false))
+  }, [isEndInView, loading, loadingMore, nextSkip, total])
 
   return (
     <AppShell withSearch={false}>
@@ -169,14 +221,14 @@ export default function BrowseBorrowPage() {
               : describeSelection(selectedCategories, 'All categories', 'categories')}
           </span>
           <small>
-            {visibleItems.length} {visibleItems.length === 1 ? 'item' : 'items'}
+            {total} {total === 1 ? 'item' : 'items'}
           </small>
         </div>
         {loading ? (
           <AppLoader inline label="Loading items…" />
-        ) : visibleItems.length ? (
+        ) : items.length ? (
           <section className="browse-grid" aria-label="Available items">
-            {visibleItems.map((item) => (
+            {items.map((item) => (
               <article className="browse-card" key={item._id}>
                 <div className="browse-photo">
                   {item.photos?.[0] ? (
@@ -184,7 +236,7 @@ export default function BrowseBorrowPage() {
                   ) : (
                     <PackageOpen size={35} aria-hidden="true" />
                   )}
-                  <CategoryTag category={item.category} />
+                  <ItemTags category={item.category} condition={item.condition} />
                 </div>
                 <div className="browse-card-body">
                   <h2 className="browse-card-title">
@@ -209,7 +261,7 @@ export default function BrowseBorrowPage() {
           </section>
         ) : (
           <BrowseEmptyState
-            noItems={items.length === 0}
+            noItems={!hasFilters}
             onClearFilters={() => {
               setQuery('')
               setSelectedCategories(new Set())
@@ -217,6 +269,9 @@ export default function BrowseBorrowPage() {
             }}
           />
         )}
+        {/* Loads the next page as it nears the viewport */}
+        <div ref={endRef} />
+        {loadingMore && <AppLoader inline label="Loading more items..." />}
         {selectedItem && (
           <BorrowItemDialog
             item={selectedItem}

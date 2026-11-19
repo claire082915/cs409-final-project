@@ -83,7 +83,7 @@
 /* ---------- Right: white card ---------- */
 .auth-card {
   padding: 1.75rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #eff2ee;
   border-radius: 1.25rem;
   box-shadow: 0 22px 40px #244c3d21;
@@ -180,7 +180,7 @@
 
 .auth-card input:focus {
   outline: none;
-  background: #fff;
+  background: var(--surface);
   border-color: var(--sul-green);
   box-shadow: 0 0 0 4px #357d7022;
 }
@@ -212,7 +212,7 @@
 .auth-panel button.button-light {
   margin-top: 0;
   color: var(--sul-ink);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--sul-border);
 }
 
@@ -245,7 +245,7 @@
 }
 
 .auth-error {
-  color: #a5402a;
+  color: var(--error);
   background: #fdeee7;
 }
 
@@ -397,7 +397,7 @@
   gap: 0.85rem;
   width: 72%;
   padding: 0.9rem 1rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--sul-border);
   border-radius: 1rem;
   box-shadow: 0 14px 28px #244c3d1a;

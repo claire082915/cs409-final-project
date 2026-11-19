@@ -10,7 +10,7 @@
   padding: 4px;
   border: 1px solid #dfe8eb;
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 8px 20px #17455114;
 }
 
@@ -76,7 +76,7 @@
 
 /* Orange tick, more specific than the grey menu icon rule */
 .field-option .filter-menu-check svg {
-  color: #c4521f;
+  color: var(--brand-orange);
 }
 
 .field-option[data-disabled],
@@ -100,7 +100,7 @@
   padding: 0 10px 0 4px;
   border: 1px solid #dfe8eb;
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .date-picker-group[data-focus-within] {
@@ -217,7 +217,7 @@
 
 .calendar-cell[data-selected] {
   color: #fff;
-  background: #0c5865;
+  background: var(--brand-teal);
 }
 
 .calendar-cell[data-disabled],

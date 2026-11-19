@@ -6,7 +6,7 @@ import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
-import CategoryTag from '../components/CategoryTag.jsx'
+import ItemTags from '../components/ItemTags.jsx'
 import Reputation from '../components/Reputation.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -21,7 +21,7 @@ function ProfileItem({ item, onOpen }) {
     <article className="browse-card">
       <div className="browse-photo">
         {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={30} />}
-        <CategoryTag category={item.category} />
+        <ItemTags category={item.category} condition={item.condition} />
       </div>
       <div className="browse-card-body">
         <h3 className="browse-card-title">

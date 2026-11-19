@@ -16,7 +16,7 @@
 
 /* Each text color is at least 6.5:1 on its background */
 .avatar-color-0 {
-  color: #0c5865;
+  color: var(--brand-teal);
   background: #dcebe7;
 }
 

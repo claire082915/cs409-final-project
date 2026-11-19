@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ImagePlus, Plus, PackageOpen, X } from 'lucide-react'
+import { ImagePlus, Plus, PackageOpen, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
-import CategoryTag from '../components/CategoryTag.jsx'
+import ItemTags from '../components/ItemTags.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
+import { ITEM_CONDITIONS, NO_CONDITION } from '../lib/itemConditions.js'
 import SelectMenu from '../components/SelectMenu.jsx'
+import FilterMenu from '../components/FilterMenu.jsx'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
 import { MOCK_INVENTORY } from '../lib/mockInventory.js'
@@ -25,6 +27,7 @@ function formFromItem(item) {
   return {
     name: item?.name ?? '',
     category: item?.category ?? DEFAULT_CATEGORY,
+    condition: item?.condition ?? NO_CONDITION,
     description: item?.description ?? '',
   }
 }
@@ -34,6 +37,8 @@ export default function InventoryPage() {
   const [source, setSource] = useState(() => localStorage.getItem('lendrInventorySource') || 'mock')
   const [items, setItems] = useState(MOCK_INVENTORY)
   const [tab, setTab] = useState('available')
+  const [query, setQuery] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -99,6 +104,8 @@ export default function InventoryPage() {
     const fields = {
       name: form.name.trim(),
       category: form.category,
+      // The picker needs a text option, the backend stores a missing condition as null
+      condition: form.condition === NO_CONDITION ? null : form.condition,
       description: form.description.trim(),
     }
     if (!fields.name) {
@@ -187,10 +194,16 @@ export default function InventoryPage() {
 
   const visibleItems = useMemo(
     () =>
-      items.filter((item) =>
-        tab === 'available' ? item.available !== false : item.available === false,
-      ),
-    [items, tab],
+      items.filter((item) => {
+        const matchesTab = tab === 'available' ? item.available !== false : item.available === false
+        const matchesQuery = `${item.name} ${item.description}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+        const matchesCategory =
+          selectedCategories.size === 0 || selectedCategories.has(item.category)
+        return matchesTab && matchesQuery && matchesCategory
+      }),
+    [items, tab, query, selectedCategories],
   )
   const availableCount = items.filter((item) => item.available !== false).length
   const lentCount = items.length - availableCount
@@ -232,6 +245,28 @@ export default function InventoryPage() {
             selected={tab}
             onChange={setTab}
           />
+          <label className="inventory-search">
+            <Search size={17} aria-hidden="true" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search your items"
+              aria-label="Search your items"
+            />
+            {query && (
+              <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
+                <X size={15} />
+              </button>
+            )}
+            <FilterMenu
+              options={ITEM_CATEGORIES}
+              selected={selectedCategories}
+              onChange={setSelectedCategories}
+              allLabel="All categories"
+              pluralLabel="categories"
+              label="category"
+            />
+          </label>
           <div className="inventory-source" aria-label="Inventory data source">
             <span>Data</span>
             <button
@@ -268,7 +303,7 @@ export default function InventoryPage() {
                   ) : (
                     <PackageOpen size={34} />
                   )}
-                  <CategoryTag category={item.category} />
+                  <ItemTags category={item.category} condition={item.condition} />
                 </div>
                 <div className="inventory-card-copy">
                   <strong>
@@ -290,8 +325,14 @@ export default function InventoryPage() {
         ) : (
           <div className="inventory-empty">
             <PackageOpen size={28} />
-            <strong>No {tab === 'available' ? 'available' : 'lent'} items</strong>
-            <span>Your items will appear here.</span>
+            {query || selectedCategories.size > 0 ? (
+              <strong>No matching items</strong>
+            ) : (
+              <>
+                <strong>No {tab === 'available' ? 'available' : 'lent'} items</strong>
+                <span>Your items will appear here.</span>
+              </>
+            )}
           </div>
         )}
         {isFormOpen && (
@@ -373,6 +414,23 @@ export default function InventoryPage() {
                         onChange={(category) => setField('category', category)}
                       />
                     </div>
+                    <div className="item-form-field">
+                      <span id="item-condition-label">
+                        Condition{' '}
+                        {/* The backend refuses a new condition while the item is on loan */}
+                        {editingItem?.available === false && (
+                          <span className="item-field-hint">(locked while lent)</span>
+                        )}
+                      </span>
+                      <SelectMenu
+                        className="item-select"
+                        aria-labelledby="item-condition-label"
+                        options={[...ITEM_CONDITIONS, NO_CONDITION]}
+                        value={form.condition}
+                        onChange={(condition) => setField('condition', condition)}
+                        isDisabled={editingItem?.available === false}
+                      />
+                    </div>
                   </div>
                 </div>
                 <label className="item-form-field">
@@ -384,7 +442,7 @@ export default function InventoryPage() {
                     value={form.description}
                     onChange={(event) => setField('description', event.target.value)}
                     rows="3"
-                    placeholder="Condition, pickup details..."
+                    placeholder="Pickup details..."
                     maxLength="500"
                   />
                 </label>
