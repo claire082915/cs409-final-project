@@ -1,0 +1,35 @@
+/* Two joined buttons, the selected one sits on white */
+.view-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #e8eff0;
+}
+.view-switch button {
+  min-height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  color: #587076;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.view-switch button[aria-pressed='true'] {
+  color: #c4521f;
+  background: #fff;
+  box-shadow: 0 1px 3px #17455118;
+}
+.view-switch button:focus-visible {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
+.view-switch small {
+  margin-left: 6px;
+  color: #587076;
+  font-size: 13px;
+  font-weight: 500;
+}

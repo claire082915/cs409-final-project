@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Button, FileTrigger } from 'react-aria-components'
-import { UserRound } from 'lucide-react'
+import Avatar from './Avatar.jsx'
 import '../styles/components/profile-photo-picker.css'
 
 // Shows a picked file from the browser, the caller uploads it when the form is saved
-export default function ProfilePhotoPicker({ photo, file, onSelect, onRemove, isDisabled }) {
+export default function ProfilePhotoPicker({
+  photo,
+  name,
+  username,
+  caption,
+  file,
+  onSelect,
+  onRemove,
+  isDisabled,
+}) {
   const [filePreview, setFilePreview] = useState('')
 
   // Free the preview URL when the file changes or the picker unmounts
@@ -22,9 +31,8 @@ export default function ProfilePhotoPicker({ photo, file, onSelect, onRemove, is
 
   return (
     <div className="photo-picker">
-      <span className="photo-picker-preview">
-        {shownPhoto ? <img src={shownPhoto} alt="Your profile photo" /> : <UserRound size={26} />}
-      </span>
+      <Avatar photo={shownPhoto} name={name} username={username} className="photo-picker-preview" />
+      {caption}
       <div className="photo-picker-actions">
         <FileTrigger acceptedFileTypes={['image/*']} onSelect={(files) => onSelect(files[0])}>
           <Button className="photo-picker-upload" isDisabled={isDisabled}>

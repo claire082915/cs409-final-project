@@ -41,23 +41,23 @@ Every request except `health` needs an `Authorization: Bearer <Firebase ID token
 
 Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
 
-| Endpoint               | Method | Action                             |
-| ---------------------- | ------ | ---------------------------------- |
-| `health`               | GET    | Check the server is up             |
-| `items`                | POST   | Create an item                     |
-| `items?owner=:id`      | GET    | List a user's items, newest first  |
-| `items/detect`         | POST   | Draft items from a room photo      |
-| `items/detect/discard` | POST   | Delete the photos of unkept drafts |
-| `items/nearby`         | GET    | List items near you, nearest first |
-| `items/:id`            | GET    | Get an item                        |
-|                        | PATCH  | Update name, description or photos |
-|                        | DELETE | Delete an item                     |
-| `search?q=:text`       | GET    | Search items and people            |
-| `uploads/signature`    | POST   | Sign a photo upload                |
-| `users`                | POST   | Create your profile                |
-| `users/me`             | GET    | View your own profile              |
-|                        | PATCH  | Update your profile                |
-| `users/:username`      | GET    | View a user's profile              |
+| Endpoint               | Method | Action                                       |
+| ---------------------- | ------ | -------------------------------------------- |
+| `health`               | GET    | Check the server is up                       |
+| `items`                | POST   | Create an item                               |
+| `items?owner=:id`      | GET    | List a user's items, newest first            |
+| `items/detect`         | POST   | Draft items from a room photo                |
+| `items/detect/discard` | POST   | Delete the photos of unkept drafts           |
+| `items/browse`         | GET    | List other users' items, newest first        |
+| `items/:id`            | GET    | Get an item                                  |
+|                        | PATCH  | Update name, description, category or photos |
+|                        | DELETE | Delete an item                               |
+| `search?q=:text`       | GET    | Search items and people                      |
+| `uploads/signature`    | POST   | Sign a photo upload                          |
+| `users`                | POST   | Create your profile                          |
+| `users/me`             | GET    | View your own profile                        |
+|                        | PATCH  | Update your profile                          |
+| `users/:username`      | GET    | View a user's profile                        |
 
 | Endpoint            | Method | Action                                |
 | ------------------- | ------ | ------------------------------------- |
@@ -84,7 +84,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 
 Item responses also include `available`, which is `false` while the item is on loan.
 
-`GET items/nearby?miles=10` lists other users' items within `miles` of you, nearest first. `miles` is 5 to 100 and defaults to 10. Each item also has `owner` as `{ username, displayName, photo }`, or `null` when the owner turned off `showProfile`, and `distanceMiles`. Distance is measured between ZIP code centers, so it needs your `zipCode` set, and returns 400 until it is.
+`GET items/browse` lists other users' items, newest first, each with `available`. Each item also has `owner` as `{ username, displayName, photo, campusArea }`, or `null` when the owner turned off `showProfile`.
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
 
@@ -98,7 +98,7 @@ PATCH replaces the whole `photos` list and deletes any left-out photos from Clou
 
 #### Request a loan
 
-`POST loans` takes `{ itemId, dueDate }`. The caller becomes the borrower, and `dueDate` must be a future date.
+`POST loans` takes `{ itemId, dueDate, message }`. The caller becomes the borrower, and `dueDate` must be a future date. `message` is an optional note to the owner, up to 300 characters.
 
 #### Fields
 
@@ -109,13 +109,16 @@ PATCH replaces the whole `photos` list and deletes any left-out photos from Clou
 | `borrower`    | id     | The user who requested it                                                 |
 | `status`      | string | `requested`, `approved`, `returned`, `confirmed`, `rejected`, `cancelled` |
 | `dueDate`     | date   | Required                                                                  |
+| `message`     | string | Optional note to the owner, up to 300 characters                          |
 | `approvedAt`  | date   | Set when the owner approves the request                                   |
 | `returnedAt`  | date   | Set when the borrower marks the item returned                             |
 | `confirmedAt` | date   | Set when the owner confirms the return                                    |
 
 #### Dashboard
 
-Each loan's `item` is `{ name, description, photos, deletedAt }`. `GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
+Each loan's `item` is `{ name, description, category, photos, deletedAt }`. In `GET loans/lent` and `GET loans/borrowed` it also has `available`, so a request can show that its item is out on another loan. `GET loans/lent` also gives each `borrower` a `reputation`, like profiles, so the owner can decide on a request.
+
+`GET loans/lent` and `GET loans/borrowed` accept an optional `?status=` filter. Without `?status=`, every loan is returned.
 
 | `status`    | Matches                                 |
 | ----------- | --------------------------------------- |
@@ -150,17 +153,19 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 `POST users` takes `{ username, displayName }`. A username is 3 to 20 characters, using only letters, digits, dots or underscores, and is stored lowercase.
 
-`PATCH users/me` takes `{ username, displayName, city, zipCode, photo, preferences }`, all optional. `zipCode` is a 5 digit US ZIP code, and saving it also stores the center of that ZIP code as `location` for nearby searches. An unknown ZIP code returns 400. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
+`PATCH users/me` takes `{ username, displayName, campusArea, photo, preferences }`, all optional. `campusArea` is one of the areas listed in `models/user.js`, or `""` for none, and anything else returns 400. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
 
 `preferences` holds the Settings toggles as booleans: `borrowRequests`, `dueDateReminders` and `showProfile`, all defaulting to `true`. Send only the ones you want to change.
 
 With `showProfile` off, other users can't see your profile or find you in search, and your items show with `owner` as `null`. Loans still show both people's names, since the owner approves each request.
 
-`GET users/:username` returns `{ username, displayName, photo, items, reputation }`, or 404 when the user turned off `showProfile` and isn't you. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
+`GET users/:username` returns `{ username, displayName, photo, campusArea, joinedAt, lentCount, borrowedCount, items, reputation }`, or 404 when the user turned off `showProfile` and isn't you. `joinedAt` is when the account was created. `lentCount` and `borrowedCount` count the user's loans that came back, as owner and as borrower. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 
 ### Search
 
-`GET search?q=camera` returns `{ items, people }`, up to 5 of each, matching `q` anywhere in the text and ignoring case. `items` are other users' items whose name matches, newest first, each with `available` and `owner` like `items/nearby`. `people` are other users whose username or display name matches, as `{ username, displayName, photo }`, leaving out anyone with `showProfile` off. A missing or blank `q` returns 400.
+`GET search?q=camera` returns `{ items, people }`, up to 5 of each, matching `q` anywhere in the text and ignoring case. `limit` asks for more, from 1 to 50, for a full results page. `items` are other users' items whose name matches, newest first, each with `available` and `owner` like `items/browse`. `people` are other users whose username or display name matches, as `{ username, displayName, photo, campusArea, reputation }`, leaving out anyone with `showProfile` off. A missing or blank `q` returns 400, and a `limit` outside 1 to 50 returns 400.
+
+A `q` starting with `@` only looks up usernames that start with the rest, so `@may` finds `maya_chen` and returns no items.
 
 ### Photos
 

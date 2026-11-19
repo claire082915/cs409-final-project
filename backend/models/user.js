@@ -1,8 +1,24 @@
 import mongoose from 'mongoose'
-import zipcodes from 'zipcodes'
-
-const ZIP_CODE_PATTERN = /^\d{5}$/
 import { isUserPhotoUrl } from '../lib/cloudinary.js'
+
+// University Housing's halls and apartments, then off campus areas
+export const CAMPUS_AREAS = [
+  'Ikenberry Commons (Ike)',
+  'Illinois Street (ISR)',
+  'Lincoln Avenue (LAR)',
+  'Allen Hall',
+  'Busey-Evans',
+  'Pennsylvania Avenue (PAR)',
+  'Florida Avenue (FAR)',
+  'Sherman Hall',
+  'Daniels Hall',
+  'Orchard Downs',
+  'Goodwin-Green',
+  'Ashton Woods',
+  'Campustown',
+  'Champaign',
+  'Urbana',
+]
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,14 +37,10 @@ const userSchema = new mongoose.Schema(
       ],
     },
     displayName: { type: String, required: true, trim: true },
-    city: { type: String, trim: true },
-    // Five digits is enough to look up a location for distance, so ZIP+4 is not accepted
-    zipCode: { type: String, trim: true, match: [ZIP_CODE_PATTERN, 'ZIP code must be 5 digits'] },
-    // Center of the ZIP code area as a GeoJSON point, set from zipCode when it changes
-    location: {
-      type: { type: String, enum: ['Point'] },
-      // No default so users without a ZIP code have no location at all
-      coordinates: { type: [Number], default: undefined },
+    // Where on campus the user is, an empty string clears it
+    campusArea: {
+      type: String,
+      enum: { values: ['', ...CAMPUS_AREAS], message: 'Pick a campus area from the list' },
     },
     // Cloudinary URL from the user's own folder, an empty string removes it
     photo: {
@@ -40,7 +52,7 @@ const userSchema = new mongoose.Schema(
         message: 'Profile photo must be uploaded by you',
       },
     },
-    // Notification and privacy choices from Settings
+    // Notification and privacy choices from the Account page
     preferences: {
       borrowRequests: { type: Boolean, default: true },
       dueDateReminders: { type: Boolean, default: true },
@@ -49,30 +61,5 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true },
 )
-
-// Lets nearby searches find users by distance, users without a location are skipped
-userSchema.index({ location: '2dsphere' })
-
-// Also fills in users who saved a ZIP code before locations existed
-userSchema.pre('validate', function () {
-  if (!this.isModified('zipCode') && (this.location?.coordinates || !this.zipCode)) {
-    return
-  }
-  if (!this.zipCode) {
-    this.location = undefined
-    return
-  }
-  // Leave a badly formatted ZIP code to the match check and its clearer message
-  if (!ZIP_CODE_PATTERN.test(this.zipCode)) {
-    return
-  }
-  const place = zipcodes.lookup(this.zipCode)
-  if (!place) {
-    this.invalidate('zipCode', 'Unknown ZIP code')
-    return
-  }
-  // GeoJSON puts longitude first
-  this.location = { type: 'Point', coordinates: [place.longitude, place.latitude] }
-})
 
 export default mongoose.model('User', userSchema)

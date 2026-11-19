@@ -1,0 +1,16 @@
+/* Sits over the bottom left of an item photo */
+.category-tag {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border-radius: 5px;
+  color: #315761;
+  background: #ffffffed;
+  font-size: 12px;
+  font-weight: 700;
+}

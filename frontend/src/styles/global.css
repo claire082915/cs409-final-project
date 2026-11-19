@@ -10,7 +10,7 @@
   font-weight: 400;
   --ink: #123d45;
   --teal: #0c4850;
-  --orange: #f47742;
+  --orange: #c4521f;
   --muted: #778a88;
   --line: #e6ece8;
 }
@@ -165,11 +165,11 @@ a {
 .button-small {
   color: white;
   background: var(--orange);
-  box-shadow: 0 5px 13px #ed78352a;
+  box-shadow: 0 5px 13px #c4521f2a;
 }
 .button-primary:hover,
 .button-small:hover {
-  background: #e96837;
+  background: #a9461a;
 }
 .button-small {
   min-height: 34px;

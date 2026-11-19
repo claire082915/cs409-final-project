@@ -16,6 +16,13 @@ const loanSchema = new mongoose.Schema(
       required: true,
     },
     dueDate: { type: Date, required: true },
+    // Optional note from the borrower to the owner
+    message: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: [300, 'Message must be 300 characters or fewer'],
+    },
     approvedAt: Date,
     returnedAt: Date,
     confirmedAt: Date,

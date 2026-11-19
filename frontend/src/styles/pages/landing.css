@@ -31,11 +31,37 @@
   gap: 8px;
 }
 .eyebrow-dot {
+  position: relative;
   width: 7px;
   height: 7px;
   background: #f47d49;
   border-radius: 50%;
   box-shadow: 0 0 0 4px #f47d491b;
+}
+/* A ring pulses out from the dot like a beacon */
+.eyebrow-dot::after {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid #f47d49;
+  border-radius: 50%;
+  content: '';
+  animation: eyebrow-beacon 2.4s ease-out infinite;
+}
+@keyframes eyebrow-beacon {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eyebrow-dot::after {
+    animation: none;
+    opacity: 0;
+  }
 }
 .hero h1 {
   font:

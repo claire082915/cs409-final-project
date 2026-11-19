@@ -1,0 +1,100 @@
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #0f2f3666;
+}
+
+/* Only the panel counts as inside, so clicking the backdrop closes it */
+.confirm-wrap {
+  width: min(100%, 400px);
+}
+
+.confirm-panel {
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid #e3ebed;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 20px 40px #1745512e;
+  outline: 0;
+}
+
+.confirm-title {
+  margin: 0;
+  color: #173f4b;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.confirm-text {
+  margin: 8px 0 0;
+  color: #587076;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.confirm-actions button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-cancel {
+  border: 0;
+  color: #3f5f66;
+  background: #eef3f4;
+}
+
+.confirm-cancel[data-hovered] {
+  background: #e2eaec;
+}
+
+.confirm-danger {
+  border: 0;
+  color: #fff;
+  background: #b4482f;
+}
+
+.confirm-danger[data-hovered] {
+  background: #9c3c26;
+}
+
+.confirm-danger[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirm-actions button[data-focus-visible] {
+  outline: 2px solid #318675;
+  outline-offset: 2px;
+}
+
+.confirm-primary {
+  border: 0;
+  color: #fff;
+  background: #0c5865;
+}
+
+.confirm-primary[data-hovered] {
+  background: #084653;
+}
+
+.confirm-primary[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
+}

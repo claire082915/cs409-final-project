@@ -1,0 +1,94 @@
+.profile-page {
+  color: #173f4b;
+}
+/* Card with the avatar beside the name, the name matches every other page title */
+.profile-heading {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 36px;
+  padding: 32px;
+  border: 1px solid #e4ecee;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 15px #17455108;
+}
+.profile-heading h1 {
+  margin: 0 0 10px;
+  color: #123c48;
+  font-size: clamp(27px, 3vw, 35px);
+  letter-spacing: -0.04em;
+}
+/* Rating sits under the photo, like on Account */
+.profile-photo-column {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  gap: 10px;
+}
+.profile-page-avatar {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  font-size: 38px;
+}
+.profile-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  color: #587076;
+  font-size: 14px;
+  line-height: 20px;
+}
+.profile-facts + .profile-facts {
+  margin-top: 6px;
+}
+.profile-facts svg {
+  flex: none;
+}
+.profile-section-label {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+section + section .profile-section-label {
+  margin-top: 36px;
+}
+.profile-empty {
+  margin: 0;
+  color: #587076;
+  font-size: 14px;
+}
+.profile-missing {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px dashed #cbdadc;
+  border-radius: 12px;
+  color: #587076;
+  font-size: 14px;
+}
+.profile-missing strong {
+  color: #315c65;
+  font-size: 15px;
+}
+
+@media (max-width: 560px) {
+  /* The avatar moves above the name so the fact lines get the full width */
+  .profile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding: 22px;
+  }
+  .profile-page-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+  }
+}

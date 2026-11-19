@@ -5,9 +5,8 @@ export default function PagePlaceholder({ title, description, withSidebar = true
   return (
     <AppShell withSidebar={withSidebar}>
       <main className="screen-scaffold">
-        <div className="screen-heading">
+        <div className="screen-heading page-heading">
           <div>
-            <span className="placeholder-kicker">YOUR LENDR SPACE</span>
             <h1>{title}</h1>
             <p>{description}</p>
           </div>

@@ -1,13 +1,14 @@
 import { Router } from 'express'
 import Item from '../models/item.js'
 import User from '../models/user.js'
+import Loan from '../models/loan.js'
 import requireUser, { requireIdToken } from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
-import Rating from '../models/rating.js'
+import { reputation } from '../lib/reputation.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 
 const router = Router()
-const editableFields = ['username', 'displayName', 'city', 'zipCode', 'photo']
+const editableFields = ['username', 'displayName', 'campusArea', 'photo']
 const preferenceNames = ['borrowRequests', 'dueDateReminders', 'showProfile']
 
 // Copies the preferences that were sent, returns an error message when one isn't a boolean
@@ -27,13 +28,9 @@ function applyPreferences(user, preferences) {
   return null
 }
 
-// Null when nobody has rated the user yet
-async function reputation(userId) {
-  const [result] = await Rating.aggregate([
-    { $match: { ratee: userId } },
-    { $group: { _id: null, average: { $avg: '$score' }, count: { $sum: 1 } } },
-  ])
-  return result ? { average: result.average, count: result.count } : null
+// The signed in user's own profile, with their reputation so the Account page can show it
+async function withReputation(user) {
+  return { ...user.toJSON(), reputation: await reputation(user._id) }
 }
 
 // Called once after the first Firebase sign-in to pick a username
@@ -54,8 +51,8 @@ router.post('/', requireIdToken, async (req, res) => {
   res.status(201).json({ message: 'OK', data: user })
 })
 
-router.get('/me', requireUser, (req, res) => {
-  res.json({ message: 'OK', data: req.user })
+router.get('/me', requireUser, async (req, res) => {
+  res.json({ message: 'OK', data: await withReputation(req.user) })
 })
 
 // Email comes from Firebase, so it can't change here
@@ -82,7 +79,7 @@ router.patch('/me', requireUser, async (req, res) => {
   if (oldPhoto && oldPhoto !== req.user.photo) {
     await deleteUnusedPhotos([oldPhoto])
   }
-  res.json({ message: 'OK', data: req.user })
+  res.json({ message: 'OK', data: await withReputation(req.user) })
 })
 
 router.get('/:username', requireUser, async (req, res) => {
@@ -95,10 +92,20 @@ router.get('/:username', requireUser, async (req, res) => {
   const items = await Item.find({ owner: user._id, deletedAt: null }).sort({ createdAt: -1 })
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
+  // Only loans that came back count toward someone's lending record
+  const finished = { $in: ['returned', 'confirmed'] }
+  const [lentCount, borrowedCount] = await Promise.all([
+    Loan.countDocuments({ owner: user._id, status: finished }),
+    Loan.countDocuments({ borrower: user._id, status: finished }),
+  ])
   const profile = {
     username: user.username,
     displayName: user.displayName,
     photo: user.photo,
+    campusArea: user.campusArea,
+    joinedAt: user.createdAt,
+    lentCount,
+    borrowedCount,
     items: itemsWithAvailability,
     reputation: await reputation(user._id),
   }
