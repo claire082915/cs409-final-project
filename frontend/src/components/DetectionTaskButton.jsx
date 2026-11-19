@@ -1,7 +1,7 @@
 import { LoaderCircle, Sparkles, TriangleAlert } from 'lucide-react'
 import { useBeforeUnload } from 'react-router-dom'
 import Tooltip from './Tooltip.jsx'
-import { openPanel, useDetectionTask } from '../lib/detectionTask.js'
+import { hasStartedTask, openPanel, useDetectionTask } from '../lib/detectionTask.js'
 import '../styles/components/count-badge.css'
 import '../styles/components/detection-task-button.css'
 
@@ -31,7 +31,7 @@ function TaskIcon({ status }) {
 // Sits next to notifications so a photo search can run while the user does other things
 export default function DetectionTaskButton() {
   const task = useDetectionTask()
-  const hasTask = task.status !== 'idle'
+  const hasTask = hasStartedTask(task)
 
   // A reload would lose the search and the drafts, browsers show their own text here
   useBeforeUnload((event) => {

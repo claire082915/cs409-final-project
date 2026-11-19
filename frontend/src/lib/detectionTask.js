@@ -76,6 +76,16 @@ export function openPanel() {
   updateTask({ isPanelOpen: true })
 }
 
+// The panel's first step, nothing runs until a photo is picked
+export function openPicker() {
+  updateTask({ ...NO_TASK, status: 'picking', isPanelOpen: true })
+}
+
+// Picking a photo hasn't started anything, so it counts the same as no task
+export function hasStartedTask(task) {
+  return task.status !== 'idle' && task.status !== 'picking'
+}
+
 // The same words go in the notification and, while the panel is hidden, a toast
 function resultMessage() {
   if (task.status === 'failed') {
@@ -143,10 +153,10 @@ export function clearTask() {
   updateTask(NO_TASK)
 }
 
-// Hiding keeps a running search or drafts to review, a failed or empty search has nothing to come back to
+// Hiding keeps a running search or drafts to review, the other steps have nothing to come back to
 export function hidePanel() {
   const hasNothingToReview = task.status === 'review' && task.drafts.length === 0
-  if (task.status === 'failed' || hasNothingToReview) {
+  if (task.status === 'picking' || task.status === 'failed' || hasNothingToReview) {
     clearTask()
     return
   }

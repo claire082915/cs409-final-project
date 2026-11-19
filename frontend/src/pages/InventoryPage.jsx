@@ -6,7 +6,6 @@ import AppLoader from '../components/AppLoader.jsx'
 import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
-import PhotoPickButton from '../components/PhotoPickButton.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -16,7 +15,13 @@ import SelectMenu from '../components/SelectMenu.jsx'
 import FilterMenu from '../components/FilterMenu.jsx'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
-import { findItems, onItemsAdded, openPanel, useDetectionTask } from '../lib/detectionTask.js'
+import {
+  hasStartedTask,
+  onItemsAdded,
+  openPanel,
+  openPicker,
+  useDetectionTask,
+} from '../lib/detectionTask.js'
 import { MOCK_INVENTORY } from '../lib/mockInventory.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
@@ -231,11 +236,7 @@ export default function InventoryPage() {
           </div>
           <div className="inventory-heading-actions">
             {/* One photo at a time, a running search or unreviewed drafts reopen instead */}
-            {detectionTask.status === 'idle' ? (
-              <PhotoPickButton className="inventory-photo-button" onPick={findItems}>
-                <Sparkles size={17} aria-hidden="true" /> Auto-populate
-              </PhotoPickButton>
-            ) : (
+            {hasStartedTask(detectionTask) ? (
               <button type="button" className="inventory-photo-button" onClick={openPanel}>
                 {detectionTask.status === 'searching' ? (
                   <LoaderCircle size={17} className="task-spinner" aria-hidden="true" />
@@ -243,6 +244,10 @@ export default function InventoryPage() {
                   <Sparkles size={17} aria-hidden="true" />
                 )}
                 {detectionTask.status === 'searching' ? 'Finding items...' : 'Review items'}
+              </button>
+            ) : (
+              <button type="button" className="inventory-photo-button" onClick={openPicker}>
+                <Sparkles size={17} aria-hidden="true" /> Auto-populate
               </button>
             )}
             <button className="inventory-add-button" type="button" onClick={() => openForm(null)}>

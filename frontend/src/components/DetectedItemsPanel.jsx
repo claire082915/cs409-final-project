@@ -1,11 +1,18 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Dialog, Heading, Modal, ModalOverlay } from 'react-aria-components'
-import { Check, Circle, ImageUp, LoaderCircle, SearchX, X } from 'lucide-react'
+import {
+  Button,
+  Dialog,
+  DropZone,
+  FileTrigger,
+  Heading,
+  Modal,
+  ModalOverlay,
+} from 'react-aria-components'
+import { Check, Circle, ImageUp, LoaderCircle, SearchX, Sparkles, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog.jsx'
 import DetectedItemCard from './DetectedItemCard.jsx'
 import PendingLabel from './PendingLabel.jsx'
-import PhotoPickButton from './PhotoPickButton.jsx'
 import { apiFetch } from '../lib/api.js'
 import { storedCondition } from '../lib/itemConditions.js'
 import {
@@ -15,6 +22,7 @@ import {
   findItems,
   hidePanel,
   notifyItemsAdded,
+  openPicker,
   updateDrafts,
   useDetectionTask,
 } from '../lib/detectionTask.js'
@@ -46,6 +54,40 @@ async function addDrafts(drafts) {
     }
   }
   return { added, failed }
+}
+
+// A drop can hold any files, so take the first image
+function droppedPhoto(items) {
+  const image = items.find((item) => item.kind === 'file' && item.type.startsWith('image/'))
+  return image?.getFile()
+}
+
+// The first step, a drop area and picker so the file browser doesn't open out of nowhere
+function PickState() {
+  const startSearch = (photo) => {
+    if (photo) {
+      findItems(photo)
+    }
+  }
+  return (
+    <div className="detected-pick">
+      <p className="detected-pick-intro">We'll draft items from your photo for you to review.</p>
+      <DropZone
+        className="detected-drop"
+        onDrop={async (event) => startSearch(await droppedPhoto(event.items))}
+      >
+        <ImageUp size={26} aria-hidden="true" />
+        <span className="detected-drop-text">Drop a photo here or</span>
+        <FileTrigger acceptedFileTypes={['image/*']} onSelect={(files) => startSearch(files?.[0])}>
+          <Button className="detected-choose">Choose photo</Button>
+        </FileTrigger>
+      </DropZone>
+      <p className="detected-pick-hint">
+        <strong>Tip:</strong> Use good lighting with items in full view. We'll recognize up to 20
+        items.
+      </p>
+    </div>
+  )
 }
 
 // Only the steps the frontend can see happen, Gemini's cropping runs inside the finding step
@@ -101,7 +143,7 @@ function SearchingState({ photoPreview, searchStep }) {
 }
 
 // Covers both a failed search and a photo with nothing in it
-function NoItemsState({ error, onPick }) {
+function NoItemsState({ error }) {
   return (
     <div className="detected-empty">
       <SearchX size={28} aria-hidden="true" />
@@ -109,9 +151,10 @@ function NoItemsState({ error, onPick }) {
       <span role={error ? 'alert' : undefined}>
         {error || 'Try a photo where each item is in full view.'}
       </span>
-      <PhotoPickButton className="detected-secondary-button" onPick={onPick}>
+      {/* Back to the pick step rather than straight into the file browser */}
+      <button type="button" className="detected-secondary-button" onClick={openPicker}>
         <ImageUp size={16} aria-hidden="true" /> Try another photo
-      </PhotoPickButton>
+      </button>
     </div>
   )
 }
@@ -177,7 +220,7 @@ export default function DetectedItemsPanel() {
           <Dialog className="detected-panel" aria-labelledby="detected-panel-title">
             <header className="detected-panel-header">
               <Heading slot="title" id="detected-panel-title">
-                Auto-populate
+                <Sparkles size={20} aria-hidden="true" /> Auto-populate from photo
               </Heading>
               <button
                 type="button"
@@ -189,11 +232,12 @@ export default function DetectedItemsPanel() {
                 <X size={19} />
               </button>
             </header>
+            {status === 'picking' && <PickState />}
             {status === 'searching' && (
               <SearchingState photoPreview={photoPreview} searchStep={task.searchStep} />
             )}
             {(status === 'failed' || (status === 'review' && drafts.length === 0)) && (
-              <NoItemsState error={error} onPick={findItems} />
+              <NoItemsState error={error} />
             )}
             {status === 'review' && drafts.length > 0 && (
               <form className="detected-review" onSubmit={addKept}>
