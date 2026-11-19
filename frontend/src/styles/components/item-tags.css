@@ -1,0 +1,26 @@
+/* Under the item name, wrapping to a second line on narrow cards */
+.item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.item-tag {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+/* Pale brand tints so the two tags read apart at a glance */
+.item-tag-category {
+  /* The darker green from the view switch, brand green text is too faint on its tint */
+  color: #176f64;
+  background: color-mix(in srgb, var(--brand-green) 12%, white);
+}
+.item-tag-condition {
+  color: var(--brand-orange-dark);
+  background: color-mix(in srgb, var(--brand-orange) 12%, white);
+}

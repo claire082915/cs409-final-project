@@ -13,7 +13,7 @@
   padding: 35px;
   border: 1px solid #e5edf0;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   text-align: center;
   box-shadow: 0 5px 18px #17475b08;
 }

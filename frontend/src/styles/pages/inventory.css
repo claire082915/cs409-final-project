@@ -15,22 +15,113 @@
   border-radius: 8px;
   padding: 11px 16px;
   color: white;
-  background: #c4521f;
-  box-shadow: 0 5px 13px #c4521f30;
+  background: var(--brand-orange);
+  box-shadow: 0 5px 13px #cc582230;
   font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .inventory-add-button:hover {
-  background: #a9461a;
+  background: var(--brand-orange-dark);
+}
+.inventory-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* Same size as Add item, a teal tint so the orange button stays the main action */
+.inventory-photo-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  color: var(--brand-teal);
+  background: color-mix(in srgb, var(--brand-teal) 10%, white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.inventory-photo-button:hover {
+  background: color-mix(in srgb, var(--brand-teal) 16%, white);
+}
+.inventory-photo-button:has(input:focus-visible),
+.inventory-photo-button:focus-visible,
+.inventory-add-button:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
 }
 .inventory-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 14px;
+}
+/* Its own row under the toolbar so the placeholder has room at any width, same cap as Browse */
+.inventory-search {
+  display: flex;
+  box-sizing: border-box;
+  width: min(100%, 560px);
+  align-items: center;
+  gap: 10px;
+  height: 42px;
   margin-bottom: 22px;
+  padding: 0 6px 0 13px;
+  border: 1px solid #afbec2;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+.inventory-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #234c56;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+.inventory-search input::placeholder {
+  color: var(--text-muted);
+}
+.inventory-search button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+/* Same divider and look as the filters on Browse */
+.inventory-search .filter-menu-button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px 0 12px;
+  border: 0;
+  border-left: 1px solid #dfe8eb;
+  color: #3f5f66;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: 0;
+}
+.inventory-search .filter-menu-button[data-focus-visible] {
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--brand-green);
+}
+.inventory-search:focus-within {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px #3186752a;
 }
 .inventory-source {
   display: flex;
@@ -40,7 +131,7 @@
   padding: 3px;
   border: 1px solid #dfe8eb;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
 }
 .inventory-source span {
   padding: 0 7px;
@@ -72,7 +163,7 @@
   overflow: hidden;
   border: 1px solid #e4ecee;
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 15px #17455108;
   transition:
     transform 0.18s,
@@ -83,7 +174,7 @@
   box-shadow: 0 9px 22px #17455112;
 }
 .inventory-card:has(.inventory-card-open:focus-visible) {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 .inventory-card-open {
@@ -177,7 +268,7 @@
   border: 1px solid #e3ecee;
   border-radius: 16px;
   color: #244c56;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 24px 75px #05232c45;
 }
 .item-modal-heading {
@@ -200,8 +291,8 @@
   height: 34px;
   border: 1px solid #e2eaec;
   border-radius: 8px;
-  color: #587076;
-  background: #fff;
+  color: var(--text-muted);
+  background: var(--surface);
   cursor: pointer;
 }
 .item-form {
@@ -252,13 +343,13 @@
   border: 1px solid #afbec2;
   border-radius: 8px;
   color: #173f4b;
-  background: #fff;
+  background: var(--surface);
   font-size: 14px;
   font-weight: 400;
 }
 .item-select .select-menu-button[data-focus-visible],
 .item-select .select-menu-button[data-pressed] {
-  border-color: #318675;
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 3px #3186752a;
   text-decoration: none;
 }
@@ -292,7 +383,7 @@
   border-radius: 8px;
   outline: none;
   color: #173f4b;
-  background: #fff;
+  background: var(--surface);
   font: inherit;
   font-size: 14px;
   font-weight: 400;
@@ -302,18 +393,18 @@
 }
 .item-form-field > input::placeholder,
 .item-form-field textarea::placeholder {
-  color: #587076;
+  color: var(--text-muted);
 }
 .item-form-field > input:focus,
 .item-form-field textarea:focus {
-  border-color: #318675;
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 3px #3186752a;
 }
 .item-required {
-  color: #a5402a;
+  color: var(--error);
 }
 .item-field-hint {
-  color: #587076;
+  color: var(--text-muted);
 }
 .item-form-field textarea {
   padding: 10px 12px;
@@ -322,7 +413,7 @@
 }
 .item-form-error {
   margin: -4px 0 0;
-  color: #a5402a;
+  color: var(--error);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -347,7 +438,7 @@
 /* Tinted orange and pushed left, away from Save */
 .item-delete-button {
   margin-right: auto;
-  color: #a9461a;
+  color: var(--brand-orange-dark);
   background: #fbede6;
 }
 .item-delete-button:hover:not(:disabled) {
@@ -362,10 +453,10 @@
 }
 .item-save-button {
   color: #fff;
-  background: #0c5865;
+  background: var(--brand-teal);
 }
 .item-save-button:hover:not(:disabled) {
-  background: #084653;
+  background: var(--brand-teal-dark);
 }
 .item-delete-button:disabled,
 .item-cancel-button:disabled,
@@ -375,7 +466,7 @@
 }
 .item-modal button:focus-visible,
 .item-photo-upload:has(input:focus-visible) {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 /* Shows that clicking an existing photo picks a new one */
@@ -441,4 +532,9 @@
     padding: 21px 18px;
     border-radius: 15px;
   }
+}
+/* Condition is locked while the item is lent */
+.item-select .select-menu-button[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

@@ -12,12 +12,15 @@
     "@internationalized/date": "^3.12.4",
     "@vitejs/plugin-react": "^6.1.1",
     "firebase": "^13.3.0",
+    "lodash-es": "^4.18.1",
     "lucide-react": "^0.468.0",
     "react": "^19.2.8",
     "react-aria-components": "^1.22.1",
     "react-dom": "^19.2.8",
+    "react-intersection-observer": "^11.0.1",
     "react-router-dom": "^7.18.4",
     "sonner": "^2.0.8",
+    "use-debounce": "^10.1.1",
     "vite": "^8.3.0"
   }
 }

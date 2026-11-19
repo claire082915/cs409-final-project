@@ -2,7 +2,7 @@
   <defs>
     <linearGradient id="mark" x1="0.047" y1="-0.04" x2="0.953" y2="1.04">
       <stop offset="53%" stop-color="#1e9881" />
-      <stop offset="54%" stop-color="#c4521f" />
+      <stop offset="54%" stop-color="#cc5822" />
     </linearGradient>
   </defs>
   <g transform="rotate(-14 16 16)">

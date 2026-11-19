@@ -15,7 +15,7 @@
   border: 1px solid #e1e9e9;
   border-radius: 7px;
   color: #55737a;
-  background: #fff;
+  background: var(--surface);
   font:
     600 11px 'DM Sans',
     sans-serif;
@@ -136,7 +136,7 @@
   overflow: hidden;
   border: 1px solid #e8eeee;
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 5px 22px #24414a08;
 }
 .activity-row {
@@ -228,7 +228,7 @@
   border: 1px solid #e7eeee;
   border-radius: 11px;
   color: #718990;
-  background: white;
+  background: var(--surface);
   font-size: 12px;
 }
 .dashboard-empty {

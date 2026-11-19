@@ -3,16 +3,26 @@
 :root {
   font-family: 'DM Sans', sans-serif;
   color: #123d45;
-  background: #f8faf8;
+  background: var(--page-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   font-weight: 400;
   --ink: #123d45;
   --teal: #0c4850;
-  --orange: #c4521f;
   --muted: #778a88;
   --line: #e6ece8;
+  --page-bg: #eef2ee;
+  --surface: #fcfdfb;
+  --header-bg: #f3f8f7;
+  --header-border: #e1ebe8;
+  --brand-orange: #cc5822;
+  --brand-orange-dark: #a9461a;
+  --brand-green: #318675;
+  --brand-teal: #0c5865;
+  --brand-teal-dark: #084653;
+  --text-muted: #587076;
+  --error: #a5402a;
 }
 * {
   box-sizing: border-box;
@@ -58,7 +68,7 @@ a {
   place-items: center;
   margin-bottom: 8px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 12px 35px #174c4520;
 }
 .app-loader-mark::before {
@@ -96,8 +106,8 @@ a {
 }
 .site-header {
   height: 73px;
-  background: #fff;
-  border-bottom: 1px solid #edf1ee;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
 }
 .header-inner {
   max-width: 1160px;
@@ -164,12 +174,21 @@ a {
 .button-primary,
 .button-small {
   color: white;
-  background: var(--orange);
-  box-shadow: 0 5px 13px #c4521f2a;
+  background: var(--brand-orange);
+  box-shadow: 0 5px 13px #cc58222a;
 }
 .button-primary:hover,
 .button-small:hover {
-  background: #a9461a;
+  background: var(--brand-orange-dark);
+}
+/* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action] {
+  color: var(--brand-orange-dark);
+  background: color-mix(in srgb, var(--brand-orange) 12%, white);
+  font-weight: 700;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
+  background: color-mix(in srgb, var(--brand-orange) 20%, white);
 }
 .button-small {
   min-height: 34px;
@@ -179,5 +198,5 @@ a {
 }
 .button-light {
   color: #164a4f;
-  background: white;
+  background: var(--surface);
 }

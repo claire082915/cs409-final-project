@@ -1,0 +1,25 @@
+/* Teal while working so it reads as progress, orange only when it needs attention */
+.task-button {
+  color: var(--brand-teal);
+}
+.task-failed {
+  color: var(--brand-orange-dark);
+}
+.task-button:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}
+.task-spinner {
+  animation: task-spin 1s linear infinite;
+}
+@keyframes task-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .task-spinner {
+    animation-duration: 3s;
+  }
+}

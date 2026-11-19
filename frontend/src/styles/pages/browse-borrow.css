@@ -15,18 +15,18 @@
   padding: 3px;
   border: 1px solid #dfe8eb;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
 }
 .browse-source span {
   padding: 0 7px;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 12px;
 }
 .browse-source button {
   border: 0;
   border-radius: 5px;
   padding: 6px 9px;
-  color: #587076;
+  color: var(--text-muted);
   background: transparent;
   font: inherit;
   font-size: 12px;
@@ -49,8 +49,8 @@
   height: 42px;
   border: 1px solid #afbec2;
   border-radius: 8px;
-  color: #587076;
-  background: #fff;
+  color: var(--text-muted);
+  background: var(--surface);
 }
 .browse-search {
   flex: 0 1 560px;
@@ -66,13 +66,13 @@
   font-size: 14px;
 }
 .browse-search input::placeholder {
-  color: #587076;
+  color: var(--text-muted);
 }
 .browse-search button {
   display: grid;
   place-items: center;
   border: 0;
-  color: #587076;
+  color: var(--text-muted);
   background: transparent;
   cursor: pointer;
 }
@@ -101,10 +101,10 @@
 }
 .browse-search .filter-menu-button[data-focus-visible] {
   border-radius: 6px;
-  box-shadow: 0 0 0 2px #318675;
+  box-shadow: 0 0 0 2px var(--brand-green);
 }
 .browse-search:focus-within {
-  border-color: #318675;
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 3px #3186752a;
 }
 /* Match the shared menu button and date picker to the readable sizes on this page */
@@ -124,7 +124,7 @@
   font-weight: 750;
 }
 .browse-results-label small {
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
 }
@@ -138,7 +138,7 @@
   overflow: hidden;
   border: 1px solid #e4ecee;
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 15px #17455108;
   transition:
     transform 0.18s,
@@ -149,7 +149,7 @@
   box-shadow: 0 9px 22px #17455112;
 }
 .browse-card:has(.browse-card-open:focus-visible) {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 .browse-photo {
@@ -172,6 +172,10 @@
 }
 .browse-card-body {
   padding: 13px 14px 15px;
+}
+/* The card body isn't a grid, so the tags need their own gap from the name */
+.browse-card-body .item-tags {
+  margin-top: 7px;
 }
 .browse-owner-details {
   display: grid;
@@ -209,7 +213,7 @@
 .browse-location {
   overflow: hidden;
   margin: 0;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -239,7 +243,7 @@
 }
 .browse-owner-link:focus-visible {
   border-radius: 3px;
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 .browse-owner-avatar {
@@ -267,7 +271,7 @@
   border: 0;
   border-radius: 8px;
   color: #fff;
-  background: #0c5865;
+  background: var(--brand-teal);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -275,7 +279,7 @@
   transition: background 0.15s;
 }
 .browse-request-button:hover {
-  background: #084653;
+  background: var(--brand-teal-dark);
 }
 .browse-empty {
   min-height: 210px;
@@ -286,7 +290,7 @@
   gap: 9px;
   border: 1px dashed #cbdadc;
   border-radius: 12px;
-  color: #587076;
+  color: var(--text-muted);
   background: #ffffff88;
   font-size: 14px;
 }
@@ -314,7 +318,7 @@
   background: #e2eaec;
 }
 .browse-clear-filters:focus-visible {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 .browse-empty a {
@@ -322,7 +326,7 @@
   padding: 8px 14px;
   border-radius: 7px;
   color: #fff;
-  background: #0c5865;
+  background: var(--brand-teal);
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
@@ -369,7 +373,7 @@
   padding: 28px;
   border: 1px solid #e3ecee;
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 20px 70px #102f3640;
 }
 .browse-request-modal {
@@ -429,7 +433,7 @@
 }
 .borrow-item-description {
   margin: 0;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 14px;
   line-height: 1.65;
 }
@@ -444,10 +448,10 @@
   font-weight: 500;
 }
 .borrow-required {
-  color: #a5402a;
+  color: var(--error);
 }
 .borrow-field-hint {
-  color: #587076;
+  color: var(--text-muted);
   font-weight: 500;
 }
 .borrow-request-form textarea {
@@ -460,17 +464,17 @@
   border-radius: 8px;
   outline: 0;
   color: #315761;
-  background: #fff;
+  background: var(--surface);
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
 }
 .borrow-request-form textarea:focus {
-  border-color: #318675;
+  border-color: var(--brand-green);
   box-shadow: 0 0 0 3px #3186752a;
 }
 .borrow-request-form textarea::placeholder {
-  color: #587076;
+  color: var(--text-muted);
 }
 .borrow-request-form .borrow-message-label {
   margin-top: 14px;
@@ -485,8 +489,8 @@
   height: 31px;
   border: 1px solid #e1e9eb;
   border-radius: 7px;
-  color: #587076;
-  background: #fff;
+  color: var(--text-muted);
+  background: var(--surface);
   cursor: pointer;
 }
 .browse-modal h2 {
@@ -497,7 +501,7 @@
 }
 .browse-modal-description {
   margin: 0 0 21px;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -535,7 +539,7 @@
   background: #e2eaec;
 }
 .browse-modal button:focus-visible {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 

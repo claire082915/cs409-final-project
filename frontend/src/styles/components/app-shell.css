@@ -87,7 +87,7 @@ body:has(.app-shell) #root {
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: #c4521f;
+  background: var(--brand-orange);
   font-size: 10px;
 }
 .sidebar-toggle {
@@ -150,7 +150,7 @@ body:has(.app-shell) #root {
 }
 .page-heading h1 + p {
   margin: 0;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
 }
 .app-main {
@@ -170,8 +170,8 @@ body:has(.app-shell) #root {
   justify-content: space-between;
   gap: 20px;
   padding: 0 clamp(22px, 4vw, 54px);
-  background: #fff;
-  border-bottom: 1px solid #e9eef1;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
 }
 .app-search {
   width: min(390px, 55%);
@@ -231,16 +231,6 @@ body:has(.app-shell) #root {
   height: 32px;
   display: grid;
   place-items: center;
-}
-.notification-button i {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 6px;
-  height: 6px;
-  border: 1px solid #fff;
-  border-radius: 50%;
-  background: #f47742;
 }
 .profile-button {
   display: flex;
@@ -322,7 +312,7 @@ body:has(.app-shell) #root {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     border-top: 1px solid #e6ecee;
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 -5px 20px #173e4c0a;
   }
   .mobile-nav-link {

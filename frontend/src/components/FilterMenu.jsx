@@ -13,6 +13,15 @@ export function describeSelection(selected, allLabel, pluralLabel) {
   return `${selected.size} ${pluralLabel}`
 }
 
+// The button shows a count so long option names do not overflow it
+function countSelection(selected, allLabel, singularLabel, pluralLabel) {
+  if (selected.size === 0) {
+    return allLabel
+  }
+  const noun = selected.size === 1 ? singularLabel : pluralLabel
+  return `${selected.size} ${noun}`
+}
+
 function CheckOption({ id, label }) {
   return (
     <MenuItem id={id} className="field-option">
@@ -48,7 +57,7 @@ export default function FilterMenu({ options, selected, onChange, allLabel, plur
     <MenuTrigger>
       <Button className="filter-menu-button" aria-label={`Filter by ${label}`}>
         <span className="filter-menu-label">
-          {describeSelection(selected, allLabel, pluralLabel)}
+          {countSelection(selected, allLabel, label, pluralLabel)}
         </span>
         <ChevronDown size={14} aria-hidden="true" />
       </Button>

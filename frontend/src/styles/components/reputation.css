@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 13px;
   line-height: 18px;
   white-space: nowrap;

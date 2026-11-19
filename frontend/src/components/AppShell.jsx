@@ -1,6 +1,5 @@
 import {
   ArrowLeftRight,
-  Bell,
   CircleUserRound,
   Compass,
   Home,
@@ -14,8 +13,12 @@ import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Avatar from './Avatar.jsx'
+import DetectedItemsPanel from './DetectedItemsPanel.jsx'
+import DetectionTaskButton from './DetectionTaskButton.jsx'
+import NotificationsMenu from './NotificationsMenu.jsx'
 import Logo from './Logo.jsx'
 import { usePendingRequestCount } from '../lib/pendingRequestCount.js'
+import Tooltip from './Tooltip.jsx'
 import TopbarSearch from './TopbarSearch.jsx'
 import '../styles/components/app-shell.css'
 
@@ -37,38 +40,59 @@ const navigation = [
 const mobileNavigation = navigation.filter((link) => link.mobileLabel)
 const COLLAPSED_KEY = 'sidebarCollapsed'
 
+// Collapsed links only show icons so the tooltip names them, the request badge says what it counts
+function SidebarLink({ link, collapsed, requestCount }) {
+  const { label, to, icon: Icon, showsRequestCount } = link
+  const hasBadge = showsRequestCount && requestCount > 0
+  // Only received requests count, since those are the ones waiting on this user
+  const countLabel = `${requestCount} waiting for your reply`
+  let tooltip = collapsed ? label : ''
+  if (hasBadge) {
+    tooltip = collapsed ? `${label}, ${countLabel}` : countLabel
+  }
+  return (
+    <Tooltip text={tooltip} placement="right">
+      <NavLink
+        to={to}
+        className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}
+        aria-label={hasBadge ? `${label}, ${countLabel}` : undefined}
+      >
+        <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
+        <span className="sidebar-label">{label}</span>
+        {hasBadge && <span className="sidebar-badge">{requestCount}</span>}
+      </NavLink>
+    </Tooltip>
+  )
+}
+
 function Sidebar({ collapsed, onToggle }) {
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
+  const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
   const pendingRequestCount = usePendingRequestCount()
   return (
     <aside className="app-sidebar" aria-label="Main sidebar">
       <div className="sidebar-brand">
         <Logo light />
-        <button
-          type="button"
-          className="sidebar-toggle"
-          onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!collapsed}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <ToggleIcon size={17} strokeWidth={2.1} aria-hidden="true" />
-        </button>
+        <Tooltip text={toggleLabel} placement="right">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={onToggle}
+            aria-label={toggleLabel}
+            aria-expanded={!collapsed}
+          >
+            <ToggleIcon size={17} strokeWidth={2.1} aria-hidden="true" />
+          </button>
+        </Tooltip>
       </div>
       <nav className="sidebar-nav" aria-label="Main navigation">
-        {navigation.map(({ label, to, icon: Icon, showsRequestCount }) => (
-          <NavLink
-            key={label}
-            to={to}
-            className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}
-            title={collapsed ? label : undefined}
-          >
-            <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
-            <span className="sidebar-label">{label}</span>
-            {showsRequestCount && pendingRequestCount > 0 && (
-              <span className="sidebar-badge">{pendingRequestCount}</span>
-            )}
-          </NavLink>
+        {navigation.map((link) => (
+          <SidebarLink
+            key={link.label}
+            link={link}
+            collapsed={collapsed}
+            requestCount={pendingRequestCount}
+          />
         ))}
       </nav>
     </aside>
@@ -81,10 +105,8 @@ function Topbar({ withSearch }) {
     <header className={`app-topbar${withSearch ? '' : ' app-topbar-no-search'}`}>
       {withSearch && <TopbarSearch />}
       <div className="topbar-actions">
-        <button className="icon-button notification-button" aria-label="Notifications">
-          <Bell size={18} />
-          <i />
-        </button>
+        <DetectionTaskButton />
+        <NotificationsMenu />
         <Link className="profile-button" to="/account" aria-label="Open account">
           <Avatar
             photo={profile.photo}
@@ -125,6 +147,8 @@ export default function AppShell({ children, withSidebar = true, withSearch = tr
         <Topbar withSearch={withSearch} />
         <div className="app-content">{children}</div>
       </div>
+      {/* In the shell so the review opens from any page */}
+      <DetectedItemsPanel />
       {withSidebar && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
           {mobileNavigation.map(({ label, mobileLabel, to, icon: Icon }) => (

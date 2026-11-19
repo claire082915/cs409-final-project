@@ -4,6 +4,7 @@ export const MOCK_ITEMS = [
     name: 'MacBook Pro',
     description: '13-inch laptop, great for coursework and projects.',
     category: 'Electronics',
+    condition: 'Like new',
     owner: {
       displayName: 'Maya Chen',
       username: 'maya-chen',
@@ -20,6 +21,7 @@ export const MOCK_ITEMS = [
     name: '2-person Camping Tent',
     description: 'Lightweight tent with rain fly. Easy to set up.',
     category: 'Outdoor',
+    condition: 'Good',
     owner: {
       displayName: 'Jordan Lee',
       username: 'jordan-lee',
@@ -36,6 +38,7 @@ export const MOCK_ITEMS = [
     name: 'Mirrorless Camera',
     description: 'A compact camera with a versatile 18–55mm lens.',
     category: 'Electronics',
+    condition: 'Fair',
     owner: {
       displayName: 'Sam Rivera',
       username: 'sam-rivera',
@@ -52,6 +55,7 @@ export const MOCK_ITEMS = [
     name: 'Computer Science Textbooks',
     description: 'A bundle of helpful books for introductory CS courses.',
     category: 'Books',
+    condition: 'New',
     owner: {
       displayName: 'Avery Patel',
       username: 'averypat18',
@@ -68,6 +72,7 @@ export const MOCK_ITEMS = [
     name: 'Skateboard',
     description: 'Well-maintained complete board, suitable for beginners.',
     category: 'Sports',
+    condition: 'Good',
     owner: {
       displayName: 'Noah Brooks',
       username: 'noah-brooks',
@@ -84,6 +89,7 @@ export const MOCK_ITEMS = [
     name: 'Wireless Earbuds',
     description: 'Noise-cancelling earbuds with charging case.',
     category: 'Electronics',
+    condition: 'Like new',
     owner: {
       displayName: 'Taylor Kim',
       username: 'taylor-kim',

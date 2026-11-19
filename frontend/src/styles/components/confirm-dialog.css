@@ -18,7 +18,7 @@
   padding: 22px;
   border: 1px solid #e3ebed;
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 20px 40px #1745512e;
   outline: 0;
 }
@@ -32,7 +32,7 @@
 
 .confirm-text {
   margin: 8px 0 0;
-  color: #587076;
+  color: var(--text-muted);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -80,18 +80,18 @@
 }
 
 .confirm-actions button[data-focus-visible] {
-  outline: 2px solid #318675;
+  outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }
 
 .confirm-primary {
   border: 0;
   color: #fff;
-  background: #0c5865;
+  background: var(--brand-teal);
 }
 
 .confirm-primary[data-hovered] {
-  background: #084653;
+  background: var(--brand-teal-dark);
 }
 
 .confirm-primary[data-disabled] {
