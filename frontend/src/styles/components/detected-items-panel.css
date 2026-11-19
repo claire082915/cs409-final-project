@@ -1,0 +1,311 @@
+/* Same dimmed backdrop as the item form */
+.detected-backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  background: #102f36a8;
+  backdrop-filter: blur(3px);
+}
+.detected-backdrop[data-entering] {
+  animation: detected-fade 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* Only the panel counts as inside, so clicking the backdrop hides it */
+.detected-panel-wrap {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(100%, 540px);
+}
+.detected-panel-wrap[data-entering] {
+  animation: detected-slide 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.detected-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 1px solid #e3ecee;
+  color: #244c56;
+  background: var(--surface);
+  box-shadow: -24px 0 60px #05232c30;
+  outline: 0;
+}
+.detected-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid #e3ecee;
+}
+.detected-panel-header h2 {
+  margin: 0;
+  color: #153f4a;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.detected-close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e2eaec;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: var(--surface);
+  cursor: pointer;
+}
+.detected-close:hover:not(:disabled) {
+  background: #eef3f4;
+}
+
+/* Searching and empty states sit in the middle of the panel */
+.detected-searching,
+.detected-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+.detected-searching strong,
+.detected-empty strong {
+  color: #173f4b;
+  font-size: 16px;
+}
+.detected-searching > span,
+.detected-empty > span {
+  max-width: 320px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.detected-empty svg {
+  color: var(--brand-orange);
+}
+/* Shrinks to the photo so the shimmer only covers the photo */
+.detected-room-photo {
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+/* The whole photo shows uncropped, so you see what Gemini is looking at */
+.detected-room-photo img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+}
+/* A soft light band drifts across the photo while Gemini looks at it */
+.detected-shimmer {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 60%;
+  background: linear-gradient(105deg, transparent, #ffffff40 50%, transparent);
+  animation: detected-shimmer 3.6s ease-in-out infinite;
+}
+.detected-steps {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 6px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.detected-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.detected-step.active {
+  color: #173f4b;
+  font-weight: 600;
+}
+.detected-step.active svg,
+.detected-step.done svg {
+  color: var(--brand-green);
+}
+.detected-secondary-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: var(--brand-teal);
+  background: color-mix(in srgb, var(--brand-teal) 10%, white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.detected-secondary-button:hover {
+  background: color-mix(in srgb, var(--brand-teal) 16%, white);
+}
+
+/* The list scrolls between the fixed header and footer */
+.detected-review {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.detected-review-list {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 18px 24px;
+}
+.detected-review-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.detected-review-heading img {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.detected-review-heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.detected-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #e3ecee;
+  border-radius: 12px;
+  background: #fff;
+  transition: background 180ms;
+}
+.detected-card-select {
+  position: relative;
+  align-self: start;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.detected-card-photo {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #eef3f4;
+}
+/* White ring so the box stays visible on dark and light photos */
+.detected-checkbox {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  color: #fff;
+  background: #ffffffcc;
+  box-shadow: 0 1px 4px #05232c40;
+}
+.detected-checkbox svg {
+  visibility: hidden;
+}
+.detected-card-select[data-selected] .detected-checkbox {
+  background: var(--brand-teal);
+}
+.detected-card-select[data-selected] .detected-checkbox svg {
+  visibility: visible;
+}
+.detected-card-select[data-hovered] .detected-checkbox {
+  border-color: color-mix(in srgb, var(--brand-teal) 40%, white);
+}
+.detected-card-select[data-focus-visible] {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}
+.detected-card-fields {
+  display: grid;
+  gap: 12px;
+  transition: opacity 180ms;
+}
+.detected-card-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+/* Unchecked cards stay in place, faded, with the checkbox still at full strength */
+.detected-card.unselected {
+  background: #f4f7f7;
+}
+.detected-card.unselected .detected-card-fields,
+.detected-card.unselected .detected-card-photo {
+  opacity: 0.45;
+}
+.detected-panel-footer {
+  display: grid;
+  gap: 10px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid #e3ecee;
+  background: var(--surface);
+}
+.detected-panel-footer .item-form-error {
+  margin: 0;
+}
+.detected-panel button:focus-visible,
+.detected-secondary-button:has(input:focus-visible) {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}
+
+@keyframes detected-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes detected-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+/* Drifts in the first 55% (about 2s) then pauses before the next pass, both picked by hand */
+@keyframes detected-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  55%,
+  to {
+    transform: translateX(270%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detected-backdrop[data-entering],
+  .detected-panel-wrap[data-entering],
+  .detected-shimmer {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .detected-card {
+    grid-template-columns: 1fr;
+  }
+  .detected-card-photo {
+    width: 72px;
+    height: 72px;
+  }
+}

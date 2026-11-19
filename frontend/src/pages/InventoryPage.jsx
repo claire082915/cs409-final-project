@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ImagePlus, Plus, PackageOpen, Search, X } from 'lucide-react'
+import { ImagePlus, LoaderCircle, Plus, PackageOpen, Search, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
+import PhotoPickButton from '../components/PhotoPickButton.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
-import { ITEM_CONDITIONS, NO_CONDITION } from '../lib/itemConditions.js'
+import { ITEM_CONDITIONS, NO_CONDITION, storedCondition } from '../lib/itemConditions.js'
 import SelectMenu from '../components/SelectMenu.jsx'
 import FilterMenu from '../components/FilterMenu.jsx'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
+import { findItems, onItemsAdded, openPanel, useDetectionTask } from '../lib/detectionTask.js'
 import { MOCK_INVENTORY } from '../lib/mockInventory.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
@@ -53,6 +56,7 @@ export default function InventoryPage() {
   const [isDiscardOpen, setIsDiscardOpen] = useState(false)
   const [deletingItem, setDeletingItem] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const detectionTask = useDetectionTask()
 
   const openForm = (item) => {
     setEditingItem(item)
@@ -99,13 +103,22 @@ export default function InventoryPage() {
     return apiFetch(`items/${editingItem._id}`, { method: 'PATCH', body: { ...fields, photos } })
   }
 
+  // The photo review can be finished from any page, so its items arrive here as an event
+  useEffect(
+    () =>
+      onItemsAdded((addedItems) => {
+        setItems((current) => [...addedItems, ...current])
+        setTab('available')
+      }),
+    [],
+  )
+
   const saveItem = async (event) => {
     event.preventDefault()
     const fields = {
       name: form.name.trim(),
       category: form.category,
-      // The picker needs a text option, the backend stores a missing condition as null
-      condition: form.condition === NO_CONDITION ? null : form.condition,
+      condition: storedCondition(form.condition),
       description: form.description.trim(),
     }
     if (!fields.name) {
@@ -216,9 +229,26 @@ export default function InventoryPage() {
             <h1>My Items</h1>
             <p>Manage what you lend.</p>
           </div>
-          <button className="inventory-add-button" type="button" onClick={() => openForm(null)}>
-            <Plus size={17} /> Add item
-          </button>
+          <div className="inventory-heading-actions">
+            {/* One photo at a time, a running search or unreviewed drafts reopen instead */}
+            {detectionTask.status === 'idle' ? (
+              <PhotoPickButton className="inventory-photo-button" onPick={findItems}>
+                <Sparkles size={17} aria-hidden="true" /> Auto-populate
+              </PhotoPickButton>
+            ) : (
+              <button type="button" className="inventory-photo-button" onClick={openPanel}>
+                {detectionTask.status === 'searching' ? (
+                  <LoaderCircle size={17} className="task-spinner" aria-hidden="true" />
+                ) : (
+                  <Sparkles size={17} aria-hidden="true" />
+                )}
+                {detectionTask.status === 'searching' ? 'Finding items...' : 'Review items'}
+              </button>
+            )}
+            <button className="inventory-add-button" type="button" onClick={() => openForm(null)}>
+              <Plus size={17} /> Add item
+            </button>
+          </div>
         </div>
 
         <div className="inventory-toolbar">
@@ -245,28 +275,6 @@ export default function InventoryPage() {
             selected={tab}
             onChange={setTab}
           />
-          <label className="inventory-search">
-            <Search size={17} aria-hidden="true" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search your items"
-              aria-label="Search your items"
-            />
-            {query && (
-              <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
-                <X size={15} />
-              </button>
-            )}
-            <FilterMenu
-              options={ITEM_CATEGORIES}
-              selected={selectedCategories}
-              onChange={setSelectedCategories}
-              allLabel="All categories"
-              pluralLabel="categories"
-              label="category"
-            />
-          </label>
           <div className="inventory-source" aria-label="Inventory data source">
             <span>Data</span>
             <button
@@ -285,6 +293,28 @@ export default function InventoryPage() {
             </button>
           </div>
         </div>
+        <label className="inventory-search">
+          <Search size={17} aria-hidden="true" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search your items"
+            aria-label="Search your items"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
+              <X size={15} />
+            </button>
+          )}
+          <FilterMenu
+            options={ITEM_CATEGORIES}
+            selected={selectedCategories}
+            onChange={setSelectedCategories}
+            allLabel="All categories"
+            pluralLabel="categories"
+            label="category"
+          />
+        </label>
 
         {error && (
           <p className="inventory-error" role="status">
@@ -303,21 +333,17 @@ export default function InventoryPage() {
                   ) : (
                     <PackageOpen size={34} />
                   )}
-                  <ItemTags category={item.category} condition={item.condition} />
                 </div>
                 <div className="inventory-card-copy">
                   <strong>
                     {/* Its click area covers the whole card, like on Browse */}
-                    <button
+                    <ItemNameButton
+                      name={item.name}
                       className="inventory-card-open"
-                      type="button"
-                      title={item.name}
-                      aria-haspopup="dialog"
                       onClick={() => openForm(item)}
-                    >
-                      {item.name}
-                    </button>
+                    />
                   </strong>
+                  <ItemTags category={item.category} condition={item.condition} />
                 </div>
               </article>
             ))}

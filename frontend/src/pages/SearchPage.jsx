@@ -9,6 +9,7 @@ import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
+import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
 import Reputation from '../components/Reputation.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -27,21 +28,13 @@ function ItemResult({ item, onOpen }) {
     <article className="browse-card">
       <div className="browse-photo">
         {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={30} />}
-        <ItemTags category={item.category} condition={item.condition} />
       </div>
       <div className="browse-card-body">
         <h3 className="browse-card-title">
           {/* Its click area covers the whole card, like on Browse */}
-          <button
-            className="browse-card-open"
-            type="button"
-            title={item.name}
-            aria-haspopup="dialog"
-            onClick={onOpen}
-          >
-            {item.name}
-          </button>
+          <ItemNameButton name={item.name} className="browse-card-open" onClick={onOpen} />
         </h3>
+        <ItemTags category={item.category} condition={item.condition} />
         <div className="browse-owner-details">
           {/* Owner is null when they hid their profile */}
           <p className="browse-owner">

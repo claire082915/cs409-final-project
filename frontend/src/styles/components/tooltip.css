@@ -1,0 +1,50 @@
+/* Dark teal so it stands out from the light surfaces, above popovers and modals */
+.tooltip {
+  z-index: 70;
+  box-sizing: border-box;
+  max-width: 240px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  color: #fff;
+  background: var(--brand-teal-dark);
+  box-shadow: 0 6px 16px #05232c30;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.tooltip[data-entering] {
+  animation: tooltip-fade 140ms ease-out;
+}
+.tooltip-arrow svg {
+  display: block;
+  fill: var(--brand-teal-dark);
+}
+/* The arrow is drawn pointing down, so it turns to face the trigger on the other sides */
+.tooltip[data-placement='bottom'] .tooltip-arrow svg {
+  transform: rotate(180deg);
+}
+.tooltip[data-placement='right'] .tooltip-arrow svg {
+  transform: rotate(90deg);
+}
+.tooltip[data-placement='left'] .tooltip-arrow svg {
+  transform: rotate(-90deg);
+}
+/* Spans a card edge to edge, a shadow would spill past the edges and make it look wider */
+.tooltip-flush {
+  box-shadow: none;
+}
+/* At the right end where the ellipsis cuts the name, !important beats React Aria's inline left */
+.tooltip-flush .tooltip-arrow {
+  right: 14px;
+  left: auto !important;
+}
+@keyframes tooltip-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip[data-entering] {
+    animation: none;
+  }
+}

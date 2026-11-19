@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase.js'
+import { discardTask } from '../lib/detectionTask.js'
+import { clearNotifications } from '../lib/notifications.js'
 import { useAuth } from './AuthContext.jsx'
 
 // Log out is a route so pages with unsaved changes can block it like any other navigation
@@ -9,6 +11,9 @@ export default function LogOutRoute() {
   const { user } = useAuth()
 
   useEffect(() => {
+    // Drafts and notifications belong to this user, so they go before the next one signs in
+    discardTask()
+    clearNotifications()
     signOut(auth)
   }, [])
 

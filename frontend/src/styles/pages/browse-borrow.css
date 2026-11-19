@@ -173,6 +173,10 @@
 .browse-card-body {
   padding: 13px 14px 15px;
 }
+/* The card body isn't a grid, so the tags need their own gap from the name */
+.browse-card-body .item-tags {
+  margin-top: 7px;
+}
 .browse-owner-details {
   display: grid;
   gap: 4px;

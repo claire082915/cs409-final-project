@@ -7,6 +7,7 @@ import { Check, PackageOpen, Search, X } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
+import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
 import OwnerDetails from '../components/OwnerDetails.jsx'
 import FilterMenu, { describeSelection } from '../components/FilterMenu.jsx'
@@ -236,24 +237,20 @@ export default function BrowseBorrowPage() {
                   ) : (
                     <PackageOpen size={35} aria-hidden="true" />
                   )}
-                  <ItemTags category={item.category} condition={item.condition} />
                 </div>
                 <div className="browse-card-body">
                   <h2 className="browse-card-title">
                     {/* Its click area covers the whole card, so the card opens the request */}
-                    <button
+                    <ItemNameButton
+                      name={item.name}
                       className="browse-card-open"
-                      type="button"
-                      title={item.name}
-                      aria-haspopup="dialog"
                       onClick={() => {
                         setError('')
                         setSelectedItem(item)
                       }}
-                    >
-                      {item.name}
-                    </button>
+                    />
                   </h2>
+                  <ItemTags category={item.category} condition={item.condition} />
                   <OwnerDetails owner={item.owner} />
                 </div>
               </article>

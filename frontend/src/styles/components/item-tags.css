@@ -1,9 +1,7 @@
-/* Sits over the bottom left of an item photo */
+/* Under the item name, wrapping to a second line on narrow cards */
 .item-tags {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .item-tag {
@@ -16,7 +14,7 @@
   font-size: 12px;
   font-weight: 700;
 }
-/* Pale brand tints so the tags stay readable over any photo */
+/* Pale brand tints so the two tags read apart at a glance */
 .item-tag-category {
   /* The darker green from the view switch, brand green text is too faint on its tint */
   color: #176f64;

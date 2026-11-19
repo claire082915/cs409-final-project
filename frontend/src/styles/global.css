@@ -181,6 +181,15 @@ a {
 .button-small:hover {
   background: var(--brand-orange-dark);
 }
+/* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action] {
+  color: var(--brand-orange-dark);
+  background: color-mix(in srgb, var(--brand-orange) 12%, white);
+  font-weight: 700;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
+  background: color-mix(in srgb, var(--brand-orange) 20%, white);
+}
 .button-small {
   min-height: 34px;
   padding: 0 15px;
