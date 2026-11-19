@@ -143,7 +143,7 @@ export default function LandingPage() {
               <span className="step-number">01</span>
               <div>
                 <h3>Find something useful</h3>
-                <p>Browse what people nearby are happy to lend.</p>
+                <p>Browse what people on campus are happy to lend.</p>
               </div>
             </div>
             <div className="step">
