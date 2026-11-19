@@ -6,6 +6,7 @@ import requireUser, { requireIdToken } from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
 import { reputation } from '../lib/reputation.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
+import { demoUsernameError } from '../lib/demoAccount.js'
 
 const router = Router()
 const editableFields = ['username', 'displayName', 'campusArea', 'photo']
@@ -39,6 +40,10 @@ router.post('/', requireIdToken, async (req, res) => {
   if (typeof username !== 'string' || typeof displayName !== 'string') {
     return res.status(400).json({ message: 'Username and display name are required', data: {} })
   }
+  const usernameError = demoUsernameError(req.idToken.email, username)
+  if (usernameError) {
+    return res.status(400).json({ message: usernameError, data: {} })
+  }
   if (await User.exists({ firebaseUid: req.idToken.uid })) {
     return res.status(409).json({ message: 'Profile already exists', data: {} })
   }
@@ -59,6 +64,12 @@ router.get('/me', requireUser, async (req, res) => {
 router.patch('/me', requireUser, async (req, res) => {
   const body = req.body ?? {}
   const oldPhoto = req.user.photo
+  // Save always sends the username, so only a new one is checked
+  const changesUsername = typeof body.username === 'string' && body.username !== req.user.username
+  const usernameError = changesUsername && demoUsernameError(req.user.email, body.username)
+  if (usernameError) {
+    return res.status(400).json({ message: usernameError, data: {} })
+  }
   for (const field of editableFields) {
     if (body[field] === undefined) {
       continue

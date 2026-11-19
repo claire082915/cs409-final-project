@@ -8,14 +8,20 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
   signInWithPopup,
   signOut,
   validatePassword,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase.js'
-import { apiFetch } from '../lib/api.js'
+import { apiFetch, fetchDemoToken } from '../lib/api.js'
 import { useAuth } from '../auth/AuthContext.jsx'
-import { SCHOOL_DOMAIN, isSchoolEmail, netIdToEmail } from '../auth/schoolEmail.js'
+import {
+  DEMO_EMAIL_DOMAIN,
+  SCHOOL_DOMAIN,
+  isAllowedEmail,
+  netIdToEmail,
+} from '../auth/schoolEmail.js'
 import Logo from '../components/Logo.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
@@ -312,7 +318,7 @@ export default function SignUpLoginPage() {
 
   const continueWithGoogle = run(async () => {
     const result = await signInWithPopup(auth, googleProvider)
-    if (!isSchoolEmail(result.user.email)) {
+    if (!isAllowedEmail(result.user.email)) {
       await removeOutsideAccount(result)
       throw new Error(`Use your ${SCHOOL_DOMAIN} Google account.`)
     }
@@ -320,6 +326,11 @@ export default function SignUpLoginPage() {
       ...current,
       displayName: current.displayName || result.user.displayName || '',
     }))
+  })
+
+  // Demo only, the backend makes the demo account and its profile, so this lands on the dashboard
+  const continueAsDemo = run(async () => {
+    await signInWithCustomToken(auth, await fetchDemoToken())
   })
 
   // Delete accounts Firebase just made so outside sign ins don't pile up, older ones only sign out
@@ -374,6 +385,18 @@ export default function SignUpLoginPage() {
     </button>
   )
 
+  // Demo only, hidden unless the demo domain is set
+  const demoButton = DEMO_EMAIL_DOMAIN && (
+    <button
+      type="button"
+      className="button button-light auth-demo-button"
+      onClick={continueAsDemo}
+      disabled={submitting}
+    >
+      Continue as Demo User
+    </button>
+  )
+
   return (
     <div className="site-outer">
       <header className="site-header">
@@ -396,7 +419,7 @@ export default function SignUpLoginPage() {
         </section>
 
         <section className="auth-card">
-          {user && !isSchoolEmail(user.email) ? (
+          {user && !isAllowedEmail(user.email) ? (
             <div className="auth-panel">
               <p className="auth-message auth-error" role="alert">
                 Lendr is only for {SCHOOL_DOMAIN} accounts, and you are signed in as {user.email}.
@@ -485,6 +508,7 @@ export default function SignUpLoginPage() {
                   <button type="submit" className="button button-primary" disabled={submitting}>
                     <PendingLabel pending={submitting}>Sign Up</PendingLabel>
                   </button>
+                  {demoButton}
                   {googleButton}
                   <p className="switch-prompt">
                     Already have an account?{' '}
@@ -516,6 +540,7 @@ export default function SignUpLoginPage() {
                   <button type="submit" className="button button-primary" disabled={submitting}>
                     Log In
                   </button>
+                  {demoButton}
                   {googleButton}
                   <p className="switch-prompt">
                     Don&apos;t have an account?{' '}

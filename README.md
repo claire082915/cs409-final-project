@@ -29,21 +29,24 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`.
+Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`. `DEMO_EMAIL_DOMAIN` (like `lendr-cs409-demo.com`) also lets the demo accounts sign in next to `illinois.edu`, leave it empty to allow only Illinois accounts. The demo accounts are `demo` through `demo20` at that domain, each keeps the username from its email, and nobody else can take those usernames. Set `VITE_DEMO_EMAIL_DOMAIN` in the frontend `.env` to the same value.
 
 ### Auth
 
 Sign up, log in (email or Google), log out and password reset will happen in the frontend with the Firebase SDK. The backend only verifies Firebase ID tokens and stores each user's profile.
 
+For demos, `POST demo/token` returns `{ token }`, a Firebase custom token for one shared account, `demo@` the `DEMO_EMAIL_DOMAIN`, shown as Demo User. The first call creates the account, already verified, and its profile. Sign in with `signInWithCustomToken`. The route only exists while `DEMO_EMAIL_DOMAIN` is set.
+
 ### Endpoints
 
-Every request except `health` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
+Every request except `health` and `demo/token` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
 
 Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
 
 | Endpoint               | Method | Action                                                  |
 | ---------------------- | ------ | ------------------------------------------------------- |
 | `health`               | GET    | Check the server is up                                  |
+| `demo/token`           | POST   | Get a sign in token for the demo account                |
 | `items`                | POST   | Create an item                                          |
 | `items?owner=:id`      | GET    | List a user's items, newest first                       |
 | `items/detect`         | POST   | Draft items from a room photo                           |

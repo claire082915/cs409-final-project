@@ -6,7 +6,9 @@ import PendingLabel from '../components/PendingLabel.jsx'
 import Reputation from '../components/Reputation.jsx'
 import SelectMenu from '../components/SelectMenu.jsx'
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx'
+import Tooltip from '../components/Tooltip.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
+import { isDemoEmail } from '../auth/schoolEmail.js'
 import { apiFetch } from '../lib/api.js'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
@@ -36,6 +38,7 @@ export default function AccountPage() {
   const [pendingPhoto, setPendingPhoto] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const isDemo = isDemoEmail(profile.email)
 
   const hasUnsavedChanges =
     hasChanges(form, formFromProfile(profile)) ||
@@ -138,13 +141,17 @@ export default function AccountPage() {
                     Username
                     <span className="account-username">
                       <span aria-hidden="true">@</span>
-                      <input
-                        name="username"
-                        value={form.username}
-                        onChange={updateForm}
-                        placeholder="yourusername"
-                        autoComplete="username"
-                      />
+                      {/* Demo only, read-only like Email so the tooltip still opens */}
+                      <Tooltip text={isDemo ? "Demo accounts can't change their username" : ''}>
+                        <input
+                          name="username"
+                          value={form.username}
+                          onChange={updateForm}
+                          placeholder="yourusername"
+                          autoComplete="username"
+                          readOnly={isDemo}
+                        />
+                      </Tooltip>
                     </span>
                   </label>
                   <div className="account-field">
@@ -159,7 +166,10 @@ export default function AccountPage() {
                   </div>
                   <label>
                     Email
-                    <input name="email" value={profile.email} disabled />
+                    {/* Read-only rather than disabled so hover and focus still open the tooltip */}
+                    <Tooltip text="Email can't be changed">
+                      <input name="email" value={profile.email} readOnly />
+                    </Tooltip>
                   </label>
                 </div>
               </div>
@@ -186,7 +196,7 @@ export default function AccountPage() {
                 />
                 <SettingToggle
                   label="Show my profile in the community"
-                  description="Show your name on your listings"
+                  description="Let others find your profile and see your name on listings"
                   checked={preferences.showProfile}
                   onChange={() => togglePreference('showProfile')}
                 />

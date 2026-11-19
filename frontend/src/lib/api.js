@@ -29,6 +29,17 @@ export async function apiFetch(path, { method = 'GET', body } = {}) {
     headers,
     body: body && JSON.stringify(body),
   })
+  return readData(response)
+}
+
+// Demo only, asks for a sign in token for the shared demo account, so it runs signed out
+export async function fetchDemoToken() {
+  const response = await fetch(`${API_BASE}/demo/token`, { method: 'POST' })
+  const { token } = await readData(response)
+  return token
+}
+
+async function readData(response) {
   if (response.status === 204) {
     return null
   }
