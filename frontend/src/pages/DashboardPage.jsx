@@ -131,7 +131,7 @@ export default function DashboardPage() {
         <div className="dashboard-heading page-heading">
           <div>
             <h1>Hi {greeting}!</h1>
-            <p>Here’s what’s happening with your items.</p>
+            <p>Here’s what’s happening with your account.</p>
           </div>
           <button
             className="dashboard-refresh"

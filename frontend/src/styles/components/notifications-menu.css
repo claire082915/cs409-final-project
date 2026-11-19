@@ -57,9 +57,13 @@
   padding: 6px;
   list-style: none;
 }
+/* Holds the row and its dismiss button, which sits over the row's last column */
+.notifications-list li {
+  position: relative;
+}
 .notification-row {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 8px;
+  grid-template-columns: 32px minmax(0, 1fr) 24px;
   align-items: start;
   gap: 10px;
   width: 100%;
@@ -108,13 +112,54 @@
   font-size: 12px;
 }
 .notification-unread {
+  justify-self: center;
   width: 8px;
   height: 8px;
   margin-top: 6px;
   border-radius: 50%;
   background: var(--brand-orange);
 }
+/* Shows on hover or focus in place of the unread dot */
+.notification-dismiss {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: transparent;
+  opacity: 0;
+  cursor: pointer;
+}
+.notification-dismiss:hover {
+  color: #173f4b;
+  background: #e2eaec;
+}
+.notifications-list li:hover .notification-dismiss,
+.notifications-list li:focus-within .notification-dismiss {
+  opacity: 1;
+}
+.notifications-list li:hover .notification-unread,
+.notifications-list li:focus-within .notification-unread {
+  visibility: hidden;
+}
+/* Touch screens have no hover, so the button always shows there with the dot moved below it */
+@media (hover: none) {
+  .notification-dismiss {
+    opacity: 1;
+  }
+  .notifications-list li .notification-unread {
+    visibility: visible;
+    margin-top: 30px;
+  }
+}
 .notification-row:focus-visible,
+.notification-dismiss:focus-visible,
 .notifications-clear:focus-visible {
   outline: 2px solid var(--brand-green);
   outline-offset: -2px;

@@ -27,7 +27,7 @@ const navigation = [
   { label: 'Home', mobileLabel: 'Home', to: '/dashboard', icon: Home },
   { label: 'Browse Items', mobileLabel: 'Browse', to: '/browse', icon: Compass },
   { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Package },
-  { label: 'My Loans', to: '/loan-details', icon: ArrowLeftRight },
+  { label: 'My Loans', mobileLabel: 'Loans', to: '/loan-details', icon: ArrowLeftRight },
   {
     label: 'Borrow Requests',
     mobileLabel: 'Requests',

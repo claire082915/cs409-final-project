@@ -46,6 +46,10 @@ export function markAllRead() {
   saveNotifications(notifications.map((notification) => ({ ...notification, read: true })))
 }
 
+export function dismissNotification(id) {
+  saveNotifications(notifications.filter((notification) => notification.id !== id))
+}
+
 export function clearNotifications() {
   saveNotifications([])
 }

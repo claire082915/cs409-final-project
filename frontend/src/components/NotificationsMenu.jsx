@@ -1,8 +1,13 @@
 import { Button, Dialog, DialogTrigger, Heading, Popover } from 'react-aria-components'
-import { Bell, SearchX, Sparkles, TriangleAlert } from 'lucide-react'
+import { Bell, SearchX, Sparkles, TriangleAlert, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { openPanel, useDetectionTask } from '../lib/detectionTask.js'
-import { clearNotifications, markAllRead, useNotifications } from '../lib/notifications.js'
+import {
+  clearNotifications,
+  dismissNotification,
+  markAllRead,
+  useNotifications,
+} from '../lib/notifications.js'
 import '../styles/components/count-badge.css'
 import '../styles/components/notifications-menu.css'
 
@@ -44,6 +49,15 @@ function NotificationRow({ notification, onOpen }) {
         {!notification.read && (
           <span className="notification-unread" role="img" aria-label="Unread" />
         )}
+      </button>
+      {/* A sibling of the row since a button can't hold another button */}
+      <button
+        type="button"
+        className="notification-dismiss"
+        onClick={() => dismissNotification(notification.id)}
+        aria-label={`Dismiss ${notification.title}`}
+      >
+        <X size={14} aria-hidden="true" />
       </button>
     </li>
   )
@@ -92,7 +106,7 @@ export default function NotificationsMenu() {
                 )}
               </header>
               {notifications.length === 0 ? (
-                <p className="notifications-empty">No notifications yet.</p>
+                <p className="notifications-empty">All caught up!</p>
               ) : (
                 <ul className="notifications-list">
                   {notifications.map((notification) => (

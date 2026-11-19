@@ -310,7 +310,9 @@ body:has(.app-shell) #root {
     left: 0;
     height: 65px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* One equal column per link, so adding a link can't wrap the bar */
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
     border-top: 1px solid #e6ecee;
     background: var(--surface);
     box-shadow: 0 -5px 20px #173e4c0a;

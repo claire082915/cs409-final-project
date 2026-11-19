@@ -53,7 +53,7 @@ function PersonOption({ person }) {
     <ListBoxItem
       id={`person-${person.username}`}
       textValue={person.displayName}
-      href={`#/profile/${encodeURIComponent(person.username)}`}
+      href={`/profile/${encodeURIComponent(person.username)}`}
       className="field-option"
     >
       <Avatar
