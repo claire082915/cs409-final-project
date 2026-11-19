@@ -26,11 +26,12 @@ async function searchItems(pattern, userId, skip, limit) {
     .limit(limit)
     .populate('owner', 'username displayName photo campusArea preferences.showProfile')
   const loanedIds = await loanedItemIds(items.map((item) => item._id))
+  const reputations = await reputationsByUser(items.map((item) => item.owner._id))
   const matchingItems = []
   for (const item of items) {
     matchingItems.push({
       ...withAvailability(item, !loanedIds.has(item.id)),
-      owner: publicOwner(item.owner),
+      owner: publicOwner(item.owner, reputations.get(item.owner.id) ?? null),
     })
   }
   return matchingItems

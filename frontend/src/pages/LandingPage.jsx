@@ -4,6 +4,13 @@ import FeatureCard from '../components/FeatureCard.jsx'
 import Logo from '../components/Logo.jsx'
 import '../styles/pages/landing.css'
 
+const FEATURED_AVATARS = [
+  { initials: 'KL', color: 0 },
+  { initials: 'RL', color: 2 },
+  { initials: 'CL', color: 4 },
+  { initials: 'AB', color: 6 },
+]
+
 function scrollTo(event, id) {
   event.preventDefault()
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -64,10 +71,12 @@ export default function LandingPage() {
               </div>
               <div className="neighbor-proof">
                 <div className="avatar-stack" aria-hidden="true">
-                  <span>J</span>
-                  <span>M</span>
-                  <span>A</span>
-                  <span>+</span>
+                  {FEATURED_AVATARS.map(({ initials, color }) => (
+                    <span key={initials} className={`avatar avatar-color-${color}`}>
+                      {initials}
+                    </span>
+                  ))}
+                  <span className="avatar avatar-stack-more">+</span>
                 </div>
                 <p>
                   <strong>Good neighbors share.</strong>

@@ -251,10 +251,29 @@
   height: 24px;
   font-size: 9px;
 }
+.browse-owner-hidden {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+/* Grey circle in place of a hidden owner's photo or initials */
+.browse-owner-placeholder {
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-muted);
+  background: #e7eef0;
+}
 /* As wide as the avatar so the area name lines up with the owner name */
 .browse-location svg {
   flex: none;
   width: 24px;
+}
+/* Unrated has no star, so indent it by the icon column and gap to line up with the rows above */
+.browse-location:not(:has(svg)) {
+  padding-left: 30px;
 }
 .browse-owner-link > span:last-child,
 .browse-owner > span,

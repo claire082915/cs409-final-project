@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-Pushes to `main` that change `frontend/` build and deploy the site to GitHub Pages through `.github/workflows/deploy-pages.yml`. In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**. The Vite build uses relative asset paths so it works at the repository's Pages URL.
+Pushes to `main` that change `frontend/` build and deploy the site to GitHub Pages through `.github/workflows/deploy-pages.yml`. In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**. The site is served from `/cs409-final-project/`, set as `base` in `vite.config.js` and used as the router's basename. The build copies `index.html` to `404.html`, so GitHub Pages serves the app for any page path and a reload or direct link still opens the right page.
 
 ## Backend
 
@@ -29,21 +29,24 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`.
+Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`. `DEMO_EMAIL_DOMAIN` (like `lendr-cs409-demo.com`) also lets the demo accounts sign in next to `illinois.edu`, leave it empty to allow only Illinois accounts. The demo accounts are `demo` through `demo20` at that domain, each keeps the username from its email, and nobody else can take those usernames. Set `VITE_DEMO_EMAIL_DOMAIN` in the frontend `.env` to the same value.
 
 ### Auth
 
 Sign up, log in (email or Google), log out and password reset will happen in the frontend with the Firebase SDK. The backend only verifies Firebase ID tokens and stores each user's profile.
 
+For demos, `POST demo/token` returns `{ token }`, a Firebase custom token for one shared account, `demo@` the `DEMO_EMAIL_DOMAIN`, shown as Demo User. The first call creates the account, already verified, and its profile. Sign in with `signInWithCustomToken`. The route only exists while `DEMO_EMAIL_DOMAIN` is set.
+
 ### Endpoints
 
-Every request except `health` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
+Every request except `health` and `demo/token` needs an `Authorization: Bearer <Firebase ID token>` header. After the first sign-in, call `POST users` to create the profile, other requests return 403 until then.
 
 Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE items/:id` returns 204 with no body.
 
 | Endpoint               | Method | Action                                                  |
 | ---------------------- | ------ | ------------------------------------------------------- |
 | `health`               | GET    | Check the server is up                                  |
+| `demo/token`           | POST   | Get a sign in token for the demo account                |
 | `items`                | POST   | Create an item                                          |
 | `items?owner=:id`      | GET    | List a user's items, newest first                       |
 | `items/detect`         | POST   | Draft items from a room photo                           |
@@ -86,7 +89,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 
 Item responses also include `available`, which is `false` while the item is on loan. Changing `condition` fails with 409 while the item is on loan, since the borrower took it as it was.
 
-`GET items/browse` returns `{ items, total }`, other users' items 12 at a time, newest first, leaving out items on loan. Pass `skip` to get the next page, and `total` counts every match. `q` matches the name or description, ignoring case. `category` and `area` filter by category and by the owner's campus area, and can repeat, like `?category=Books&category=Games`. Owners with `showProfile` off only show without an `area` filter. Each item has `owner` as `{ username, displayName, photo, campusArea }`, or `null` when the owner turned off `showProfile`.
+`GET items/browse` returns `{ items, total }`, other users' items 12 at a time, newest first, leaving out items on loan. Pass `skip` to get the next page, and `total` counts every match. `q` matches the name or description, ignoring case. `category` and `area` filter by category and by the owner's campus area, and can repeat, like `?category=Books&category=Games`. Each item has `owner` as `{ _id, username, displayName, photo, campusArea, reputation }`, with `reputation` like profiles. When the owner turned off `showProfile`, `username`, `displayName` and `photo` are `null`, and the area and reputation still show.
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
 
@@ -159,7 +162,7 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 `preferences` holds the Settings toggles as booleans: `borrowRequests`, `dueDateReminders` and `showProfile`, all defaulting to `true`. Send only the ones you want to change.
 
-With `showProfile` off, other users can't see your profile or find you in search, and your items show with `owner` as `null`. Loans still show both people's names, since the owner approves each request.
+With `showProfile` off, other users can't see your profile or find you in search, and your items show without your name, username or photo. Loans still show both people's names, since the owner approves each request.
 
 `GET users/:username` returns `{ username, displayName, photo, campusArea, joinedAt, lentCount, borrowedCount, items, reputation }`, or 404 when the user turned off `showProfile` and isn't you. `joinedAt` is when the account was created. `lentCount` and `borrowedCount` count the user's loans that came back, as owner and as borrower. `items` lists the user's items, newest first, each with `available`. `reputation` is `{ average, count }`, the average `score` and the number of ratings the user has received from other users, or `null` if they haven't been rated yet.
 

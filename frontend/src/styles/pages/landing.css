@@ -119,30 +119,17 @@
   display: flex;
   padding-left: 4px;
 }
-.avatar-stack span {
+.avatar-stack > .avatar {
   width: 26px;
   height: 26px;
-  display: grid;
-  place-items: center;
   border: 2px solid #f7f9f6;
-  border-radius: 50%;
   margin-left: -4px;
-  background: #edcfb8;
-  color: #73533d;
   font-size: 8px;
   font-weight: 700;
 }
-.avatar-stack span:nth-child(2) {
-  background: #d9e6df;
-  color: #527467;
-}
-.avatar-stack span:nth-child(3) {
-  background: #e8d7e8;
-  color: #765d77;
-}
-.avatar-stack span:nth-child(4) {
-  background: var(--surface);
+.avatar-stack > .avatar-stack-more {
   color: #638377;
+  background: var(--surface);
   font-size: 12px;
 }
 .neighbor-proof p {

@@ -9,6 +9,7 @@ import { detectItems } from '../lib/detectItems.js'
 import { cropBox, hasArea, uprightJpeg } from '../lib/photoCrops.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
+import { reputationsByUser } from '../lib/reputation.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'category', 'condition', 'photos']
@@ -149,11 +150,7 @@ async function browseFilter(userId, query) {
   }
   const areas = listParam(query.area)
   if (areas.length) {
-    // Owners who hid their profile only show under All areas
-    const ownerIds = await User.distinct('_id', {
-      campusArea: { $in: areas },
-      'preferences.showProfile': { $ne: false },
-    })
+    const ownerIds = await User.distinct('_id', { campusArea: { $in: areas } })
     filter.owner.$in = ownerIds
   }
   return filter
@@ -174,13 +171,16 @@ router.get('/browse', async (req, res) => {
       .populate('owner', 'username displayName photo campusArea preferences.showProfile'),
     Item.countDocuments(filter),
   ])
+  // Skip items whose owner profile was deleted by hand in the database
+  const ownedItems = items.filter((item) => item.owner)
+  const reputations = await reputationsByUser(ownedItems.map((item) => item.owner._id))
   const browseItems = []
-  for (const item of items) {
-    // Skip items whose owner profile was deleted by hand in the database
-    if (!item.owner) {
-      continue
-    }
-    browseItems.push({ ...withAvailability(item, true), owner: publicOwner(item.owner) })
+  for (const item of ownedItems) {
+    const reputation = reputations.get(item.owner.id) ?? null
+    browseItems.push({
+      ...withAvailability(item, true),
+      owner: publicOwner(item.owner, reputation),
+    })
   }
   res.json({ message: 'OK', data: { items: browseItems, total } })
 })

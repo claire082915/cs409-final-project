@@ -1,9 +1,16 @@
 import { getAuth } from 'firebase-admin/auth'
 import User from '../models/user.js'
+import { isDemoEmail } from '../lib/demoAccount.js'
 
-const SCHOOL_EMAIL_DOMAIN = '@illinois.edu'
+// Demo only, nobody can open mail at the demo domain, so a verified demo account was made by us
+function isAllowedToken(decodedToken) {
+  if (decodedToken.email.endsWith('@illinois.edu')) {
+    return true
+  }
+  return isDemoEmail(decodedToken.email) && decodedToken.email_verified
+}
 
-// Null when the header is missing, the token is bad or expired, or the email is outside the school
+// Null when the header is missing, the token is bad or expired, or the email isn't allowed
 async function decodeIdToken(req) {
   const [scheme, idToken] = req.get('Authorization')?.split(' ') ?? []
   if (scheme !== 'Bearer' || !idToken) {
@@ -15,7 +22,7 @@ async function decodeIdToken(req) {
   } catch {
     return null
   }
-  return decodedToken.email.endsWith(SCHOOL_EMAIL_DOMAIN) ? decodedToken : null
+  return isAllowedToken(decodedToken) ? decodedToken : null
 }
 
 // For creating a profile, which sign up does before the email is verified

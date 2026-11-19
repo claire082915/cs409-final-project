@@ -3,7 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '../lib/firebase.js'
 import { apiFetch } from '../lib/api.js'
 import AppLoader from '../components/AppLoader.jsx'
-import { isSchoolEmail } from './schoolEmail.js'
+import { isAllowedEmail } from './schoolEmail.js'
 
 const AuthContext = createContext(null)
 
@@ -21,7 +21,7 @@ async function loadProfile() {
 
 // The backend rejects everyone else, so skip the request
 function canLoadProfile(firebaseUser) {
-  return firebaseUser?.emailVerified && isSchoolEmail(firebaseUser.email)
+  return firebaseUser?.emailVerified && isAllowedEmail(firebaseUser.email)
 }
 
 export function AuthProvider({ children }) {

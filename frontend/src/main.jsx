@@ -2,7 +2,16 @@ import './styles/global.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from 'sonner'
-import { Route, RouterProvider, createHashRouter, createRoutesFromElements } from 'react-router-dom'
+import {
+  Outlet,
+  Route,
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
+  useHref,
+  useNavigate,
+} from 'react-router-dom'
+import { RouterProvider as AriaRouterProvider } from 'react-aria-components'
 import LandingPage from './pages/LandingPage.jsx'
 import SignUpLoginPage from './pages/SignUpLoginPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -20,14 +29,26 @@ import LogOutRoute from './auth/LogOutRoute.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import SearchPage from './pages/SearchPage.jsx'
+import ErrorPage from './pages/ErrorPage.jsx'
 import { warmApi } from './lib/api.js'
 
 warmApi()
 
+// Lets React Aria links like the search results move within the app instead of reloading it
+function AriaLinks() {
+  const navigate = useNavigate()
+  return (
+    <AriaRouterProvider navigate={navigate} useHref={useHref}>
+      <Outlet />
+    </AriaRouterProvider>
+  )
+}
+
 // A data router so pages like Account can block navigation with useBlocker
-const router = createHashRouter(
+const router = createBrowserRouter(
   createRoutesFromElements(
-    <>
+    // Pathless so one error page and the React Aria link setup cover every route
+    <Route element={<AriaLinks />} errorElement={<ErrorPage />}>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<SignUpLoginPage />} />
       <Route path="/signup" element={<SignUpLoginPage />} />
@@ -47,8 +68,10 @@ const router = createHashRouter(
         <Route path="/search" element={<SearchPage />} />
       </Route>
       <Route path="*" element={<LandingPage />} />
-    </>,
+    </Route>,
   ),
+  // GitHub Pages serves the app from the repository's path
+  { basename: import.meta.env.BASE_URL },
 )
 
 createRoot(document.getElementById('root')).render(

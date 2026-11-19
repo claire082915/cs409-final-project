@@ -129,8 +129,9 @@
   box-shadow: 0 0 0 3px #3186752a;
   text-decoration: none;
 }
-/* Email comes from the sign in, so it is shown but can't be edited */
-.account-fields input:disabled {
+/* Email comes from the sign in and the demo username is fixed, so both are shown but can't be edited */
+.account-fields input:disabled,
+.account-fields input:read-only {
   color: var(--account-muted);
   background: #f3f6f7;
   border-color: #c9d5d8;

@@ -304,7 +304,7 @@
   background: #d6ede5;
 }
 /* Approve is off while the item is lent, Decline still works */
-.request-approve:disabled {
+.request-approve[aria-disabled='true'] {
   color: var(--text-muted);
   background: #eef3f4;
   cursor: not-allowed;

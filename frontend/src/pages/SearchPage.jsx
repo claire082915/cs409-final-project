@@ -7,6 +7,7 @@ import { Button, Disclosure, DisclosurePanel, Heading } from 'react-aria-compone
 import { ChevronRight, MapPin, PackageOpen, SearchX } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import OwnerDetails from '../components/OwnerDetails.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
 import ItemNameButton from '../components/ItemNameButton.jsx'
@@ -35,26 +36,10 @@ function ItemResult({ item, onOpen }) {
           <ItemNameButton name={item.name} className="browse-card-open" onClick={onOpen} />
         </h3>
         <ItemTags category={item.category} condition={item.condition} />
-        <div className="browse-owner-details">
-          {/* Owner is null when they hid their profile */}
-          <p className="browse-owner">
-            {item.owner ? (
-              <Link to={`/profile/${item.owner.username}`} className="browse-owner-link">
-                <Avatar
-                  photo={item.owner.photo}
-                  name={item.owner.displayName}
-                  username={item.owner.username}
-                  className="browse-owner-avatar"
-                />
-                <span>{item.owner.displayName}</span>
-              </Link>
-            ) : (
-              <span>Community member</span>
-            )}
-          </p>
+        <OwnerDetails owner={item.owner}>
           {/* Results mix both, so only lent items get a label */}
           {item.available === false && <p className="search-item-lent">Lent</p>}
-        </div>
+        </OwnerDetails>
       </div>
     </article>
   )

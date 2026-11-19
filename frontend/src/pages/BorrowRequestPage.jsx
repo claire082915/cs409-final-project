@@ -20,6 +20,7 @@ import ItemDialog from '../components/ItemDialog.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import Reputation from '../components/Reputation.jsx'
+import Tooltip from '../components/Tooltip.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
 import { MOCK_RECEIVED, MOCK_SENT } from '../lib/mockRequests.js'
@@ -151,15 +152,16 @@ function ReceivedEntry({ request, onApprove, onDecline }) {
         <button type="button" className="request-decline" onClick={() => onDecline(request)}>
           Decline
         </button>
-        <button
-          type="button"
-          className="request-approve"
-          disabled={isOnLoan}
-          title={isOnLoan ? 'Available once the item is back' : undefined}
-          onClick={() => onApprove(request)}
-        >
-          Approve
-        </button>
+        <Tooltip text={isOnLoan ? 'Already lent out' : ''} placement="top">
+          <button
+            type="button"
+            className="request-approve"
+            aria-disabled={isOnLoan}
+            onClick={isOnLoan ? undefined : () => onApprove(request)}
+          >
+            Approve
+          </button>
+        </Tooltip>
       </div>
     </div>
   )
