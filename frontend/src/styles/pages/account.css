@@ -51,14 +51,14 @@
   display: grid;
   grid-template-columns: 136px minmax(0, 1fr);
   align-items: start;
-  gap: 24px;
+  gap: 36px;
   padding-top: 24px;
 }
 .account-fields {
   display: grid;
-  /* Columns stop at a normal input width, the container queries below drop columns as the card narrows */
-  grid-template-columns: repeat(3, minmax(0, 320px));
-  gap: 16px;
+  /* Two columns so the four fields fill both rows, each stops at a normal input width */
+  grid-template-columns: repeat(2, minmax(0, 320px));
+  gap: 16px 36px;
 }
 .account-fields label,
 .account-field {
@@ -281,12 +281,6 @@
 @media (max-width: 760px) {
   .account-save-bar {
     bottom: 82px;
-  }
-}
-/* Card widths where each field column would drop below about 200px */
-@container (max-width: 800px) {
-  .account-fields {
-    grid-template-columns: repeat(2, minmax(0, 320px));
   }
 }
 @container (max-width: 580px) {

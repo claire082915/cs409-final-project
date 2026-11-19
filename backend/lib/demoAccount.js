@@ -1,6 +1,6 @@
-// Demo only, the shared account the demo login signs into plus 20 spares made by hand
+// Demo only, the shared account the demo login signs into plus 9 spares made by hand
 const DEMO_USERNAMES = ['demo']
-for (let number = 1; number <= 20; number++) {
+for (let number = 1; number <= 9; number++) {
   DEMO_USERNAMES.push(`demo${number}`)
 }
 

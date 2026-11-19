@@ -3,9 +3,9 @@ export const SCHOOL_DOMAIN = 'illinois.edu'
 // Demo only, set to show the demo login and let the demo accounts in, unset allows only Illinois
 export const DEMO_EMAIL_DOMAIN = import.meta.env.VITE_DEMO_EMAIL_DOMAIN
 
-// Demo only, the shared account the demo login signs into plus 20 spares, same list as the backend
+// Demo only, the shared account the demo login signs into plus 9 spares, same list as the backend
 const DEMO_USERNAMES = ['demo']
-for (let number = 1; number <= 20; number++) {
+for (let number = 1; number <= 9; number++) {
   DEMO_USERNAMES.push(`demo${number}`)
 }
 

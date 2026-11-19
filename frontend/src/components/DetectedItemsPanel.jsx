@@ -1,18 +1,11 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  Button,
-  Dialog,
-  DropZone,
-  FileTrigger,
-  Heading,
-  Modal,
-  ModalOverlay,
-} from 'react-aria-components'
+import { Dialog, Heading, Modal, ModalOverlay } from 'react-aria-components'
 import { Check, Circle, ImageUp, LoaderCircle, SearchX, Sparkles, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog.jsx'
 import DetectedItemCard from './DetectedItemCard.jsx'
 import PendingLabel from './PendingLabel.jsx'
+import PhotoDropZone from './PhotoDropZone.jsx'
 import { apiFetch } from '../lib/api.js'
 import { storedCondition } from '../lib/itemConditions.js'
 import {
@@ -56,35 +49,17 @@ async function addDrafts(drafts) {
   return { added, failed }
 }
 
-// A drop can hold any files, so take the first image
-function droppedPhoto(items) {
-  const image = items.find((item) => item.kind === 'file' && item.type.startsWith('image/'))
-  return image?.getFile()
-}
-
-// The first step, a drop area and picker so the file browser doesn't open out of nowhere
+// The first step, so the file browser doesn't open before the user knows what it's for
 function PickState() {
-  const startSearch = (photo) => {
-    if (photo) {
-      findItems(photo)
-    }
-  }
   return (
     <div className="detected-pick">
-      <p className="detected-pick-intro">We'll draft items from your photo for you to review.</p>
-      <DropZone
-        className="detected-drop"
-        onDrop={async (event) => startSearch(await droppedPhoto(event.items))}
-      >
-        <ImageUp size={26} aria-hidden="true" />
-        <span className="detected-drop-text">Drop a photo here or</span>
-        <FileTrigger acceptedFileTypes={['image/*']} onSelect={(files) => startSearch(files?.[0])}>
-          <Button className="detected-choose">Choose photo</Button>
-        </FileTrigger>
-      </DropZone>
+      <p className="detected-pick-intro">
+        We'll crop out each item and use Gemini to draft details for review.
+      </p>
+      <PhotoDropZone className="detected-drop" onPhoto={findItems} />
       <p className="detected-pick-hint">
-        <strong>Tip:</strong> Use good lighting with items in full view. We'll recognize up to 20
-        items.
+        <strong>Tip:</strong> Use good lighting with items in full view. Up to 20 items generated
+        per photo.
       </p>
     </div>
   )

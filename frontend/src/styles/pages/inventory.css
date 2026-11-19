@@ -39,14 +39,14 @@
   border-radius: 8px;
   padding: 11px 16px;
   color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 10%, white);
+  background: var(--tint-teal);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .inventory-photo-button:hover {
-  background: color-mix(in srgb, var(--brand-teal) 16%, white);
+  background: var(--tint-teal-hover);
 }
 .inventory-photo-button:has(input:focus-visible),
 .inventory-photo-button:focus-visible,
@@ -300,23 +300,8 @@
   gap: 16px;
 }
 .item-photo-upload {
-  position: relative;
-  display: flex;
   aspect-ratio: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
   overflow: hidden;
-  border: 1px dashed #aec8c8;
-  border-radius: 11px;
-  color: #21816e;
-  background: #f5faf8;
-  cursor: pointer;
-}
-.item-photo-upload > strong {
-  color: #315d65;
-  font-size: 14px;
 }
 /* The dashed outline only invites a first photo */
 .item-photo-upload:has(img) {
@@ -352,14 +337,6 @@
   border-color: var(--brand-green);
   box-shadow: 0 0 0 3px #3186752a;
   text-decoration: none;
-}
-.item-photo-upload input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
 }
 .item-photo-upload img {
   position: absolute;
@@ -465,21 +442,27 @@
   cursor: default;
 }
 .item-modal button:focus-visible,
-.item-photo-upload:has(input:focus-visible) {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
 /* Shows that clicking an existing photo picks a new one */
 .item-photo-upload .item-photo-change {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  padding: 5px 10px;
-  border-radius: 6px;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   color: #315761;
   background: #ffffffed;
-  font-size: 13px;
-  font-weight: 600;
+  box-shadow: 0 1px 4px #05232c40;
+}
+/* Mouse users see it on hover or focus, touch screens keep it showing since they can't hover */
+@media (hover: hover) {
+  .item-photo-upload
+    .photo-drop-button:not([data-hovered], [data-focus-visible])
+    .item-photo-change {
+    opacity: 0;
+  }
 }
 @media (max-width: 900px) {
   .inventory-grid {

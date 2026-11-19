@@ -48,6 +48,14 @@
   background: var(--surface);
 }
 
+/* Shown when a file type is rejected */
+.photo-picker-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+  text-align: center;
+}
+
 .photo-picker-upload[data-hovered],
 .photo-picker-remove[data-hovered] {
   background: #f4f8f8;

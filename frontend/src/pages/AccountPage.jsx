@@ -154,6 +154,13 @@ export default function AccountPage() {
                       </Tooltip>
                     </span>
                   </label>
+                  <label>
+                    Email
+                    {/* Read-only rather than disabled so hover and focus still open the tooltip */}
+                    <Tooltip text="Email can't be changed">
+                      <input name="email" value={profile.email} readOnly />
+                    </Tooltip>
+                  </label>
                   <div className="account-field">
                     <span id="campus-area-label">Campus area</span>
                     <SelectMenu
@@ -164,13 +171,6 @@ export default function AccountPage() {
                       onChange={updateCampusArea}
                     />
                   </div>
-                  <label>
-                    Email
-                    {/* Read-only rather than disabled so hover and focus still open the tooltip */}
-                    <Tooltip text="Email can't be changed">
-                      <input name="email" value={profile.email} readOnly />
-                    </Tooltip>
-                  </label>
                 </div>
               </div>
             </section>

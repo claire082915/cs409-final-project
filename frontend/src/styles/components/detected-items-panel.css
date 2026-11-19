@@ -150,63 +150,20 @@
   line-height: 1.5;
   text-align: center;
 }
-.detected-drop {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
+.detected-drop .photo-drop-button {
   padding: 36px 16px;
-  border: 1.5px dashed #c9d5d8;
-  border-radius: 12px;
-  color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 4%, white);
-  text-align: center;
-}
-/* Tints while a photo is dragged over it */
-.detected-drop[data-drop-target] {
-  border-color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 10%, white);
-}
-.detected-drop-text {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-/* Same teal tint as the Auto-populate button that opened the panel */
-.detected-choose {
-  min-height: 38px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 8px;
-  color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 12%, white);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.detected-choose[data-hovered] {
-  background: color-mix(in srgb, var(--brand-teal) 18%, white);
-}
-.detected-choose[data-focus-visible] {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }
 /* Helper text under the drop area, like the file limits upload boxes usually show */
 .detected-pick-hint {
   margin: 10px 0 0;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   text-align: center;
 }
 .detected-pick-hint strong {
   color: #3f5f66;
   font-weight: 600;
-}
-/* Phones have nothing to drag from, so only the button shows */
-@media (hover: none) {
-  .detected-drop-text {
-    display: none;
-  }
 }
 .detected-secondary-button {
   display: inline-flex;
@@ -217,14 +174,14 @@
   border: 0;
   border-radius: 8px;
   color: var(--brand-teal);
-  background: color-mix(in srgb, var(--brand-teal) 10%, white);
+  background: var(--tint-teal);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .detected-secondary-button:hover {
-  background: color-mix(in srgb, var(--brand-teal) 16%, white);
+  background: var(--tint-teal-hover);
 }
 
 /* The list scrolls between the fixed header and footer */

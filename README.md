@@ -29,7 +29,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`. `DEMO_EMAIL_DOMAIN` (like `lendr-cs409-demo.com`) also lets the demo accounts sign in next to `illinois.edu`, leave it empty to allow only Illinois accounts. The demo accounts are `demo` through `demo20` at that domain, each keeps the username from its email, and nobody else can take those usernames. Set `VITE_DEMO_EMAIL_DOMAIN` in the frontend `.env` to the same value.
+Add `MONGODB_URI`, `CLOUDINARY_URL`, `FIREBASE_SERVICE_ACCOUNT` (the service account key JSON on one line) and `GEMINI_API_KEY` values in `.env`. `DEMO_EMAIL_DOMAIN` (like `lendr-cs409-demo.com`) also lets the demo accounts sign in next to `illinois.edu`, leave it empty to allow only Illinois accounts. The demo accounts are `demo` and `demo1` through `demo9` at that domain, each keeps the username from its email, and nobody else can take those usernames. Set `VITE_DEMO_EMAIL_DOMAIN` in the frontend `.env` to the same value.
 
 ### Auth
 
@@ -93,7 +93,7 @@ Item responses also include `available`, which is `false` while the item is on l
 
 Deleting hides an item but keeps it so past loans still show it. It fails with 409 while the item is on loan, and pending requests become `rejected`.
 
-`POST items/detect` takes `{ photoUrl }`, a photo of a room uploaded to your folder (see [Photos](#photos)). Gemini finds up to 20 items worth lending, most lendable first, and each one is cropped out and uploaded to your folder. It returns drafts as `{ name, description, category, condition, photos }` without saving them, so send the ones the user keeps to `POST items`. It can take a while, so show a loader. It returns 429 once the day's Gemini requests are used up. The room photo is deleted once it has been read, so upload it again to retry.
+`POST items/detect` takes `{ photoUrl }`, a photo of a room uploaded to your folder (see [Photos](#photos)). Gemini finds up to 20 items worth lending, most lendable first, and each one is cropped out and uploaded to your folder. It returns drafts as `{ name, description, category, condition, photos }` without saving them, so send the ones the user keeps to `POST items`. It can take a while, so show a loader. It returns 400 if the photo isn't a JPEG, PNG, WebP or AVIF, and 429 once the day's Gemini requests are used up. The room photo is deleted once it has been read, so upload it again to retry.
 
 `POST items/detect/discard` takes `{ photos }`, the photos of the drafts the user didn't keep, and deletes them from Cloudinary. It returns 204, or 409 without deleting anything if one of the photos belongs to an item or your profile.
 

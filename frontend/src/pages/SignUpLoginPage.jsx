@@ -210,7 +210,7 @@ function AuthTabs({ isSignUp, setMode }) {
         className={`auth-tab${isSignUp ? ' is-active' : ''}`}
         onClick={() => setMode('signup')}
       >
-        Sign Up
+        Sign up
       </button>
       <button
         type="button"
@@ -221,7 +221,7 @@ function AuthTabs({ isSignUp, setMode }) {
         className={`auth-tab${!isSignUp ? ' is-active' : ''}`}
         onClick={() => setMode('login')}
       >
-        Log In
+        Log in
       </button>
     </div>
   )
@@ -393,7 +393,7 @@ export default function SignUpLoginPage() {
       onClick={continueAsDemo}
       disabled={submitting}
     >
-      Continue as Demo User
+      Try the demo
     </button>
   )
 
@@ -505,10 +505,13 @@ export default function SignUpLoginPage() {
                     passwordAutoComplete="new-password"
                   />
                   {messages}
-                  <button type="submit" className="button button-primary" disabled={submitting}>
-                    <PendingLabel pending={submitting}>Sign Up</PendingLabel>
-                  </button>
-                  {demoButton}
+                  {/* The demo sits beside the main button so it's as easy to find */}
+                  <div className="auth-button-row">
+                    <button type="submit" className="button button-primary" disabled={submitting}>
+                      <PendingLabel pending={submitting}>Sign up</PendingLabel>
+                    </button>
+                    {demoButton}
+                  </div>
                   {googleButton}
                   <p className="switch-prompt">
                     Already have an account?{' '}
@@ -537,10 +540,12 @@ export default function SignUpLoginPage() {
                     }
                   />
                   {messages}
-                  <button type="submit" className="button button-primary" disabled={submitting}>
-                    Log In
-                  </button>
-                  {demoButton}
+                  <div className="auth-button-row">
+                    <button type="submit" className="button button-primary" disabled={submitting}>
+                      Log in
+                    </button>
+                    {demoButton}
+                  </div>
                   {googleButton}
                   <p className="switch-prompt">
                     Don&apos;t have an account?{' '}

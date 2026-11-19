@@ -34,13 +34,12 @@ export default function OwnerDetails({ owner, children }) {
       <p className="browse-owner">
         <OwnerName owner={owner} />
       </p>
-      {owner.campusArea && (
-        <p className="browse-location">
-          <MapPin size={12} aria-hidden="true" />
-          {/* A span so a long area name can end in an ellipsis inside the flex row */}
-          <span>{owner.campusArea}</span>
-        </p>
-      )}
+      {/* Always shown so cards line up when an owner has no area */}
+      <p className="browse-location">
+        <MapPin size={12} aria-hidden="true" />
+        {/* A span so a long area name can end in an ellipsis inside the flex row */}
+        <span>{owner.campusArea || 'Not specified'}</span>
+      </p>
       {/* Loan owners on the requests pages come without one, null means unrated */}
       {owner.reputation !== undefined && (
         <p className="browse-location">

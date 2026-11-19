@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ImagePlus, LoaderCircle, Plus, PackageOpen, Search, Sparkles, X } from 'lucide-react'
+import { LoaderCircle, Pencil, Plus, PackageOpen, Search, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
@@ -7,6 +7,7 @@ import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
+import PhotoDropZone from '../components/PhotoDropZone.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
@@ -70,6 +71,14 @@ export default function InventoryPage() {
     setForm(formFromItem(item))
     setFormError('')
     setIsFormOpen(true)
+  }
+
+  // Read it into a preview, the upload waits until the form is saved
+  const choosePhoto = (file) => {
+    setPhotoFile(file)
+    const reader = new FileReader()
+    reader.onload = () => setPhotoPreview(String(reader.result))
+    reader.readAsDataURL(file)
   }
 
   const hasUnsavedChanges =
@@ -394,31 +403,16 @@ export default function InventoryPage() {
               </div>
               <form className="item-form" onSubmit={saveItem}>
                 <div className="item-form-top">
-                  <label className="item-photo-upload">
-                    {photoPreview ? (
+                  <PhotoDropZone className="item-photo-upload" onPhoto={choosePhoto}>
+                    {photoPreview && (
                       <>
-                        <img src={photoPreview} alt="Selected item preview" />
-                        <span className="item-photo-change">Change photo</span>
-                      </>
-                    ) : (
-                      <>
-                        <ImagePlus size={25} />
-                        <strong>Add photo</strong>
+                        <img src={photoPreview} alt="Change photo" />
+                        <span className="item-photo-change">
+                          <Pencil size={14} aria-hidden="true" />
+                        </span>
                       </>
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        setPhotoFile(file ?? null)
-                        if (!file) return setPhotoPreview('')
-                        const reader = new FileReader()
-                        reader.onload = () => setPhotoPreview(String(reader.result || ''))
-                        reader.readAsDataURL(file)
-                      }}
-                    />
-                  </label>
+                  </PhotoDropZone>
                   <div className="item-form-main">
                     <label className="item-form-field">
                       <span>

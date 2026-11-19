@@ -107,12 +107,11 @@ function ProfileDetails({ profile, onOpenItem }) {
         <div>
           <h1>{profile.displayName}</h1>
           <p className="profile-facts">@{profile.username}</p>
-          {profile.campusArea && (
-            <p className="profile-facts">
-              <MapPin size={14} aria-hidden="true" />
-              {profile.campusArea}
-            </p>
-          )}
+          {/* Matches the Not specified on listing cards */}
+          <p className="profile-facts">
+            <MapPin size={14} aria-hidden="true" />
+            {profile.campusArea || 'Not specified'}
+          </p>
           <p className="profile-facts">
             <CalendarDays size={14} aria-hidden="true" />
             {joinedLabel(profile.joinedAt)}

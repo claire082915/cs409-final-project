@@ -3,6 +3,23 @@ import sharp from 'sharp'
 // Gemini scales box coordinates to 0-1000 on each axis
 const BOX_SCALE = 1000
 
+// Formats auto-populate takes, GIFs are left out since they can be animated
+const SUPPORTED_FORMATS = ['jpeg', 'png', 'webp']
+
+// Sharp reports AVIF and HEIC both as heif, and this build only decodes the AVIF kind
+export async function isSupportedPhoto(photo) {
+  try {
+    const { format, compression } = await sharp(photo).metadata()
+    if (format === 'heif') {
+      return compression === 'av1'
+    }
+    return SUPPORTED_FORMATS.includes(format)
+  } catch {
+    // Not an image at all, like a video renamed to .jpg
+    return false
+  }
+}
+
 // Apply the EXIF rotation so the model and the crops see the photo upright
 export function uprightJpeg(photo) {
   return sharp(photo).rotate().jpeg().toBuffer()

@@ -6,7 +6,7 @@ import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
 import { detectItems } from '../lib/detectItems.js'
-import { cropBox, hasArea, uprightJpeg } from '../lib/photoCrops.js'
+import { cropBox, hasArea, isSupportedPhoto, uprightJpeg } from '../lib/photoCrops.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
 import { reputationsByUser } from '../lib/reputation.js'
@@ -68,9 +68,16 @@ router.post('/detect', async (req, res) => {
   if (!response.ok) {
     return res.status(400).json({ message: "Couldn't download the photo", data: {} })
   }
-  const image = await uprightJpeg(Buffer.from(await response.arrayBuffer()))
+  const photo = Buffer.from(await response.arrayBuffer())
   // The room photo is only needed for this request
   await deleteUnusedPhotos([photoUrl])
+  // The frontend checks too, this catches files whose type was wrong or missing
+  if (!(await isSupportedPhoto(photo))) {
+    return res
+      .status(400)
+      .json({ message: "Can't read this photo. Use a JPEG or PNG instead.", data: {} })
+  }
+  const image = await uprightJpeg(photo)
   let detectedItems
   try {
     detectedItems = await detectItems(image)

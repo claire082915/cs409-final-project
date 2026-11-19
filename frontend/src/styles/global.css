@@ -21,6 +21,9 @@
   --brand-green: #318675;
   --brand-teal: #0c5865;
   --brand-teal-dark: #084653;
+  /* Teal is dark, so it needs a stronger tint than the orange's 12% to not look grey, picked by eye */
+  --tint-teal: color-mix(in srgb, var(--brand-teal) 15%, white);
+  --tint-teal-hover: color-mix(in srgb, var(--brand-teal) 22%, white);
   --text-muted: #587076;
   --error: #a5402a;
 }
