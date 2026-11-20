@@ -82,7 +82,7 @@
     border-top: 1px solid var(--grey-250);
     border-left: 0;
   }
-  /* Pull the menu row out to the field's edges so its top border spans the full width */
+  /* Stretch the menu row to the field's edges so its top border spans it */
   .search-field .filter-menu-button:not(.filter-menu-button + .filter-menu-button) {
     margin-left: -13px;
     padding-left: 13px;

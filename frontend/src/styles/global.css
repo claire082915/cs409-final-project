@@ -8,7 +8,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   font-weight: 400;
-  /* Scale steps go light to dark, near-identical shades were merged into the closest step */
+  /* Steps go light to dark */
   --grey-25: #fcfdfb;
   --grey-50: #f3f8f7;
   --grey-100: #eef2ee;
@@ -43,7 +43,6 @@
   /* Teal is dark, so it needs a stronger tint than the orange's 12% to not look grey, picked by eye */
   --tint-teal: color-mix(in srgb, var(--brand-teal) 15%, white);
   --tint-teal-hover: color-mix(in srgb, var(--brand-teal) 22%, white);
-  /* Soft glow around a focused text field and the resting shadow under cards */
   --focus-glow: 0 0 0 3px #3186752a;
   --card-shadow: 0 4px 15px #17455108;
   --ink: var(--slate-900);
@@ -258,7 +257,7 @@ a {
   cursor: pointer;
   transition: background 0.15s;
 }
-/* React Aria buttons carry data-rac and get hover and focus from data attributes, which skip touch and mouse focus */
+/* React Aria buttons use their data attributes, which skip touch hover and mouse focus */
 .action-button:hover:not(:disabled, [data-rac]),
 .action-button[data-hovered] {
   background: var(--action-bg-hover);
@@ -370,7 +369,6 @@ a {
   font-size: 13px;
   font-weight: 500;
 }
-/* Cut text that runs past its box off with an ellipsis */
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;

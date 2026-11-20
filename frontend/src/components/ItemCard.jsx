@@ -3,7 +3,7 @@ import ItemNameButton from './ItemNameButton.jsx'
 import ItemTags from './ItemTags.jsx'
 import '../styles/components/item-card.css'
 
-// One card for an item everywhere it's listed, cards without onOpen don't open
+// Cards without onOpen don't open, like your own items on Profile
 export default function ItemCard({ item, onOpen, children }) {
   return (
     <article className="item-card">
