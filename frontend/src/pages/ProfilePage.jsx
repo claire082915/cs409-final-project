@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CalendarDays, MapPin, PackageOpen, UserRound } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
@@ -170,11 +171,9 @@ export default function ProfilePage() {
     <AppShell>
       <main className="profile-page">
         {error ? (
-          <div className="profile-missing">
-            <UserRound size={26} aria-hidden="true" />
-            <strong>Profile not available</strong>
+          <EmptyState icon={UserRound} title="Profile not available">
             <span>This person might have hidden their profile.</span>
-          </div>
+          </EmptyState>
         ) : profile ? (
           <ProfileDetails profile={profile} onOpenItem={isOwnProfile ? null : setSelectedItem} />
         ) : (

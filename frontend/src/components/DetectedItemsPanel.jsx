@@ -127,7 +127,11 @@ function NoItemsState({ error }) {
         {error || 'Try a photo where each item is in full view.'}
       </span>
       {/* Back to the pick step rather than straight into the file browser */}
-      <button type="button" className="detected-secondary-button" onClick={openPicker}>
+      <button
+        type="button"
+        className="action-button action-button-teal-tint detected-secondary-button"
+        onClick={openPicker}
+      >
         <ImageUp size={16} aria-hidden="true" /> Try another photo
       </button>
     </div>
@@ -199,7 +203,7 @@ export default function DetectedItemsPanel() {
               </Heading>
               <button
                 type="button"
-                className="detected-close"
+                className="close-button"
                 aria-label="Close"
                 disabled={saving}
                 onClick={hidePanel}
@@ -236,7 +240,7 @@ export default function DetectedItemsPanel() {
                   <div className="item-form-actions">
                     <button
                       type="button"
-                      className="item-cancel-button"
+                      className="action-button action-button-neutral"
                       disabled={saving}
                       onClick={() => setIsDiscardOpen(true)}
                     >
@@ -244,7 +248,7 @@ export default function DetectedItemsPanel() {
                     </button>
                     <button
                       type="submit"
-                      className="item-save-button"
+                      className="action-button action-button-teal"
                       disabled={saving || selectedDrafts.length === 0}
                     >
                       <PendingLabel pending={saving} pendingText="Adding...">

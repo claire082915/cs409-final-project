@@ -31,7 +31,12 @@ export default function ItemDialog({ item, onClose, children }) {
         aria-modal="true"
         aria-labelledby="borrow-modal-title"
       >
-        <button className="browse-modal-close" type="button" onClick={onClose} aria-label="Close">
+        <button
+          className="close-button browse-modal-close"
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+        >
           <X size={19} />
         </button>
         <div className="borrow-item-summary">

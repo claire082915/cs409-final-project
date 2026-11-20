@@ -24,8 +24,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-left: 1px solid #e3ecee;
-  color: #244c56;
+  border-left: 1px solid var(--grey-200);
+  color: var(--slate-800);
   background: var(--surface);
   box-shadow: -24px 0 60px #05232c30;
   outline: 0;
@@ -36,32 +36,17 @@
   justify-content: space-between;
   gap: 16px;
   padding: 22px 24px 16px;
-  border-bottom: 1px solid #e3ecee;
+  border-bottom: 1px solid var(--grey-200);
 }
 .detected-panel-header h2 {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 0;
-  color: #153f4a;
+  color: var(--slate-900);
   font-size: 22px;
   letter-spacing: -0.03em;
 }
-.detected-close {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid #e2eaec;
-  border-radius: 8px;
-  color: var(--text-muted);
-  background: var(--surface);
-  cursor: pointer;
-}
-.detected-close:hover:not(:disabled) {
-  background: #eef3f4;
-}
-
 /* Searching and empty states sit in the middle of the panel */
 .detected-searching,
 .detected-empty {
@@ -76,7 +61,7 @@
 }
 .detected-searching strong,
 .detected-empty strong {
-  color: #173f4b;
+  color: var(--slate-900);
   font-size: 16px;
 }
 .detected-searching > span,
@@ -127,7 +112,7 @@
   font-size: 14px;
 }
 .detected-step.active {
-  color: #173f4b;
+  color: var(--slate-900);
   font-weight: 600;
 }
 .detected-step.active svg,
@@ -162,26 +147,11 @@
   text-align: center;
 }
 .detected-pick-hint strong {
-  color: #3f5f66;
+  color: var(--slate-700);
   font-weight: 600;
 }
 .detected-secondary-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   margin-top: 8px;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: 8px;
-  color: var(--brand-teal);
-  background: var(--tint-teal);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.detected-secondary-button:hover {
-  background: var(--tint-teal-hover);
 }
 
 /* The list scrolls between the fixed header and footer */
@@ -223,9 +193,9 @@
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 16px;
   padding: 14px;
-  border: 1px solid #e3ecee;
+  border: 1px solid var(--grey-200);
   border-radius: 12px;
-  background: #fff;
+  background: var(--grey-25);
   transition: background 180ms;
 }
 .detected-card-select {
@@ -240,7 +210,7 @@
   height: 96px;
   border-radius: 8px;
   object-fit: cover;
-  background: #eef3f4;
+  background: var(--grey-100);
 }
 /* White ring so the box stays visible on dark and light photos */
 .detected-checkbox {
@@ -252,9 +222,9 @@
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  border: 2px solid #fff;
+  border: 2px solid var(--grey-25);
   border-radius: 6px;
-  color: #fff;
+  color: var(--grey-25);
   background: #ffffffcc;
   box-shadow: 0 1px 4px #05232c40;
 }
@@ -286,7 +256,7 @@
 }
 /* Unchecked cards stay in place, faded, with the checkbox still at full strength */
 .detected-card.unselected {
-  background: #f4f7f7;
+  background: var(--grey-100);
 }
 .detected-card.unselected .detected-card-fields,
 .detected-card.unselected .detected-card-photo {
@@ -296,14 +266,13 @@
   display: grid;
   gap: 10px;
   padding: 14px 24px 18px;
-  border-top: 1px solid #e3ecee;
+  border-top: 1px solid var(--grey-200);
   background: var(--surface);
 }
 .detected-panel-footer .item-form-error {
   margin: 0;
 }
-.detected-panel button:focus-visible,
-.detected-secondary-button:has(input:focus-visible) {
+.detected-panel button:focus-visible {
   outline: 2px solid var(--brand-green);
   outline-offset: 2px;
 }

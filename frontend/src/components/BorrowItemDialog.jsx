@@ -61,10 +61,14 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
           </p>
         )}
         <div className="browse-modal-actions">
-          <button className="browse-cancel-button" type="button" onClick={onClose}>
+          <button className="action-button action-button-neutral" type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className="browse-request-button" type="submit" disabled={requesting}>
+          <button
+            className="action-button action-button-teal browse-request-button"
+            type="submit"
+            disabled={requesting}
+          >
             <PendingLabel pending={requesting} pendingText="Sending…">
               Send request
             </PendingLabel>

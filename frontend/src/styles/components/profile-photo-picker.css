@@ -19,33 +19,13 @@
   width: 100%;
 }
 
-.photo-picker-actions button {
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  outline: 0;
-}
-
-.photo-picker-actions button[data-focus-visible] {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
-
-.photo-picker-actions button[data-disabled] {
-  opacity: 0.6;
-  cursor: default;
-}
-
-/* Outlined like Remove so it doesn't outweigh the fields beside it */
+/* Outlined so it does not outweigh the fields beside it */
 .photo-picker-upload,
 .photo-picker-remove {
-  border: 1px solid #7f9599;
-  color: #3f5f66;
-  background: var(--surface);
+  --action-color: var(--slate-700);
+  --action-bg: var(--surface);
+  --action-bg-hover: var(--grey-100);
+  border: 1px solid var(--slate-450);
 }
 
 /* Shown when a file type is rejected */
@@ -54,9 +34,4 @@
   color: var(--error);
   font-size: 13px;
   text-align: center;
-}
-
-.photo-picker-upload[data-hovered],
-.photo-picker-remove[data-hovered] {
-  background: #f4f8f8;
 }

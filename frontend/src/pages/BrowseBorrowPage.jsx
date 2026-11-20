@@ -5,6 +5,7 @@ import { uniqBy } from 'lodash-es'
 import { toast } from 'sonner'
 import { Check, PackageOpen, Search, X } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
 import ItemNameButton from '../components/ItemNameButton.jsx'
@@ -59,21 +60,21 @@ async function loadBrowsePage(source, filters, skip) {
 function BrowseEmptyState({ noItems, onClearFilters }) {
   if (noItems) {
     return (
-      <div className="browse-empty">
-        <PackageOpen size={30} />
-        <strong>No items yet</strong>
+      <EmptyState icon={PackageOpen} title="No items yet">
         <span>Nobody is lending anything yet.</span>
-      </div>
+      </EmptyState>
     )
   }
   return (
-    <div className="browse-empty">
-      <PackageOpen size={30} />
-      <strong>No matching items</strong>
-      <button type="button" className="browse-clear-filters" onClick={onClearFilters}>
+    <EmptyState icon={PackageOpen} title="No matching items">
+      <button
+        type="button"
+        className="action-button action-button-neutral browse-clear-filters"
+        onClick={onClearFilters}
+      >
         Clear filters
       </button>
-    </div>
+    </EmptyState>
   )
 }
 
@@ -146,7 +147,7 @@ export default function BrowseBorrowPage() {
   return (
     <AppShell withSearch={false}>
       <main className="browse-page">
-        <header className="browse-heading page-heading">
+        <header className="page-heading">
           <div>
             <h1>Browse Items</h1>
             <p>Borrow from people on campus.</p>

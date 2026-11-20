@@ -96,7 +96,7 @@ export default function AccountPage() {
     <AppShell>
       <UnsavedChangesPrompt when={hasUnsavedChanges} />
       <main className="account-page">
-        <header className="account-heading page-heading">
+        <header className="page-heading">
           <div>
             <h1>Account</h1>
             <p>Manage your profile and how we keep you updated.</p>
@@ -212,13 +212,13 @@ export default function AccountPage() {
             </p>
             <button
               type="button"
-              className="account-discard"
+              className="action-button action-button-neutral"
               onClick={discardChanges}
               disabled={saving}
             >
               Discard
             </button>
-            <button type="submit" className="account-save" disabled={saving}>
+            <button type="submit" className="action-button action-button-teal" disabled={saving}>
               <Save size={16} aria-hidden="true" />
               <PendingLabel pending={saving} pendingText="Saving...">
                 Save changes

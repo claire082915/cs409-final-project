@@ -7,7 +7,7 @@
 .notifications-popover {
   z-index: 40;
   width: min(360px, calc(100vw - 32px));
-  border: 1px solid #e3ebed;
+  border: 1px solid var(--grey-200);
   border-radius: 11px;
   background: var(--surface);
   box-shadow: 0 20px 40px #1745512e;
@@ -20,11 +20,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px 10px;
-  border-bottom: 1px solid #e3ecee;
+  border-bottom: 1px solid var(--grey-200);
 }
 .notifications-header h2 {
   margin: 0;
-  color: #173f4b;
+  color: var(--slate-900);
   font-size: 15px;
   font-weight: 700;
 }
@@ -40,7 +40,7 @@
   cursor: pointer;
 }
 .notifications-clear:hover {
-  background: #eef3f4;
+  background: var(--grey-100);
 }
 .notifications-empty {
   margin: 0;
@@ -77,7 +77,7 @@
   cursor: pointer;
 }
 .notification-row:hover {
-  background: #eef3f4;
+  background: var(--grey-100);
 }
 .notification-icon {
   display: grid;
@@ -98,11 +98,11 @@
   gap: 2px;
 }
 .notification-copy strong {
-  color: #173f4b;
+  color: var(--slate-900);
   font-size: 14px;
 }
 .notification-copy span {
-  color: #3f5f66;
+  color: var(--slate-700);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -137,8 +137,8 @@
   cursor: pointer;
 }
 .notification-dismiss:hover {
-  color: #173f4b;
-  background: #e2eaec;
+  color: var(--slate-900);
+  background: var(--grey-200);
 }
 .notifications-list li:hover .notification-dismiss,
 .notifications-list li:focus-within .notification-dismiss {

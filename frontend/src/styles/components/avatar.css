@@ -17,12 +17,12 @@
 /* Each text color is at least 6.5:1 on its background */
 .avatar-color-0 {
   color: var(--brand-teal);
-  background: #dcebe7;
+  background: var(--green-50);
 }
 
 .avatar-color-1 {
   color: #1f4e7a;
-  background: #dce8f5;
+  background: var(--blue-100);
 }
 
 .avatar-color-2 {
@@ -47,7 +47,7 @@
 
 .avatar-color-6 {
   color: #34495a;
-  background: #e3e8ec;
+  background: var(--grey-250);
 }
 
 .avatar-color-7 {

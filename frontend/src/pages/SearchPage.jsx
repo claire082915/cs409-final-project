@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Button, Disclosure, DisclosurePanel, Heading } from 'react-aria-components'
 import { ChevronRight, MapPin, PackageOpen, SearchX } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import OwnerDetails from '../components/OwnerDetails.jsx'
 import Avatar from '../components/Avatar.jsx'
@@ -135,7 +136,11 @@ function PagedSection({
     <ResultSection title={title} count={count}>
       {renderResults(isShowingAll ? allResults : allResults.slice(0, FIRST_RESULTS))}
       {!isShowingAll && count > FIRST_RESULTS && (
-        <button type="button" className="search-show-all" onClick={() => setIsShowingAll(true)}>
+        <button
+          type="button"
+          className="action-button action-button-neutral search-show-all"
+          onClick={() => setIsShowingAll(true)}
+        >
           Show all {count}
         </button>
       )}
@@ -185,22 +190,22 @@ export default function SearchPage() {
     <AppShell>
       <main className="search-page">
         <header className="page-heading">
-          <h1>Search</h1>
-          <p>
-            {query ? `Results for "${query}"` : 'Type in the search bar to find items or people.'}
-          </p>
+          <div>
+            <h1>Search</h1>
+            <p>
+              {query ? `Results for "${query}"` : 'Type in the search bar to find items or people.'}
+            </p>
+          </div>
         </header>
         {query && !backendResults ? (
           <AppLoader inline label="Searching..." />
         ) : isEmpty ? (
-          <div className="search-empty">
-            <SearchX size={26} aria-hidden="true" />
-            <strong>No matches</strong>
+          <EmptyState icon={SearchX} title="No matches">
             {/* A failed search only shows when there's nothing else to show, like the top bar */}
             <span role={error ? 'alert' : undefined}>
               {error || 'Try a different word or check the spelling.'}
             </span>
-          </div>
+          </EmptyState>
         ) : (
           <>
             {mock.items.length + backendResults.itemTotal > 0 && (

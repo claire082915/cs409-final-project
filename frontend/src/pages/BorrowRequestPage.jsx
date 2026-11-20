@@ -13,6 +13,7 @@ import { CalendarDays, Check, ChevronRight, MapPin, PackageOpen, Send } from 'lu
 import { toast } from 'sonner'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
@@ -149,13 +150,17 @@ function ReceivedEntry({ request, onApprove, onDecline }) {
         personDetail={<Reputation reputation={request.borrower.reputation} />}
       />
       <div className="request-actions">
-        <button type="button" className="request-decline" onClick={() => onDecline(request)}>
+        <button
+          type="button"
+          className="action-button request-decline"
+          onClick={() => onDecline(request)}
+        >
           Decline
         </button>
         <Tooltip text={isOnLoan ? 'Already lent out' : ''} placement="top">
           <button
             type="button"
-            className="request-approve"
+            className="action-button request-approve"
             aria-disabled={isOnLoan}
             onClick={isOnLoan ? undefined : () => onApprove(request)}
           >
@@ -252,7 +257,11 @@ function SentRequests({ requests, onOpenItem, onCancel }) {
             />
           </div>
           <div className="request-actions">
-            <button type="button" className="request-decline" onClick={() => onCancel(request)}>
+            <button
+              type="button"
+              className="action-button request-decline"
+              onClick={() => onCancel(request)}
+            >
               Cancel
             </button>
           </div>
@@ -295,10 +304,18 @@ function ApproveDialog({ request, isPending, onCancel, onConfirm }) {
                 isRequired
               />
               <div className="confirm-actions">
-                <Button className="confirm-cancel" isDisabled={isPending} onPress={onCancel}>
+                <Button
+                  className="action-button action-button-neutral"
+                  isDisabled={isPending}
+                  onPress={onCancel}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="confirm-primary" isDisabled={isPending}>
+                <Button
+                  type="submit"
+                  className="action-button action-button-teal"
+                  isDisabled={isPending}
+                >
                   <PendingLabel pending={isPending} pendingText="Approving...">
                     Approve
                   </PendingLabel>
@@ -327,19 +344,15 @@ function OwnerArea({ campusArea }) {
 function EmptyRequests({ view }) {
   if (view === 'sent') {
     return (
-      <div className="requests-empty">
-        <Send size={26} aria-hidden="true" />
-        <strong>No requests sent</strong>
+      <EmptyState icon={Send} title="No requests sent">
         <span>Requests you send from Browse show up here.</span>
-      </div>
+      </EmptyState>
     )
   }
   return (
-    <div className="requests-empty">
-      <Check size={26} aria-hidden="true" />
-      <strong>You're all caught up</strong>
+    <EmptyState icon={Check} title="You're all caught up">
       <span>New requests will show up here.</span>
-    </div>
+    </EmptyState>
   )
 }
 
@@ -419,7 +432,7 @@ export default function BorrowRequestPage() {
   return (
     <AppShell>
       <main className="requests-page">
-        <header className="requests-heading page-heading">
+        <header className="page-heading">
           <div>
             <h1>Borrow Requests</h1>
             <p>Requests for your items and ones you've sent.</p>

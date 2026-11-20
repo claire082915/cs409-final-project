@@ -8,6 +8,6 @@
   white-space: nowrap;
 }
 .reputation svg {
-  color: #f47742;
+  color: var(--orange-400);
   fill: currentColor;
 }

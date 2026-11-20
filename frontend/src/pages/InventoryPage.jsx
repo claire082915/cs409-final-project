@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { LoaderCircle, Pencil, Plus, PackageOpen, Search, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import ItemNameButton from '../components/ItemNameButton.jsx'
 import ItemTags from '../components/ItemTags.jsx'
@@ -232,13 +233,14 @@ export default function InventoryPage() {
       }),
     [items, tab, query, selectedCategories],
   )
+  const isFiltering = query || selectedCategories.size > 0
   const availableCount = items.filter((item) => item.available !== false).length
   const lentCount = items.length - availableCount
 
   return (
     <AppShell>
       <main className="inventory-page">
-        <div className="inventory-heading page-heading">
+        <div className="page-heading">
           <div>
             <h1>My Items</h1>
             <p>Manage what you lend.</p>
@@ -246,7 +248,11 @@ export default function InventoryPage() {
           <div className="inventory-heading-actions">
             {/* One photo at a time, a running search or unreviewed drafts reopen instead */}
             {hasStartedTask(detectionTask) ? (
-              <button type="button" className="inventory-photo-button" onClick={openPanel}>
+              <button
+                type="button"
+                className="action-button action-button-teal-tint"
+                onClick={openPanel}
+              >
                 {detectionTask.status === 'searching' ? (
                   <LoaderCircle size={17} className="task-spinner" aria-hidden="true" />
                 ) : (
@@ -255,11 +261,19 @@ export default function InventoryPage() {
                 {detectionTask.status === 'searching' ? 'Finding items...' : 'Review items'}
               </button>
             ) : (
-              <button type="button" className="inventory-photo-button" onClick={openPicker}>
+              <button
+                type="button"
+                className="action-button action-button-teal-tint"
+                onClick={openPicker}
+              >
                 <Sparkles size={17} aria-hidden="true" /> Auto-populate
               </button>
             )}
-            <button className="inventory-add-button" type="button" onClick={() => openForm(null)}>
+            <button
+              className="action-button action-button-orange-tint inventory-add-button"
+              type="button"
+              onClick={() => openForm(null)}
+            >
               <Plus size={17} /> Add item
             </button>
           </div>
@@ -363,17 +377,12 @@ export default function InventoryPage() {
             ))}
           </section>
         ) : (
-          <div className="inventory-empty">
-            <PackageOpen size={28} />
-            {query || selectedCategories.size > 0 ? (
-              <strong>No matching items</strong>
-            ) : (
-              <>
-                <strong>No {tab === 'available' ? 'available' : 'lent'} items</strong>
-                <span>Your items will appear here.</span>
-              </>
-            )}
-          </div>
+          <EmptyState
+            icon={PackageOpen}
+            title={isFiltering ? 'No matching items' : `No ${tab} items`}
+          >
+            {!isFiltering && <span>Your items will appear here.</span>}
+          </EmptyState>
         )}
         {isFormOpen && (
           <div
@@ -393,7 +402,7 @@ export default function InventoryPage() {
                   <h2 id="item-modal-title">{editingItem ? 'Edit item' : 'Add item'}</h2>
                 </div>
                 <button
-                  className="item-modal-close"
+                  className="close-button"
                   type="button"
                   aria-label="Close"
                   onClick={requestClose}
@@ -481,7 +490,7 @@ export default function InventoryPage() {
                   {editingItem && editingItem.available !== false && (
                     <button
                       type="button"
-                      className="item-delete-button"
+                      className="action-button action-button-orange-tint item-delete-button"
                       disabled={saving}
                       onClick={() => setDeletingItem(editingItem)}
                     >
@@ -490,13 +499,17 @@ export default function InventoryPage() {
                   )}
                   <button
                     type="button"
-                    className="item-cancel-button"
+                    className="action-button action-button-neutral"
                     disabled={saving}
                     onClick={requestClose}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="item-save-button" disabled={saving}>
+                  <button
+                    type="submit"
+                    className="action-button action-button-teal"
+                    disabled={saving}
+                  >
                     <PendingLabel pending={saving} pendingText="Saving…">
                       {editingItem ? 'Save' : 'Add item'}
                     </PendingLabel>

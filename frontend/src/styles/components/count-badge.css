@@ -9,9 +9,9 @@
   place-items: center;
   padding: 0 5px;
   box-sizing: border-box;
-  border: 2px solid #fff;
+  border: 2px solid var(--grey-25);
   border-radius: 9px;
-  color: #fff;
+  color: var(--grey-25);
   background: var(--brand-orange);
   font-size: 10px;
   font-weight: 700;

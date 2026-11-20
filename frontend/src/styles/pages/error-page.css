@@ -10,9 +10,9 @@
   max-width: 100%;
   margin-top: 6px;
   padding: 8px 12px;
-  border: 1px solid #dbe5e7;
+  border: 1px solid var(--grey-200);
   border-radius: 7px;
-  color: #3f5f66;
+  color: var(--slate-700);
   background: var(--surface);
   font-size: 12px;
   overflow-wrap: anywhere;
@@ -25,5 +25,5 @@
   margin-top: 14px;
 }
 .error-page-actions .button-light {
-  border: 1px solid #dbe5e7;
+  border: 1px solid var(--grey-200);
 }

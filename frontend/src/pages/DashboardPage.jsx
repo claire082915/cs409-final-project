@@ -128,7 +128,7 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <main className="dashboard-page">
-        <div className="dashboard-heading page-heading">
+        <div className="page-heading">
           <div>
             <h1>Hi {greeting}!</h1>
             <p>Here’s what’s happening with your account.</p>
