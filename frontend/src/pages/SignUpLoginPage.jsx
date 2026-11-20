@@ -236,13 +236,14 @@ export default function SignUpLoginPage() {
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [creatingAccount, setCreatingAccount] = useState(false)
+  const [startingDemo, setStartingDemo] = useState(false)
   const { user, profile, setProfile, refreshUser, loading, error: profileError } = useAuth()
 
   if (user && profile && user.emailVerified) {
     return <Navigate to="/dashboard" replace />
   }
-  // Show the loader while a new sign in loads its profile or sign up saves one
-  if (user && (loading || creatingAccount)) {
+  // Show the loader while a new sign in loads its profile, sign up saves one or the demo account starts
+  if ((user && (loading || creatingAccount)) || startingDemo) {
     return <AppLoader />
   }
   const isSignUp = mode === 'signup'
@@ -330,7 +331,12 @@ export default function SignUpLoginPage() {
 
   // Demo only, the backend makes the demo account and its profile, so this lands on the dashboard
   const continueAsDemo = run(async () => {
-    await signInWithCustomToken(auth, await fetchDemoToken())
+    setStartingDemo(true)
+    try {
+      await signInWithCustomToken(auth, await fetchDemoToken())
+    } finally {
+      setStartingDemo(false)
+    }
   })
 
   // Delete accounts Firebase just made so outside sign ins don't pile up, older ones only sign out
