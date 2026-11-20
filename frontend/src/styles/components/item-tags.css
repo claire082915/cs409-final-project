@@ -17,7 +17,7 @@
 /* Pale brand tints so the two tags read apart at a glance */
 .item-tag-category {
   /* The darker green from the view switch, brand green text is too faint on its tint */
-  color: #176f64;
+  color: var(--green-700);
   background: color-mix(in srgb, var(--brand-green) 12%, white);
 }
 .item-tag-condition {

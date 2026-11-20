@@ -5,7 +5,7 @@
   max-width: 240px;
   padding: 6px 9px;
   border-radius: 6px;
-  color: #fff;
+  color: var(--grey-25);
   background: var(--brand-teal-dark);
   box-shadow: 0 6px 16px #05232c30;
   font-size: 12px;

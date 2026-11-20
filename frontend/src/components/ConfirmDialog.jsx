@@ -27,10 +27,19 @@ export default function ConfirmDialog({
           <p className="confirm-text">{text}</p>
           <div className="confirm-actions">
             {/* Focus the safe choice so pressing Enter cancels */}
-            <Button className="confirm-cancel" autoFocus isDisabled={isPending} onPress={onCancel}>
+            <Button
+              className="action-button action-button-neutral"
+              autoFocus
+              isDisabled={isPending}
+              onPress={onCancel}
+            >
               {cancelLabel}
             </Button>
-            <Button className="confirm-danger" isDisabled={isPending} onPress={onConfirm}>
+            <Button
+              className="action-button action-button-danger"
+              isDisabled={isPending}
+              onPress={onConfirm}
+            >
               {confirmLabel}
             </Button>
           </div>

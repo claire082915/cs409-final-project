@@ -1,5 +1,5 @@
 .profile-page {
-  color: #173f4b;
+  color: var(--slate-900);
 }
 /* Card with the avatar beside the name, the name matches every other page title */
 .profile-heading {
@@ -8,14 +8,14 @@
   gap: 28px;
   margin-bottom: 36px;
   padding: 32px;
-  border: 1px solid #e4ecee;
+  border: 1px solid var(--grey-200);
   border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 4px 15px #17455108;
+  box-shadow: var(--card-shadow);
 }
 .profile-heading h1 {
   margin: 0 0 10px;
-  color: #123c48;
+  color: var(--slate-900);
   font-size: clamp(27px, 3vw, 35px);
   letter-spacing: -0.04em;
 }
@@ -59,22 +59,6 @@ section + section .profile-section-label {
   margin: 0;
   color: var(--text-muted);
   font-size: 14px;
-}
-.profile-missing {
-  min-height: 210px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  border: 1px dashed #cbdadc;
-  border-radius: 12px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-.profile-missing strong {
-  color: #315c65;
-  font-size: 15px;
 }
 
 @media (max-width: 560px) {

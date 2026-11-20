@@ -1,9 +1,3 @@
-.screen-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
 .scaffold-panel {
   min-height: 310px;
   display: flex;
@@ -11,7 +5,7 @@
   align-items: center;
   justify-content: center;
   padding: 35px;
-  border: 1px solid #e5edf0;
+  border: 1px solid var(--grey-250);
   border-radius: 12px;
   background: var(--surface);
   text-align: center;
@@ -24,13 +18,13 @@
   place-items: center;
   margin-bottom: 14px;
   border-radius: 13px;
-  color: #328373;
-  background: #eaf4f0;
+  color: var(--brand-green);
+  background: var(--green-50);
   font-size: 22px;
 }
 .scaffold-panel h2 {
   margin: 0 0 8px;
-  color: #244d56;
+  color: var(--slate-800);
   font:
     700 16px Manrope,
     sans-serif;
@@ -38,7 +32,7 @@
 .scaffold-panel p {
   max-width: 360px;
   margin: 0;
-  color: #82959a;
+  color: var(--slate-400);
   font-size: 11px;
   line-height: 1.65;
 }

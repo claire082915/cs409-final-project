@@ -96,7 +96,7 @@ export default function AccountPage() {
     <AppShell>
       <UnsavedChangesPrompt when={hasUnsavedChanges} />
       <main className="account-page">
-        <header className="account-heading page-heading">
+        <header className="page-heading">
           <div>
             <h1>Account</h1>
             <p>Manage your profile and how we keep you updated.</p>
@@ -127,7 +127,7 @@ export default function AccountPage() {
                   isDisabled={saving}
                 />
                 <div className="account-fields">
-                  <label>
+                  <label className="form-field">
                     Display name
                     <input
                       name="displayName"
@@ -137,7 +137,7 @@ export default function AccountPage() {
                       autoComplete="name"
                     />
                   </label>
-                  <label>
+                  <label className="form-field">
                     Username
                     <span className="account-username">
                       <span aria-hidden="true">@</span>
@@ -154,17 +154,17 @@ export default function AccountPage() {
                       </Tooltip>
                     </span>
                   </label>
-                  <label>
+                  <label className="form-field">
                     Email
                     {/* Read-only rather than disabled so hover and focus still open the tooltip */}
                     <Tooltip text="Email can't be changed">
                       <input name="email" value={profile.email} readOnly />
                     </Tooltip>
                   </label>
-                  <div className="account-field">
+                  <div className="form-field">
                     <span id="campus-area-label">Campus area</span>
                     <SelectMenu
-                      className="account-select"
+                      className="select-field"
                       aria-labelledby="campus-area-label"
                       options={CAMPUS_AREA_OPTIONS}
                       value={form.campusArea || NO_CAMPUS_AREA}
@@ -212,13 +212,13 @@ export default function AccountPage() {
             </p>
             <button
               type="button"
-              className="account-discard"
+              className="action-button action-button-neutral"
               onClick={discardChanges}
               disabled={saving}
             >
               Discard
             </button>
-            <button type="submit" className="account-save" disabled={saving}>
+            <button type="submit" className="action-button action-button-teal" disabled={saving}>
               <Save size={16} aria-hidden="true" />
               <PendingLabel pending={saving} pendingText="Saving...">
                 Save changes

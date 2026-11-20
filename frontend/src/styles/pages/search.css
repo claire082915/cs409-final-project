@@ -1,5 +1,5 @@
 .search-page {
-  color: #173f4b;
+  color: var(--slate-900);
 }
 .search-section + .search-section {
   margin-top: 36px;
@@ -13,23 +13,13 @@
 /* Same look as the results labels on Browse, the chevron turns down when open */
 .search-section-toggle {
   display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
-  margin-left: -4px;
+  margin: 0 0 0 -4px;
   padding: 0;
   border: 0;
-  color: #315761;
   background: none;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 750;
+  font-family: inherit;
   cursor: pointer;
   outline: 0;
-}
-.search-section-toggle small {
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
 }
 .search-section-toggle[data-focus-visible] {
   border-radius: 4px;
@@ -60,20 +50,16 @@
   align-items: center;
   gap: 20px;
   padding: 20px;
-  border: 1px solid #e4ecee;
+  border: 1px solid var(--grey-200);
   border-radius: 11px;
   color: inherit;
   background: var(--surface);
-  box-shadow: 0 4px 15px #17455108;
+  box-shadow: var(--card-shadow);
   text-decoration: none;
   transition: box-shadow 0.18s;
 }
 .search-person:hover {
   box-shadow: 0 9px 22px #17455112;
-}
-.search-person:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }
 .search-person-photo {
   flex: none;
@@ -90,17 +76,8 @@
   font-size: 13px;
 }
 .search-person-text strong {
-  color: #214954;
+  color: var(--brand-teal-dark);
   font-size: 15px;
-}
-.search-person-text small {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-.search-person-text small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .search-person-area {
   display: flex;
@@ -110,43 +87,6 @@
 .search-person-area svg {
   flex: none;
 }
-.search-empty {
-  min-height: 210px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  border: 1px dashed #cbdadc;
-  border-radius: 12px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-.search-empty svg {
-  color: #8ca5a9;
-}
-.search-empty strong {
-  color: #315c65;
-  font-size: 15px;
-}
-/* Same look as Clear filters on Browse */
 .search-show-all {
-  min-height: 40px;
   margin-top: 18px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 8px;
-  color: #3f5f66;
-  background: #eef3f4;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.search-show-all:hover {
-  background: #e2eaec;
-}
-.search-show-all:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }

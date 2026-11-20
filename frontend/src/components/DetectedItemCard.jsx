@@ -25,7 +25,7 @@ export default function DetectedItemCard({ draft, index, onChange }) {
       </Checkbox>
       {/* Unchecked fields can't be focused or sent */}
       <div className="detected-card-fields" inert={!draft.selected}>
-        <label className="item-form-field">
+        <label className="form-field">
           <span>Item name</span>
           <input
             value={draft.name}
@@ -35,20 +35,20 @@ export default function DetectedItemCard({ draft, index, onChange }) {
           />
         </label>
         <div className="detected-card-row">
-          <div className="item-form-field">
+          <div className="form-field">
             <span id={`${labelId}-category`}>Category</span>
             <SelectMenu
-              className="item-select"
+              className="select-field"
               aria-labelledby={`${labelId}-category`}
               options={ITEM_CATEGORIES}
               value={draft.category}
               onChange={(category) => setField('category', category)}
             />
           </div>
-          <div className="item-form-field">
+          <div className="form-field">
             <span id={`${labelId}-condition`}>Condition</span>
             <SelectMenu
-              className="item-select"
+              className="select-field"
               aria-labelledby={`${labelId}-condition`}
               options={[...ITEM_CONDITIONS, NO_CONDITION]}
               value={draft.condition}
@@ -56,9 +56,9 @@ export default function DetectedItemCard({ draft, index, onChange }) {
             />
           </div>
         </div>
-        <label className="item-form-field">
+        <label className="form-field">
           <span>
-            Notes <span className="item-field-hint">(optional)</span>
+            Notes <span className="field-hint">(optional)</span>
           </span>
           <textarea
             value={draft.description}

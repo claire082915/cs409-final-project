@@ -11,7 +11,7 @@ function useCardNameFit() {
     if (!name) {
       return
     }
-    cardBodyRef.current = name.closest('.browse-card-body, .inventory-card-copy')
+    cardBodyRef.current = name.closest('.item-card-body')
     // The name's width follows the card body, so watching the body covers both
     observer.current = new ResizeObserver(() =>
       setFit({
@@ -26,7 +26,7 @@ function useCardNameFit() {
 }
 
 // The card's name button, its click area covers the whole card and it shows the full name above when cut off
-export default function ItemNameButton({ name, className, onClick }) {
+export default function ItemNameButton({ name, onClick }) {
   const { nameRef, cardBodyRef, isTruncated, cardWidth } = useCardNameFit()
   return (
     <Tooltip
@@ -38,7 +38,7 @@ export default function ItemNameButton({ name, className, onClick }) {
     >
       <button
         ref={nameRef}
-        className={className}
+        className="item-card-open truncate"
         type="button"
         aria-haspopup="dialog"
         onClick={onClick}

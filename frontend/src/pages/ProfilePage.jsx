@@ -1,13 +1,13 @@
 import { Fragment, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { CalendarDays, MapPin, PackageOpen, UserRound } from 'lucide-react'
+import { CalendarDays, MapPin, UserRound } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import ItemCard from '../components/ItemCard.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
-import ItemNameButton from '../components/ItemNameButton.jsx'
-import ItemTags from '../components/ItemTags.jsx'
 import Reputation from '../components/Reputation.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -15,27 +15,6 @@ import { MOCK_ITEMS } from '../lib/mockItems.js'
 import { findMockProfile } from '../lib/mockProfiles.js'
 import '../styles/pages/browse-borrow.css'
 import '../styles/pages/profile.css'
-
-// Same card as Browse so an item looks the same everywhere, your own items don't open
-function ProfileItem({ item, onOpen }) {
-  return (
-    <article className="browse-card">
-      <div className="browse-photo">
-        {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={30} />}
-      </div>
-      <div className="browse-card-body">
-        <h3 className="browse-card-title">
-          {onOpen ? (
-            <ItemNameButton name={item.name} className="browse-card-open" onClick={onOpen} />
-          ) : (
-            item.name
-          )}
-        </h3>
-        <ItemTags category={item.category} condition={item.condition} />
-      </div>
-    </article>
-  )
-}
 
 function joinedLabel(joinedAt) {
   const month = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric' }).format(
@@ -69,13 +48,13 @@ function ItemSection({ title, items, onOpenItem }) {
   }
   return (
     <section>
-      <h2 className="browse-results-label profile-section-label">
+      <h2 className="count-label profile-section-label">
         <span>{title}</span>
         <small>{items.length}</small>
       </h2>
-      <div className="browse-grid">
+      <div className="item-grid">
         {items.map((item) => (
-          <ProfileItem key={item._id} item={item} onOpen={onOpenItem && (() => onOpenItem(item))} />
+          <ItemCard key={item._id} item={item} onOpen={onOpenItem && (() => onOpenItem(item))} />
         ))}
       </div>
     </section>
@@ -170,11 +149,9 @@ export default function ProfilePage() {
     <AppShell>
       <main className="profile-page">
         {error ? (
-          <div className="profile-missing">
-            <UserRound size={26} aria-hidden="true" />
-            <strong>Profile not available</strong>
+          <EmptyState icon={UserRound} title="Profile not available">
             <span>This person might have hidden their profile.</span>
-          </div>
+          </EmptyState>
         ) : profile ? (
           <ProfileDetails profile={profile} onOpenItem={isOwnProfile ? null : setSelectedItem} />
         ) : (

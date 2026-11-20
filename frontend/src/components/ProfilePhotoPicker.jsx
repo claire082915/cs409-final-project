@@ -48,12 +48,16 @@ export default function ProfilePhotoPicker({
           acceptedFileTypes={SUPPORTED_PHOTO_TYPES}
           onSelect={(files) => choosePhoto(files[0])}
         >
-          <Button className="photo-picker-upload" isDisabled={isDisabled}>
+          <Button className="action-button photo-picker-upload" isDisabled={isDisabled}>
             {shownPhoto ? 'Change photo' : 'Upload photo'}
           </Button>
         </FileTrigger>
         {shownPhoto && (
-          <Button className="photo-picker-remove" isDisabled={isDisabled} onPress={onRemove}>
+          <Button
+            className="action-button photo-picker-remove"
+            isDisabled={isDisabled}
+            onPress={onRemove}
+          >
             Remove
           </Button>
         )}

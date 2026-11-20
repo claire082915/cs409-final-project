@@ -1,7 +1,7 @@
 .photo-drop {
   position: relative;
   display: grid;
-  border: 1.5px dashed #c9d5d8;
+  border: 1.5px dashed var(--slate-200);
   border-radius: 12px;
   color: var(--brand-teal);
   background: color-mix(in srgb, var(--brand-teal) 4%, white);
@@ -28,10 +28,6 @@
   font: inherit;
   text-align: center;
   cursor: pointer;
-}
-.photo-drop-button[data-focus-visible] {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }
 .photo-drop-text {
   color: var(--text-muted);

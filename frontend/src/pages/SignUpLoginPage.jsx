@@ -377,7 +377,7 @@ export default function SignUpLoginPage() {
   const googleButton = (
     <button
       type="button"
-      className="button button-light"
+      className="action-button auth-light-button"
       onClick={continueWithGoogle}
       disabled={submitting}
     >
@@ -389,7 +389,7 @@ export default function SignUpLoginPage() {
   const demoButton = DEMO_EMAIL_DOMAIN && (
     <button
       type="button"
-      className="button button-light auth-demo-button"
+      className="action-button action-button-orange-tint"
       onClick={continueAsDemo}
       disabled={submitting}
     >
@@ -424,7 +424,11 @@ export default function SignUpLoginPage() {
               <p className="auth-message auth-error" role="alert">
                 Lendr is only for {SCHOOL_DOMAIN} accounts, and you are signed in as {user.email}.
               </p>
-              <button type="button" className="button button-primary" onClick={() => signOut(auth)}>
+              <button
+                type="button"
+                className="action-button action-button-teal-tint"
+                onClick={() => signOut(auth)}
+              >
                 Use a different account
               </button>
             </div>
@@ -438,7 +442,7 @@ export default function SignUpLoginPage() {
               {messages}
               <button
                 type="button"
-                className="button button-primary"
+                className="action-button action-button-teal-tint"
                 onClick={checkVerified}
                 disabled={submitting}
               >
@@ -446,7 +450,7 @@ export default function SignUpLoginPage() {
               </button>
               <button
                 type="button"
-                className="button button-light"
+                className="action-button auth-light-button"
                 onClick={resendVerification}
                 disabled={submitting}
               >
@@ -465,7 +469,7 @@ export default function SignUpLoginPage() {
               </p>
               <button
                 type="button"
-                className="button button-primary"
+                className="action-button action-button-teal-tint"
                 onClick={() => window.location.reload()}
               >
                 Try again
@@ -477,7 +481,11 @@ export default function SignUpLoginPage() {
               <p className="auth-text">Signed in as {user.email}</p>
               <ProfileFields form={form} update={update} />
               {messages}
-              <button type="submit" className="button button-primary" disabled={submitting}>
+              <button
+                type="submit"
+                className="action-button action-button-teal-tint"
+                disabled={submitting}
+              >
                 <PendingLabel pending={submitting}>Continue</PendingLabel>
               </button>
               <p className="switch-prompt">
@@ -507,7 +515,11 @@ export default function SignUpLoginPage() {
                   {messages}
                   {/* The demo sits beside the main button so it's as easy to find */}
                   <div className="auth-button-row">
-                    <button type="submit" className="button button-primary" disabled={submitting}>
+                    <button
+                      type="submit"
+                      className="action-button action-button-teal-tint"
+                      disabled={submitting}
+                    >
                       <PendingLabel pending={submitting}>Sign up</PendingLabel>
                     </button>
                     {demoButton}
@@ -541,7 +553,11 @@ export default function SignUpLoginPage() {
                   />
                   {messages}
                   <div className="auth-button-row">
-                    <button type="submit" className="button button-primary" disabled={submitting}>
+                    <button
+                      type="submit"
+                      className="action-button action-button-teal-tint"
+                      disabled={submitting}
+                    >
                       Log in
                     </button>
                     {demoButton}

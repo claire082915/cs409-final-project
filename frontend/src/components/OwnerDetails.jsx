@@ -8,7 +8,7 @@ function OwnerName({ owner }) {
   if (!owner.username) {
     return (
       <span className="browse-owner-hidden">
-        <span className="browse-owner-avatar browse-owner-placeholder" aria-hidden="true">
+        <span className="avatar-small browse-owner-placeholder" aria-hidden="true">
           <UserRound size={12} />
         </span>
         <span>Community member</span>
@@ -21,7 +21,7 @@ function OwnerName({ owner }) {
         photo={owner.photo}
         name={owner.displayName}
         username={owner.username}
-        className="browse-owner-avatar"
+        className="avatar-small"
       />
       <span>{owner.displayName}</span>
     </Link>
@@ -31,18 +31,18 @@ function OwnerName({ owner }) {
 export default function OwnerDetails({ owner, children }) {
   return (
     <div className="browse-owner-details">
-      <p className="browse-owner">
+      <p className="browse-owner truncate">
         <OwnerName owner={owner} />
       </p>
       {/* Always shown so cards line up when an owner has no area */}
-      <p className="browse-location">
+      <p className="browse-location truncate">
         <MapPin size={12} aria-hidden="true" />
         {/* A span so a long area name can end in an ellipsis inside the flex row */}
         <span>{owner.campusArea || 'Not specified'}</span>
       </p>
       {/* Loan owners on the requests pages come without one, null means unrated */}
       {owner.reputation !== undefined && (
-        <p className="browse-location">
+        <p className="browse-location truncate">
           <Reputation reputation={owner.reputation} />
         </p>
       )}

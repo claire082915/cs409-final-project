@@ -128,7 +128,7 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <main className="dashboard-page">
-        <div className="dashboard-heading page-heading">
+        <div className="page-heading">
           <div>
             <h1>Hi {greeting}!</h1>
             <p>Here’s what’s happening with your account.</p>
@@ -194,8 +194,8 @@ export default function DashboardPage() {
                       <Package size={19} />
                     </span>
                     <span className="activity-item-copy">
-                      <strong>{loan.item?.name || 'Deleted item'}</strong>
-                      <small>
+                      <strong className="truncate">{loan.item?.name || 'Deleted item'}</strong>
+                      <small className="truncate">
                         {loan.direction === 'lent' ? 'Borrowed by' : 'Borrowed from'}{' '}
                         {personName(otherPerson)}
                       </small>

@@ -4,7 +4,7 @@
 
 .search-heading {
   padding: 8px 9px 4px;
-  color: #8a9da2;
+  color: var(--slate-400);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.04em;
@@ -19,7 +19,7 @@
   height: 28px;
   overflow: hidden;
   border-radius: 6px;
-  background: #eef5f3;
+  background: var(--grey-150);
 }
 
 .search-person-avatar {
@@ -39,14 +39,7 @@
   min-width: 0;
 }
 
-.search-text strong,
 .search-text small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.search-text small {
-  color: #7d959c;
+  color: var(--slate-450);
   font-size: 11px;
 }

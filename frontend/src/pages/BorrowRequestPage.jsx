@@ -13,6 +13,8 @@ import { CalendarDays, Check, ChevronRight, MapPin, PackageOpen, Send } from 'lu
 import { toast } from 'sonner'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import SourceSwitch from '../components/SourceSwitch.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
@@ -72,7 +74,7 @@ function personName(person) {
 
 function ItemPhoto({ item }) {
   return (
-    <div className="request-photo">
+    <div className="photo-box request-photo">
       {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={24} />}
     </div>
   )
@@ -82,7 +84,7 @@ function ItemPhoto({ item }) {
 function ItemTitle({ item }) {
   return (
     <>
-      <span className="request-item-name">{item.name}</span>
+      <span className="request-item-name truncate">{item.name}</span>
       {item.available === false && <span className="request-on-loan">Lent</span>}
     </>
   )
@@ -98,7 +100,7 @@ function RequestDetails({ request, person, personDetail }) {
             photo={person.photo}
             name={person.displayName}
             username={person.username}
-            className="request-avatar"
+            className="avatar-small"
           />
           <span className="request-person-name">{personName(person)}</span>
         </Link>
@@ -149,13 +151,17 @@ function ReceivedEntry({ request, onApprove, onDecline }) {
         personDetail={<Reputation reputation={request.borrower.reputation} />}
       />
       <div className="request-actions">
-        <button type="button" className="request-decline" onClick={() => onDecline(request)}>
+        <button
+          type="button"
+          className="action-button request-decline"
+          onClick={() => onDecline(request)}
+        >
           Decline
         </button>
         <Tooltip text={isOnLoan ? 'Already lent out' : ''} placement="top">
           <button
             type="button"
-            className="request-approve"
+            className="action-button request-approve"
             aria-disabled={isOnLoan}
             onClick={isOnLoan ? undefined : () => onApprove(request)}
           >
@@ -252,7 +258,11 @@ function SentRequests({ requests, onOpenItem, onCancel }) {
             />
           </div>
           <div className="request-actions">
-            <button type="button" className="request-decline" onClick={() => onCancel(request)}>
+            <button
+              type="button"
+              className="action-button request-decline"
+              onClick={() => onCancel(request)}
+            >
               Cancel
             </button>
           </div>
@@ -288,17 +298,25 @@ function ApproveDialog({ request, isPending, onCancel, onConfirm }) {
               </p>
               <DatePickerField
                 label="Return by"
-                className="approve-date"
+                className="form-field approve-date"
                 name="dueDate"
                 defaultValue={parseDate(String(request.dueDate).slice(0, 10))}
                 minValue={today(getLocalTimeZone()).add({ days: 1 })}
                 isRequired
               />
               <div className="confirm-actions">
-                <Button className="confirm-cancel" isDisabled={isPending} onPress={onCancel}>
+                <Button
+                  className="action-button action-button-neutral"
+                  isDisabled={isPending}
+                  onPress={onCancel}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="confirm-primary" isDisabled={isPending}>
+                <Button
+                  type="submit"
+                  className="action-button action-button-teal"
+                  isDisabled={isPending}
+                >
                   <PendingLabel pending={isPending} pendingText="Approving...">
                     Approve
                   </PendingLabel>
@@ -327,19 +345,15 @@ function OwnerArea({ campusArea }) {
 function EmptyRequests({ view }) {
   if (view === 'sent') {
     return (
-      <div className="requests-empty">
-        <Send size={26} aria-hidden="true" />
-        <strong>No requests sent</strong>
+      <EmptyState icon={Send} title="No requests sent">
         <span>Requests you send from Browse show up here.</span>
-      </div>
+      </EmptyState>
     )
   }
   return (
-    <div className="requests-empty">
-      <Check size={26} aria-hidden="true" />
-      <strong>You're all caught up</strong>
+    <EmptyState icon={Check} title="You're all caught up">
       <span>New requests will show up here.</span>
-    </div>
+    </EmptyState>
   )
 }
 
@@ -419,28 +433,12 @@ export default function BorrowRequestPage() {
   return (
     <AppShell>
       <main className="requests-page">
-        <header className="requests-heading page-heading">
+        <header className="page-heading">
           <div>
             <h1>Borrow Requests</h1>
             <p>Requests for your items and ones you've sent.</p>
           </div>
-          <div className="requests-source" aria-label="Request data source">
-            <span>Data</span>
-            <button
-              type="button"
-              className={source === 'mock' ? 'active' : ''}
-              onClick={() => setSource('mock')}
-            >
-              Mock
-            </button>
-            <button
-              type="button"
-              className={source === 'backend' ? 'active' : ''}
-              onClick={() => setSource('backend')}
-            >
-              Backend
-            </button>
-          </div>
+          <SourceSwitch source={source} onChange={setSource} label="Request data source" />
         </header>
         <ViewSwitch
           className="requests-views"
@@ -460,7 +458,7 @@ export default function BorrowRequestPage() {
           <EmptyRequests view={view} />
         ) : (
           <>
-            <p className="requests-count">
+            <p className="count-label">
               Pending
               <small>
                 {requests.length} {requests.length === 1 ? 'request' : 'requests'}

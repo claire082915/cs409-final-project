@@ -4,7 +4,7 @@
   gap: 2px;
   padding: 3px;
   border-radius: 8px;
-  background: #e8eff0;
+  background: var(--grey-150);
 }
 .view-switch button {
   min-height: 34px;
@@ -22,10 +22,6 @@
   color: var(--brand-orange);
   background: var(--surface);
   box-shadow: 0 1px 3px #17455118;
-}
-.view-switch button:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }
 .view-switch small {
   margin-left: 6px;
