@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -414,7 +414,7 @@ export default function SignUpLoginPage() {
       <main className="auth-main">
         <section className="welcome">
           <h1 className="welcome-title">
-            Welcome to <span>Lendr</span>
+            Welcome to <Link to="/">Lendr</Link>
           </h1>
           <p className="welcome-text">
             Create an account or log in to start borrowing and lending.

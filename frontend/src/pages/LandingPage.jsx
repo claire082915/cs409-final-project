@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowDown, ArrowRight, CalendarClock, Camera, MapPin, Star } from 'lucide-react'
+import { ArrowDown, ArrowRight, CalendarClock, MapPin, ScanSearch, Star } from 'lucide-react'
 import FeatureCard from '../components/FeatureCard.jsx'
 import Logo from '../components/Logo.jsx'
 import ShelfScanVisual from '../components/ShelfScanVisual.jsx'
@@ -7,11 +7,11 @@ import '../styles/pages/landing.css'
 
 const STEPS = [
   {
-    title: 'Find it',
+    title: 'Find what you need',
     text: 'Search or browse by category and campus area. Anything already out on loan stays hidden.',
   },
   {
-    title: 'Ask for it',
+    title: 'Send a request',
     text: 'Pick a return date and add a note. The owner approves or declines the request.',
   },
   {
@@ -28,6 +28,7 @@ function scrollTo(event, id) {
 export default function LandingPage() {
   return (
     <div className="landing" id="top">
+      <div className="landing-top-tint" aria-hidden="true" />
       <header className="site-header">
         <div className="header-inner">
           <Logo />
@@ -55,7 +56,7 @@ export default function LandingPage() {
                 someone <span>on campus.</span>
               </h1>
               <p className="hero-description">
-                Lendr is where students lend each other the stuff they own. Borrow a camera for the
+                Lendr helps students on campus borrow from each other. Borrow a camera for the
                 weekend or an iClicker for class, and always know when it's due back.
               </p>
               <div className="hero-actions">
@@ -70,7 +71,7 @@ export default function LandingPage() {
                   How it works <ArrowDown size={14} aria-hidden="true" />
                 </a>
               </div>
-              <p className="hero-note">Sign up with your NetID, only Illinois accounts can join.</p>
+              <p className="hero-note">Sign up with your NetID.</p>
             </div>
             <ShelfScanVisual />
           </div>
@@ -78,14 +79,14 @@ export default function LandingPage() {
 
         <section className="feature-strip" aria-label="Features">
           <div className="feature-strip-inner">
-            <FeatureCard icon={<Camera size={19} />} title="List a whole room at once">
+            <FeatureCard icon={<ScanSearch size={19} />} title="List a whole room at once">
               Take a photo and Lendr drafts a listing for everything it spots.
             </FeatureCard>
             <FeatureCard icon={<CalendarClock size={19} />} title="Due dates on every loan">
               Borrowers get a reminder before it's due.
             </FeatureCard>
             <FeatureCard icon={<Star size={19} />} title="Ratings after each return">
-              See who's reliable before you hand something over.
+              Check a borrower's ratings before lending.
             </FeatureCard>
           </div>
         </section>
@@ -114,7 +115,7 @@ export default function LandingPage() {
 
         <section className="get-started">
           <div>
-            <h2>Got a NetID? You're in.</h2>
+            <h2>Got a NetID? You're in!</h2>
             <p>Make an account with your Illinois email and add your first item.</p>
           </div>
           <Link className="action-button action-button-orange-tint" to="/signup">

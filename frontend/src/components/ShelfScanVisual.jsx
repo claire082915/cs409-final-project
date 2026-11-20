@@ -7,13 +7,13 @@ const SHELF_PHOTO =
 const DETECTED_ITEMS = [
   { name: 'Instant camera', left: 41, top: 5.6, width: 30, height: 26 },
   { name: 'Folding camera', left: 14.5, top: 21, width: 26.5, height: 28 },
-  { name: 'Planter', left: 9.8, top: 73.6, width: 31.6, height: 26.4 },
+  { name: 'Planter', left: 9.8, top: 73.6, width: 31.6, height: 26.4, labelOnLeft: true },
   { name: 'Film camera', left: 41.5, top: 84.4, width: 33.8, height: 15.6 },
 ]
 
-// Must match .scan-line, which sweeps the photo in the first 13.5% of the 13s cycle
+// Keep these in sync with the .scan-line delay and scan-sweep keyframes.
 const SCAN_START_SECONDS = 1
-const SCAN_SECONDS = 1.75
+const SCAN_SECONDS = 2
 
 function boxStyle({ left, top, width, height }) {
   const middle = (top + height / 2) / 100
@@ -35,7 +35,7 @@ export default function ShelfScanVisual() {
         <div className="scan-line" />
         {DETECTED_ITEMS.map((item) => (
           <div className="scan-box" key={item.name} style={boxStyle(item)}>
-            <span>{item.name}</span>
+            <span className={item.labelOnLeft ? 'scan-label-left' : undefined}>{item.name}</span>
           </div>
         ))}
       </div>
@@ -45,7 +45,7 @@ export default function ShelfScanVisual() {
         </span>
         <span>
           <b>{DETECTED_ITEMS.length} items found</b>
-          <small>From one shelf photo</small>
+          <small>From one photo</small>
         </span>
       </div>
       <div className="photo-label label-bottom">

@@ -46,7 +46,7 @@
   color: var(--slate-900);
 }
 
-.welcome-title span {
+.welcome-title a {
   color: var(--brand-orange-dark);
 }
 
