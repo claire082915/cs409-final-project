@@ -194,8 +194,8 @@ export default function DashboardPage() {
                       <Package size={19} />
                     </span>
                     <span className="activity-item-copy">
-                      <strong>{loan.item?.name || 'Deleted item'}</strong>
-                      <small>
+                      <strong className="truncate">{loan.item?.name || 'Deleted item'}</strong>
+                      <small className="truncate">
                         {loan.direction === 'lent' ? 'Borrowed by' : 'Borrowed from'}{' '}
                         {personName(otherPerson)}
                       </small>

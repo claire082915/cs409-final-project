@@ -233,7 +233,7 @@ export default function DetectedItemsPanel() {
                 </div>
                 <footer className="detected-panel-footer">
                   {error && (
-                    <p className="item-form-error" role="alert">
+                    <p className="form-error" role="alert">
                       {error}
                     </p>
                   )}

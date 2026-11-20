@@ -4,15 +4,14 @@ import { uniqBy } from 'lodash-es'
 import { toast } from 'sonner'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Button, Disclosure, DisclosurePanel, Heading } from 'react-aria-components'
-import { ChevronRight, MapPin, PackageOpen, SearchX } from 'lucide-react'
+import { ChevronRight, MapPin, SearchX } from 'lucide-react'
 import AppShell from '../components/AppShell.jsx'
+import ItemCard from '../components/ItemCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import OwnerDetails from '../components/OwnerDetails.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
-import ItemNameButton from '../components/ItemNameButton.jsx'
-import ItemTags from '../components/ItemTags.jsx'
 import Reputation from '../components/Reputation.jsx'
 import { apiFetch } from '../lib/api.js'
 import { MOCK_ITEMS } from '../lib/mockItems.js'
@@ -27,22 +26,12 @@ const RESULTS_PER_PAGE = 12
 
 function ItemResult({ item, onOpen }) {
   return (
-    <article className="browse-card">
-      <div className="browse-photo">
-        {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={30} />}
-      </div>
-      <div className="browse-card-body">
-        <h3 className="browse-card-title">
-          {/* Its click area covers the whole card, like on Browse */}
-          <ItemNameButton name={item.name} className="browse-card-open" onClick={onOpen} />
-        </h3>
-        <ItemTags category={item.category} condition={item.condition} />
-        <OwnerDetails owner={item.owner}>
-          {/* Results mix both, so only lent items get a label */}
-          {item.available === false && <p className="search-item-lent">Lent</p>}
-        </OwnerDetails>
-      </div>
-    </article>
+    <ItemCard item={item} onOpen={onOpen}>
+      <OwnerDetails owner={item.owner}>
+        {/* Results mix both, so only lent items get a label */}
+        {item.available === false && <p className="search-item-lent">Lent</p>}
+      </OwnerDetails>
+    </ItemCard>
   )
 }
 
@@ -57,10 +46,10 @@ function PersonResult({ person }) {
       />
       <span className="search-person-text">
         <strong>{person.displayName}</strong>
-        <small>@{person.username}</small>
+        <small className="truncate">@{person.username}</small>
         <Reputation reputation={person.reputation} />
         {person.campusArea && (
-          <small className="search-person-area">
+          <small className="search-person-area truncate">
             <MapPin size={13} aria-hidden="true" />
             {person.campusArea}
           </small>
@@ -75,7 +64,7 @@ function ResultSection({ title, count, children }) {
   return (
     <Disclosure className="search-section" defaultExpanded>
       <Heading level={2} className="search-section-heading">
-        <Button slot="trigger" className="search-section-toggle">
+        <Button slot="trigger" className="count-label search-section-toggle">
           <ChevronRight size={16} className="search-section-chevron" aria-hidden="true" />
           <span>{title}</span>
           <small>{count}</small>
@@ -217,7 +206,7 @@ export default function SearchPage() {
                 firstResults={backendResults.items}
                 firstTotal={backendResults.itemTotal}
                 renderResults={(items) => (
-                  <div className="browse-grid">
+                  <div className="item-grid">
                     {items.map((item) => (
                       <ItemResult key={item._id} item={item} onOpen={() => setSelectedItem(item)} />
                     ))}

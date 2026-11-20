@@ -38,8 +38,8 @@ function ItemOption({ item }) {
     <ListBoxItem id={`item-${item._id}`} textValue={item.name} className="field-option">
       <ItemThumb photo={item.photos[0]} />
       <span className="search-text">
-        <strong>{item.name}</strong>
-        <small>
+        <strong className="truncate">{item.name}</strong>
+        <small className="truncate">
           {ownerName}
           {item.available === false && ' · Lent'}
         </small>
@@ -63,8 +63,8 @@ function PersonOption({ person }) {
         className="search-person-avatar"
       />
       <span className="search-text">
-        <strong>{person.displayName}</strong>
-        <small>@{person.username}</small>
+        <strong className="truncate">{person.displayName}</strong>
+        <small className="truncate">@{person.username}</small>
       </span>
     </ListBoxItem>
   )

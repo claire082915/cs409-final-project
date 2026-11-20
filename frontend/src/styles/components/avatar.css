@@ -54,3 +54,10 @@
   color: #7a3a1e;
   background: #f8e2d8;
 }
+
+/* Next to a name in a card or list row */
+.avatar-small {
+  width: 24px;
+  height: 24px;
+  font-size: 9px;
+}

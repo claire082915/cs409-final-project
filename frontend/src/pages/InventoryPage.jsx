@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { LoaderCircle, Pencil, Plus, PackageOpen, Search, Sparkles, X } from 'lucide-react'
+import { LoaderCircle, Pencil, Plus, PackageOpen, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
+import SearchField from '../components/SearchField.jsx'
+import SourceSwitch from '../components/SourceSwitch.jsx'
+import ItemCard from '../components/ItemCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
-import ItemNameButton from '../components/ItemNameButton.jsx'
-import ItemTags from '../components/ItemTags.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import PhotoDropZone from '../components/PhotoDropZone.jsx'
@@ -303,37 +304,9 @@ export default function InventoryPage() {
             selected={tab}
             onChange={setTab}
           />
-          <div className="inventory-source" aria-label="Inventory data source">
-            <span>Data</span>
-            <button
-              type="button"
-              className={source === 'mock' ? 'active' : ''}
-              onClick={() => setSource('mock')}
-            >
-              Mock
-            </button>
-            <button
-              type="button"
-              className={source === 'backend' ? 'active' : ''}
-              onClick={() => setSource('backend')}
-            >
-              Backend
-            </button>
-          </div>
+          <SourceSwitch source={source} onChange={setSource} label="Inventory data source" />
         </div>
-        <label className="inventory-search">
-          <Search size={17} aria-hidden="true" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search your items"
-            aria-label="Search your items"
-          />
-          {query && (
-            <button type="button" onClick={() => setQuery('')} aria-label="Clear search">
-              <X size={15} />
-            </button>
-          )}
+        <SearchField value={query} onChange={setQuery} placeholder="Search your items">
           <FilterMenu
             options={ITEM_CATEGORIES}
             selected={selectedCategories}
@@ -342,7 +315,7 @@ export default function InventoryPage() {
             pluralLabel="categories"
             label="category"
           />
-        </label>
+        </SearchField>
 
         {error && (
           <p className="inventory-error" role="status">
@@ -352,28 +325,9 @@ export default function InventoryPage() {
         {loading ? (
           <AppLoader inline label="Loading your items…" />
         ) : visibleItems.length ? (
-          <section className="inventory-grid" aria-label={`${tab} items`}>
+          <section className="item-grid" aria-label={`${tab} items`}>
             {visibleItems.map((item) => (
-              <article className="inventory-card" key={item._id}>
-                <div className="inventory-photo">
-                  {item.photos?.[0] ? (
-                    <img src={item.photos[0]} alt={item.name} />
-                  ) : (
-                    <PackageOpen size={34} />
-                  )}
-                </div>
-                <div className="inventory-card-copy">
-                  <strong>
-                    {/* Its click area covers the whole card, like on Browse */}
-                    <ItemNameButton
-                      name={item.name}
-                      className="inventory-card-open"
-                      onClick={() => openForm(item)}
-                    />
-                  </strong>
-                  <ItemTags category={item.category} condition={item.condition} />
-                </div>
-              </article>
+              <ItemCard key={item._id} item={item} onOpen={() => openForm(item)} />
             ))}
           </section>
         ) : (
@@ -386,13 +340,13 @@ export default function InventoryPage() {
         )}
         {isFormOpen && (
           <div
-            className="item-modal-backdrop"
+            className="modal-backdrop"
             onMouseDown={(event) => {
               if (event.target === event.currentTarget) requestClose()
             }}
           >
             <section
-              className="item-modal"
+              className="modal item-modal"
               role="dialog"
               aria-modal="true"
               aria-labelledby="item-modal-title"
@@ -423,10 +377,10 @@ export default function InventoryPage() {
                     )}
                   </PhotoDropZone>
                   <div className="item-form-main">
-                    <label className="item-form-field">
+                    <label className="form-field">
                       <span>
                         Item name{' '}
-                        <span className="item-required" aria-hidden="true">
+                        <span className="field-required" aria-hidden="true">
                           *
                         </span>
                       </span>
@@ -438,26 +392,26 @@ export default function InventoryPage() {
                         maxLength="80"
                       />
                     </label>
-                    <div className="item-form-field">
+                    <div className="form-field">
                       <span id="item-category-label">Category</span>
                       <SelectMenu
-                        className="item-select"
+                        className="select-field"
                         aria-labelledby="item-category-label"
                         options={ITEM_CATEGORIES}
                         value={form.category}
                         onChange={(category) => setField('category', category)}
                       />
                     </div>
-                    <div className="item-form-field">
+                    <div className="form-field">
                       <span id="item-condition-label">
                         Condition{' '}
                         {/* The backend refuses a new condition while the item is on loan */}
                         {editingItem?.available === false && (
-                          <span className="item-field-hint">(locked while lent)</span>
+                          <span className="field-hint">(locked while lent)</span>
                         )}
                       </span>
                       <SelectMenu
-                        className="item-select"
+                        className="select-field"
                         aria-labelledby="item-condition-label"
                         options={[...ITEM_CONDITIONS, NO_CONDITION]}
                         value={form.condition}
@@ -467,9 +421,9 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </div>
-                <label className="item-form-field">
+                <label className="form-field">
                   <span>
-                    Notes <span className="item-field-hint">(optional)</span>
+                    Notes <span className="field-hint">(optional)</span>
                   </span>
                   <textarea
                     name="notes"
@@ -481,7 +435,7 @@ export default function InventoryPage() {
                   />
                 </label>
                 {formError && (
-                  <p className="item-form-error" role="alert">
+                  <p className="form-error" role="alert">
                     {formError}
                   </p>
                 )}

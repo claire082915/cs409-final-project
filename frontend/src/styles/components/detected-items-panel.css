@@ -269,13 +269,6 @@
   border-top: 1px solid var(--grey-200);
   background: var(--surface);
 }
-.detected-panel-footer .item-form-error {
-  margin: 0;
-}
-.detected-panel button:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
 
 @keyframes detected-fade {
   from {

@@ -1,0 +1,99 @@
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 560px);
+  height: 42px;
+  margin-bottom: 22px;
+  padding: 0 6px 0 13px;
+  border: 1px solid var(--slate-300);
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+.search-field:focus-within {
+  border-color: var(--brand-green);
+  box-shadow: var(--focus-glow);
+}
+.search-field input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--slate-800);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+.search-field input::placeholder {
+  color: var(--text-muted);
+}
+.search-field button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.search-field .filter-menu-button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px 0 12px;
+  border: 0;
+  border-left: 1px solid var(--grey-250);
+  color: var(--slate-700);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: 0;
+}
+/* Long area names get cut so the input keeps room to type */
+.search-field .filter-menu-label {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-field .filter-menu-button[data-focus-visible] {
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--brand-green);
+}
+
+/* The menus move to their own row so the input keeps its width */
+@media (max-width: 560px) {
+  .search-field {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 0;
+  }
+  .search-field input {
+    flex: 1 0 70%;
+    height: 42px;
+  }
+  .search-field .filter-menu-button {
+    flex: 1 0 40%;
+    justify-content: space-between;
+    min-width: 0;
+    height: 40px;
+    border-top: 1px solid var(--grey-250);
+    border-left: 0;
+  }
+  /* Pull the menu row out to the field's edges so its top border spans the full width */
+  .search-field .filter-menu-button:not(.filter-menu-button + .filter-menu-button) {
+    margin-left: -13px;
+    padding-left: 13px;
+  }
+  .search-field .filter-menu-button:last-of-type {
+    margin-right: -6px;
+  }
+  .search-field .filter-menu-button + .filter-menu-button {
+    border-left: 1px solid var(--grey-250);
+  }
+  .search-field .filter-menu-label {
+    max-width: none;
+  }
+}

@@ -1,216 +1,20 @@
 .browse-page {
   color: var(--slate-900);
 }
-.browse-source {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 3px;
-  padding: 3px;
-  border: 1px solid var(--grey-250);
-  border-radius: 8px;
-  background: var(--surface);
-}
-.browse-source span {
-  padding: 0 7px;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-.browse-source button {
-  border: 0;
-  border-radius: 5px;
-  padding: 6px 9px;
-  color: var(--text-muted);
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.browse-source button.active {
-  color: var(--green-700);
-  background: var(--green-50);
-}
-.browse-toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 23px;
-}
-.browse-search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 42px;
-  border: 1px solid var(--slate-300);
-  border-radius: 8px;
-  color: var(--text-muted);
-  background: var(--surface);
-}
-.browse-search {
-  flex: 0 1 560px;
-  padding: 0 6px 0 13px;
-}
-.browse-search input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--slate-800);
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-}
-.browse-search input::placeholder {
-  color: var(--text-muted);
-}
-.browse-search button {
-  display: grid;
-  place-items: center;
-  border: 0;
-  color: var(--text-muted);
-  background: transparent;
-  cursor: pointer;
-}
-.browse-search .filter-menu-button {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 8px 0 12px;
-  border: 0;
-  border-left: 1px solid var(--grey-250);
-  color: var(--slate-700);
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  white-space: nowrap;
-  cursor: pointer;
-  outline: 0;
-}
 /* Long area names get cut so the input keeps room to type */
-.browse-search .filter-menu-label {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.browse-search .filter-menu-button[data-focus-visible] {
-  border-radius: 6px;
-  box-shadow: 0 0 0 2px var(--brand-green);
-}
-.browse-search:focus-within {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px #3186752a;
-}
 /* Match the shared menu button and date picker to the readable sizes on this page */
-.browse-modal .date-picker-group {
-  border-color: var(--slate-300);
-}
-.browse-modal .date-picker-input {
-  font-size: 14px;
-}
-.browse-results-label {
-  display: flex;
-  align-items: baseline;
-  gap: 9px;
-  margin-bottom: 13px;
-  color: var(--slate-750);
-  font-size: 13px;
-  font-weight: 750;
-}
-.browse-results-label small {
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-}
-.browse-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 19px;
-}
-.browse-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--grey-200);
-  border-radius: 11px;
-  background: var(--surface);
-  box-shadow: 0 4px 15px #17455108;
-  transition:
-    transform 0.18s,
-    box-shadow 0.18s;
-}
-.browse-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 9px 22px #17455112;
-}
-.browse-card:has(.browse-card-open:focus-visible) {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
-.browse-photo {
-  position: relative;
-  height: clamp(145px, 17vw, 205px);
-  overflow: hidden;
-  background: var(--grey-150);
-}
-.browse-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.browse-photo > svg {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  color: #9bb0b2;
-}
-.browse-card-body {
-  padding: 13px 14px 15px;
-}
 /* The card body isn't a grid, so the tags need their own gap from the name */
-.browse-card-body .item-tags {
-  margin-top: 7px;
-}
 .browse-owner-details {
   display: grid;
   gap: 4px;
   margin-top: 7px;
 }
-.browse-card-title {
-  margin: 0;
-  color: var(--brand-teal-dark);
-  font-size: 15px;
-  line-height: 1.4;
-}
-.browse-card-open {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  color: inherit;
-  background: none;
-  font: inherit;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
 /* Stretches the click area over the whole card */
-.browse-card-open::after {
-  position: absolute;
-  inset: 0;
-  content: '';
-}
 .browse-owner,
 .browse-location {
-  overflow: hidden;
   margin: 0;
   color: var(--text-muted);
   font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .browse-owner,
 .browse-location {
@@ -237,13 +41,6 @@
 }
 .browse-owner-link:focus-visible {
   border-radius: 3px;
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
-.browse-owner-avatar {
-  width: 24px;
-  height: 24px;
-  font-size: 9px;
 }
 .browse-owner-hidden {
   display: flex;
@@ -304,29 +101,8 @@
   background: transparent;
   cursor: pointer;
 }
-.browse-modal-backdrop {
-  position: fixed;
-  z-index: 20;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: #102f36a8;
-  backdrop-filter: blur(3px);
-}
-.browse-modal {
-  position: relative;
-  width: min(100%, 440px);
-  padding: 28px;
-  border: 1px solid var(--grey-200);
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: 0 20px 70px #102f3640;
-}
 .browse-request-modal {
   width: min(100%, 740px);
-  max-height: min(92vh, 820px);
-  overflow-y: auto;
   padding: 20px;
 }
 .borrow-item-summary {
@@ -338,28 +114,16 @@
   border-radius: 11px;
   background: var(--grey-25);
 }
-.borrow-item-photo {
-  min-height: 205px;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: var(--slate-350);
-  background: var(--grey-150);
-}
+.borrow-item-photo,
 .borrow-item-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
   min-height: 205px;
-  object-fit: cover;
 }
 .borrow-item-details {
   align-self: center;
   min-width: 0;
   padding-right: 20px;
 }
-.browse-modal .borrow-item-details h2 {
+.browse-request-modal .borrow-item-details h2 {
   margin: 0 0 5px;
   color: var(--slate-900);
   font-size: 25px;
@@ -387,43 +151,8 @@
 .borrow-request-form {
   padding: 20px 18px 3px;
 }
-.borrow-message-label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--slate-700);
-  font-size: 13px;
-  font-weight: 500;
-}
-.borrow-required {
-  color: var(--error);
-}
-.borrow-field-hint {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.borrow-request-form textarea {
-  display: block;
-  width: 100%;
-  min-height: 95px;
-  resize: vertical;
-  padding: 12px 13px;
-  border: 1px solid var(--slate-300);
-  border-radius: 8px;
-  outline: 0;
-  color: var(--slate-750);
-  background: var(--surface);
-  font: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.borrow-request-form textarea:focus {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px #3186752a;
-}
-.borrow-request-form textarea::placeholder {
-  color: var(--text-muted);
-}
-.borrow-request-form .borrow-message-label {
+/* The date picker leaves a hidden element after it, so match any later field */
+.borrow-request-form .form-field ~ .form-field {
   margin-top: 14px;
 }
 .browse-modal-close {
@@ -431,24 +160,11 @@
   top: 30px;
   right: 30px;
 }
-.browse-modal h2 {
+.browse-request-modal h2 {
   margin: 4px 35px 8px 0;
   color: var(--slate-900);
   font-size: 21px;
   letter-spacing: -0.03em;
-}
-.browse-modal-description {
-  margin: 0 0 21px;
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
-.browse-date-label {
-  display: grid;
-  gap: 8px;
-  color: var(--slate-700);
-  font-size: 13px;
-  font-weight: 500;
 }
 .browse-modal-actions {
   display: flex;
@@ -460,61 +176,9 @@
 .browse-request-button {
   min-width: 130px;
 }
-.browse-modal button:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
-
-@media (max-width: 900px) {
-  .browse-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 @media (max-width: 560px) {
-  .browse-toolbar {
-    flex-direction: column;
-  }
   /* The 560px basis would set the height once the toolbar is a column */
   /* The menus move to their own row so the input keeps its width */
-  .browse-search {
-    flex: none;
-    flex-wrap: wrap;
-    height: auto;
-    row-gap: 0;
-  }
-  .browse-search input {
-    flex: 1 0 70%;
-    height: 42px;
-  }
-  .browse-search .filter-menu-button {
-    flex: 1 0 40%;
-    justify-content: space-between;
-    min-width: 0;
-    height: 40px;
-    border-top: 1px solid var(--grey-250);
-    border-left: 0;
-  }
-  .browse-search .filter-menu-button:not(.filter-menu-button + .filter-menu-button) {
-    margin-left: -13px;
-    padding-left: 13px;
-  }
-  .browse-search .filter-menu-button + .filter-menu-button {
-    margin-right: -6px;
-    border-left: 1px solid var(--grey-250);
-  }
-  .browse-search .filter-menu-label {
-    max-width: none;
-  }
-  .browse-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .browse-photo {
-    height: 205px;
-  }
-  .browse-card-body {
-    padding: 13px;
-  }
 }
 @media (max-width: 560px) {
   .browse-request-modal {
@@ -533,15 +197,10 @@
   .borrow-item-details {
     padding: 0 2px 4px;
   }
-  .browse-modal .borrow-item-details h2 {
+  .browse-request-modal .borrow-item-details h2 {
     font-size: 21px;
   }
   .borrow-request-form {
     padding: 17px 4px 3px;
   }
-}
-.borrow-form-error {
-  margin: 0;
-  color: #b4482f;
-  font-size: 13px;
 }

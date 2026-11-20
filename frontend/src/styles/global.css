@@ -43,6 +43,9 @@
   /* Teal is dark, so it needs a stronger tint than the orange's 12% to not look grey, picked by eye */
   --tint-teal: color-mix(in srgb, var(--brand-teal) 15%, white);
   --tint-teal-hover: color-mix(in srgb, var(--brand-teal) 22%, white);
+  /* Soft glow around a focused text field and the resting shadow under cards */
+  --focus-glow: 0 0 0 3px #3186752a;
+  --card-shadow: 0 4px 15px #17455108;
   --ink: var(--slate-900);
   --page-bg: var(--grey-100);
   --surface: var(--grey-25);
@@ -67,6 +70,12 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+/* One focus ring for links and buttons, :where keeps it easy to override */
+:where(a, button, [tabindex]):where(:focus-visible):where(:not([data-rac])),
+:where(a[data-rac], button[data-rac]):where([data-focus-visible]) {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
 }
 .app-loader {
   min-height: 100vh;
@@ -254,11 +263,6 @@ a {
 .action-button[data-hovered] {
   background: var(--action-bg-hover);
 }
-.action-button:focus-visible:not([data-rac]),
-.action-button[data-focus-visible] {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
 .action-button:disabled {
   opacity: 0.6;
   cursor: default;
@@ -302,7 +306,73 @@ a {
 .close-button:hover:not(:disabled) {
   background: var(--grey-100);
 }
-.close-button:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
+.modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: #102f36a8;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  position: relative;
+  max-height: min(92vh, 850px);
+  overflow-y: auto;
+  padding: 28px;
+  border: 1px solid var(--grey-200);
+  border-radius: 16px;
+  color: var(--slate-800);
+  background: var(--surface);
+  box-shadow: 0 24px 75px #05232c45;
+}
+/* An item photo or its placeholder icon in a fixed frame */
+.photo-box {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  color: var(--slate-350);
+  background: var(--grey-150);
+}
+.photo-box img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Modals open as a sheet from the bottom on phones */
+@media (max-width: 540px) {
+  .modal-backdrop {
+    align-items: end;
+    padding: 10px;
+  }
+  .modal {
+    max-height: 94vh;
+    padding: 21px 18px;
+    border-radius: 15px;
+  }
+}
+/* A list's name with its count beside it, like Pending 5 requests */
+.count-label {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0 0 13px;
+  color: var(--slate-750);
+  font-size: 13px;
+  font-weight: 750;
+}
+.count-label small {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+/* Cut text that runs past its box off with an ellipsis */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

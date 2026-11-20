@@ -13,6 +13,7 @@ import { CalendarDays, Check, ChevronRight, MapPin, PackageOpen, Send } from 'lu
 import { toast } from 'sonner'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
+import SourceSwitch from '../components/SourceSwitch.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
@@ -73,7 +74,7 @@ function personName(person) {
 
 function ItemPhoto({ item }) {
   return (
-    <div className="request-photo">
+    <div className="photo-box request-photo">
       {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={24} />}
     </div>
   )
@@ -83,7 +84,7 @@ function ItemPhoto({ item }) {
 function ItemTitle({ item }) {
   return (
     <>
-      <span className="request-item-name">{item.name}</span>
+      <span className="request-item-name truncate">{item.name}</span>
       {item.available === false && <span className="request-on-loan">Lent</span>}
     </>
   )
@@ -99,7 +100,7 @@ function RequestDetails({ request, person, personDetail }) {
             photo={person.photo}
             name={person.displayName}
             username={person.username}
-            className="request-avatar"
+            className="avatar-small"
           />
           <span className="request-person-name">{personName(person)}</span>
         </Link>
@@ -297,7 +298,7 @@ function ApproveDialog({ request, isPending, onCancel, onConfirm }) {
               </p>
               <DatePickerField
                 label="Return by"
-                className="approve-date"
+                className="form-field approve-date"
                 name="dueDate"
                 defaultValue={parseDate(String(request.dueDate).slice(0, 10))}
                 minValue={today(getLocalTimeZone()).add({ days: 1 })}
@@ -437,23 +438,7 @@ export default function BorrowRequestPage() {
             <h1>Borrow Requests</h1>
             <p>Requests for your items and ones you've sent.</p>
           </div>
-          <div className="requests-source" aria-label="Request data source">
-            <span>Data</span>
-            <button
-              type="button"
-              className={source === 'mock' ? 'active' : ''}
-              onClick={() => setSource('mock')}
-            >
-              Mock
-            </button>
-            <button
-              type="button"
-              className={source === 'backend' ? 'active' : ''}
-              onClick={() => setSource('backend')}
-            >
-              Backend
-            </button>
-          </div>
+          <SourceSwitch source={source} onChange={setSource} label="Request data source" />
         </header>
         <ViewSwitch
           className="requests-views"
@@ -473,7 +458,7 @@ export default function BorrowRequestPage() {
           <EmptyRequests view={view} />
         ) : (
           <>
-            <p className="requests-count">
+            <p className="count-label">
               Pending
               <small>
                 {requests.length} {requests.length === 1 ? 'request' : 'requests'}

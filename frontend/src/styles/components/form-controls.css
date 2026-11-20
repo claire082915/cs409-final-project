@@ -245,3 +245,92 @@
 .select-menu-button[data-focus-visible] {
   text-decoration: underline;
 }
+
+/* A label above its input, textarea, select or date picker */
+.form-field {
+  display: grid;
+  gap: 8px;
+  color: var(--slate-700);
+  font-size: 13px;
+  font-weight: 500;
+}
+.form-field input:not([type]),
+.form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--slate-300);
+  border-radius: 8px;
+  outline: none;
+  color: var(--slate-900);
+  background: var(--surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+}
+.form-field input:not([type]) {
+  height: 40px;
+}
+.form-field textarea {
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.form-field input:not([type])::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
+}
+.form-field input:not([type]):focus,
+.form-field textarea:focus {
+  border-color: var(--brand-green);
+  box-shadow: var(--focus-glow);
+}
+/* Shown but not editable, like Email and the demo username on Account */
+.form-field input:not([type]):read-only {
+  color: var(--text-muted);
+  background: var(--grey-100);
+  border-color: var(--slate-200);
+  cursor: not-allowed;
+}
+/* A select menu boxed like the text fields */
+.select-field .select-menu-button {
+  width: 100%;
+  height: 40px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--slate-300);
+  border-radius: 8px;
+  color: var(--slate-900);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 400;
+}
+.select-field .select-menu-button[data-focus-visible],
+.select-field .select-menu-button[data-pressed] {
+  border-color: var(--brand-green);
+  box-shadow: var(--focus-glow);
+  text-decoration: none;
+}
+.select-field .select-menu-button[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.form-field .date-picker-group {
+  border-color: var(--slate-300);
+}
+.form-field .date-picker-input {
+  font-size: 14px;
+}
+.field-required {
+  color: var(--error);
+}
+.field-hint {
+  color: var(--text-muted);
+}
+.form-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+  line-height: 1.5;
+}

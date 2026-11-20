@@ -14,197 +14,14 @@
   margin-bottom: 14px;
 }
 /* Its own row under the toolbar so the placeholder has room at any width, same cap as Browse */
-.inventory-search {
-  display: flex;
-  box-sizing: border-box;
-  width: min(100%, 560px);
-  align-items: center;
-  gap: 10px;
-  height: 42px;
-  margin-bottom: 22px;
-  padding: 0 6px 0 13px;
-  border: 1px solid var(--slate-300);
-  border-radius: 8px;
-  color: var(--text-muted);
-  background: var(--surface);
-}
-.inventory-search input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--slate-800);
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-}
-.inventory-search input::placeholder {
-  color: var(--text-muted);
-}
-.inventory-search button {
-  display: grid;
-  place-items: center;
-  border: 0;
-  color: var(--text-muted);
-  background: transparent;
-  cursor: pointer;
-}
 /* Same divider and look as the filters on Browse */
-.inventory-search .filter-menu-button {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 8px 0 12px;
-  border: 0;
-  border-left: 1px solid var(--grey-250);
-  color: var(--slate-700);
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  white-space: nowrap;
-  cursor: pointer;
-  outline: 0;
-}
-.inventory-search .filter-menu-button[data-focus-visible] {
-  border-radius: 6px;
-  box-shadow: 0 0 0 2px var(--brand-green);
-}
-.inventory-search:focus-within {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px #3186752a;
-}
-.inventory-source {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 8px;
-  padding: 3px;
-  border: 1px solid var(--grey-250);
-  border-radius: 8px;
-  background: var(--surface);
-}
-.inventory-source span {
-  padding: 0 7px;
-  color: var(--slate-400);
-  font-size: 10px;
-}
-.inventory-source button {
-  border: 0;
-  border-radius: 5px;
-  padding: 6px 9px;
-  color: var(--slate-500);
-  background: transparent;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.inventory-source button.active {
-  color: var(--green-700);
-  background: var(--green-50);
-}
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  margin-left: -1px;
-}
-.inventory-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--grey-200);
-  border-radius: 10px;
-  background: var(--surface);
-  box-shadow: 0 4px 15px #17455108;
-  transition:
-    transform 0.18s,
-    box-shadow 0.18s;
-}
-.inventory-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 9px 22px #17455112;
-}
-.inventory-card:has(.inventory-card-open:focus-visible) {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
-.inventory-card-open {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  color: inherit;
-  background: none;
-  font: inherit;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.inventory-card-open::after {
-  position: absolute;
-  inset: 0;
-  content: '';
-}
-.inventory-photo {
-  position: relative;
-  height: clamp(150px, 18vw, 225px);
-  overflow: hidden;
-  background: var(--grey-150);
-}
-.inventory-photo img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-.inventory-photo > svg {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  color: #9bb0b2;
-}
-.inventory-card-copy {
-  display: grid;
-  gap: 7px;
-  padding: 13px 14px 15px;
-}
-.inventory-card-copy strong {
-  overflow: hidden;
-  color: var(--brand-teal-dark);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .inventory-error {
   margin: -7px 0 20px;
   color: #b64e38;
   font-size: 12px;
 }
-.item-modal-backdrop {
-  position: fixed;
-  z-index: 20;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 24px;
-  background: #102f36a8;
-  backdrop-filter: blur(3px);
-}
 .item-modal {
   width: min(100%, 570px);
-  max-height: min(92vh, 850px);
-  overflow-y: auto;
-  padding: 28px;
-  border: 1px solid var(--grey-200);
-  border-radius: 16px;
-  color: var(--slate-800);
-  background: var(--surface);
-  box-shadow: 0 24px 75px #05232c45;
 }
 .item-modal-heading {
   display: flex;
@@ -222,6 +39,10 @@
 .item-form {
   display: grid;
   gap: 16px;
+}
+/* Pull the error up under the field it's about */
+.item-form > .form-error {
+  margin-top: -4px;
 }
 .item-photo-upload {
   aspect-ratio: 1;
@@ -243,80 +64,11 @@
   gap: 16px;
 }
 /* Match the shared menu button to the text inputs beside it */
-.item-select .select-menu-button {
-  width: 100%;
-  height: 40px;
-  justify-content: space-between;
-  box-sizing: border-box;
-  padding: 0 12px;
-  border: 1px solid var(--slate-300);
-  border-radius: 8px;
-  color: var(--slate-900);
-  background: var(--surface);
-  font-size: 14px;
-  font-weight: 400;
-}
-.item-select .select-menu-button[data-focus-visible],
-.item-select .select-menu-button[data-pressed] {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px #3186752a;
-  text-decoration: none;
-}
 .item-photo-upload img {
   position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.item-form-field {
-  display: grid;
-  gap: 8px;
-  color: var(--slate-700);
-  font-size: 13px;
-  font-weight: 500;
-}
-.item-form-field > input,
-.item-form-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 12px;
-  border: 1px solid var(--slate-300);
-  border-radius: 8px;
-  outline: none;
-  color: var(--slate-900);
-  background: var(--surface);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 400;
-}
-.item-form-field > input {
-  height: 40px;
-}
-.item-form-field > input::placeholder,
-.item-form-field textarea::placeholder {
-  color: var(--text-muted);
-}
-.item-form-field > input:focus,
-.item-form-field textarea:focus {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px #3186752a;
-}
-.item-required {
-  color: var(--error);
-}
-.item-field-hint {
-  color: var(--text-muted);
-}
-.item-form-field textarea {
-  padding: 10px 12px;
-  resize: vertical;
-  line-height: 1.5;
-}
-.item-form-error {
-  margin: -4px 0 0;
-  color: var(--error);
-  font-size: 13px;
-  line-height: 1.5;
 }
 .item-form-actions {
   display: flex;
@@ -350,15 +102,6 @@
     opacity: 0;
   }
 }
-@media (max-width: 900px) {
-  .inventory-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-  .inventory-photo {
-    height: 190px;
-  }
-}
 @media (max-width: 540px) {
   .item-form-top {
     grid-template-columns: 1fr;
@@ -374,30 +117,8 @@
     flex-direction: column-reverse;
     gap: 9px;
   }
-  .inventory-source {
+  .inventory-toolbar .source-switch {
     align-self: flex-end;
-  }
-  .inventory-grid {
-    gap: 11px;
-  }
-  .inventory-photo {
-    height: 135px;
-  }
-  .inventory-card-copy {
-    padding: 10px;
-  }
-  .item-modal-backdrop {
-    align-items: end;
-    padding: 10px;
-  }
-  .item-modal {
-    max-height: 94vh;
-    padding: 21px 18px;
-    border-radius: 15px;
   }
 }
 /* Condition is locked while the item is lent */
-.item-select .select-menu-button[data-disabled] {
-  opacity: 0.55;
-  cursor: not-allowed;
-}

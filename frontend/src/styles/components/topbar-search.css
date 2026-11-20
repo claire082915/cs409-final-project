@@ -39,13 +39,6 @@
   min-width: 0;
 }
 
-.search-text strong,
-.search-text small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .search-text small {
   color: var(--slate-450);
   font-size: 11px;

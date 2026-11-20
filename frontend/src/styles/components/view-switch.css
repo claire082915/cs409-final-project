@@ -23,10 +23,6 @@
   background: var(--surface);
   box-shadow: 0 1px 3px #17455118;
 }
-.view-switch button:focus-visible {
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
-}
 .view-switch small {
   margin-left: 6px;
   color: var(--text-muted);

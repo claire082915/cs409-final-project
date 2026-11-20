@@ -41,22 +41,24 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
           label={
             <>
               Return by{' '}
-              <span className="borrow-required" aria-hidden="true">
+              <span className="field-required" aria-hidden="true">
                 *
               </span>
             </>
           }
-          className="browse-date-label"
+          className="form-field"
           name="dueDate"
           minValue={today(getLocalTimeZone()).add({ days: 1 })}
           isRequired
         />
-        <label className="borrow-message-label" htmlFor="borrow-message">
-          Message <span className="borrow-field-hint">(optional)</span>
+        <label className="form-field">
+          <span>
+            Message <span className="field-hint">(optional)</span>
+          </span>
+          <textarea name="message" rows="4" maxLength={300} />
         </label>
-        <textarea id="borrow-message" name="message" rows="4" maxLength={300} />
         {error && (
-          <p className="borrow-form-error" role="alert">
+          <p className="form-error" role="alert">
             {error}
           </p>
         )}

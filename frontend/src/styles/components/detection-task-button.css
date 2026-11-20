@@ -7,8 +7,6 @@
 }
 .task-button:focus-visible {
   border-radius: 8px;
-  outline: 2px solid var(--brand-green);
-  outline-offset: 2px;
 }
 .task-spinner {
   animation: task-spin 1s linear infinite;

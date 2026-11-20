@@ -20,13 +20,13 @@ export default function ItemDialog({ item, onClose, children }) {
   // Rendered on the body so the sticky top bar's stacking doesn't put the sidebar over it
   return createPortal(
     <div
-      className="browse-modal-backdrop"
+      className="modal-backdrop"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
     >
       <section
-        className="browse-modal browse-request-modal"
+        className="modal browse-request-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="borrow-modal-title"
@@ -40,7 +40,7 @@ export default function ItemDialog({ item, onClose, children }) {
           <X size={19} />
         </button>
         <div className="borrow-item-summary">
-          <div className="borrow-item-photo">
+          <div className="photo-box borrow-item-photo">
             {item.photos?.[0] ? (
               <img src={item.photos[0]} alt={item.name} />
             ) : (
