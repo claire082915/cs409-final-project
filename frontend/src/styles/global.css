@@ -52,6 +52,8 @@
   --header-border: var(--grey-200);
   --text-muted: var(--slate-600);
   --error: #a5402a;
+  --radius-photo: 6px;
+  --radius-card: 9px;
 }
 * {
   box-sizing: border-box;
@@ -173,18 +175,11 @@ a {
   display: block;
   flex: none;
 }
-.header-nav {
-  margin-left: 100px;
-  display: flex;
-  gap: 32px;
-}
-.header-nav a,
 .login-link {
   font-size: 11px;
   font-weight: 600;
   color: #607874;
 }
-.header-nav a:hover,
 .login-link:hover {
   color: var(--brand-green);
 }
@@ -211,14 +206,12 @@ a {
 .button:hover {
   transform: translateY(-2px);
 }
-.button-primary,
-.button-small {
+.button-primary {
   color: white;
   background: var(--brand-orange);
   box-shadow: 0 5px 13px #cc58222a;
 }
-.button-primary:hover,
-.button-small:hover {
+.button-primary:hover {
   background: var(--brand-orange-dark);
 }
 /* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
@@ -229,12 +222,6 @@ a {
 }
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
   background: color-mix(in srgb, var(--brand-orange) 20%, white);
-}
-.button-small {
-  min-height: 34px;
-  padding: 0 15px;
-  border-radius: 6px;
-  font-size: 10px;
 }
 .button-light {
   color: var(--slate-850);
@@ -332,7 +319,7 @@ a {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-photo);
   color: var(--slate-350);
   background: var(--grey-150);
 }
@@ -368,6 +355,10 @@ a {
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
+}
+/* Trim the space above the first line so its capitals line up with the top of a photo beside it */
+.cap-top {
+  text-box: trim-start cap alphabetic;
 }
 .truncate {
   overflow: hidden;

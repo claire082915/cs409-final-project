@@ -24,7 +24,7 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--grey-200);
-  border-radius: 11px;
+  border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -43,7 +43,7 @@
 .request-group {
   overflow: hidden;
   border: 1px solid var(--grey-200);
-  border-radius: 11px;
+  border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }

@@ -1,14 +1,23 @@
 import { Link } from 'react-router-dom'
-import Button from '../components/Button.jsx'
+import { ArrowDown, ArrowRight, CalendarClock, Camera, MapPin, Star } from 'lucide-react'
 import FeatureCard from '../components/FeatureCard.jsx'
 import Logo from '../components/Logo.jsx'
+import ShelfScanVisual from '../components/ShelfScanVisual.jsx'
 import '../styles/pages/landing.css'
 
-const FEATURED_AVATARS = [
-  { initials: 'KL', color: 0 },
-  { initials: 'RL', color: 2 },
-  { initials: 'CL', color: 4 },
-  { initials: 'AB', color: 6 },
+const STEPS = [
+  {
+    title: 'Find it',
+    text: 'Search or browse by category and campus area. Anything already out on loan stays hidden.',
+  },
+  {
+    title: 'Ask for it',
+    text: 'Pick a return date and add a note. The owner approves or declines the request.',
+  },
+  {
+    title: 'Bring it back',
+    text: 'Mark it returned, the owner confirms, and you both rate how it went.',
+  },
 ]
 
 function scrollTo(event, id) {
@@ -22,21 +31,13 @@ export default function LandingPage() {
       <header className="site-header">
         <div className="header-inner">
           <Logo />
-          <nav className="header-nav" aria-label="Main navigation">
-            <a href="#how-it-works" onClick={(event) => scrollTo(event, 'how-it-works')}>
-              How it works
-            </a>
-            <a href="#why-lendr" onClick={(event) => scrollTo(event, 'why-lendr')}>
-              Why Lendr
-            </a>
-          </nav>
           <div className="header-actions">
             <Link className="login-link" to="/login">
               Log in
             </Link>
-            <Button to="/signup" variant="small">
+            <Link className="action-button action-button-orange-tint" to="/signup">
               Sign up
-            </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -46,147 +47,84 @@ export default function LandingPage() {
           <div className="hero-inner">
             <div className="hero-copy">
               <span className="eyebrow">
-                <span className="eyebrow-dot" /> GOOD THINGS ARE CLOSER THAN YOU THINK
+                <MapPin className="eyebrow-pin" size={14} aria-hidden="true" /> For UIUC students
               </span>
               <h1 id="hero-title">
-                Borrow. Lend.
+                Borrow it from
                 <br />
-                <span>Keep it simple.</span>
+                someone <span>on campus.</span>
               </h1>
               <p className="hero-description">
-                Share the things you have. Find the things you need. Keep every loan easy,
-                thoughtful, and close to home.
+                Lendr is where students lend each other the stuff they own. Borrow a camera for the
+                weekend or an iClicker for class, and always know when it's due back.
               </p>
               <div className="hero-actions">
-                <Button href="#get-started">
-                  Get started <span aria-hidden="true">→</span>
-                </Button>
+                <Link className="action-button action-button-orange-tint" to="/signup">
+                  Sign up <ArrowRight size={16} aria-hidden="true" />
+                </Link>
                 <a
                   className="how-link"
                   href="#how-it-works"
                   onClick={(event) => scrollTo(event, 'how-it-works')}
                 >
-                  <span className="play-icon">▷</span> See how it works
+                  How it works <ArrowDown size={14} aria-hidden="true" />
                 </a>
               </div>
-              <div className="neighbor-proof">
-                <div className="avatar-stack" aria-hidden="true">
-                  {FEATURED_AVATARS.map(({ initials, color }) => (
-                    <span key={initials} className={`avatar avatar-color-${color}`}>
-                      {initials}
-                    </span>
-                  ))}
-                  <span className="avatar avatar-stack-more">+</span>
-                </div>
-                <p>
-                  <strong>Good neighbors share.</strong>
-                  <br />
-                  Start with the people around you.
-                </p>
-              </div>
+              <p className="hero-note">Sign up with your NetID, only Illinois accounts can join.</p>
             </div>
-            <div
-              className="hero-visual"
-              aria-label="A collection of useful items ready to share"
-              role="img"
-            >
-              <div className="visual-sun" />
-              <div className="visual-arc arc-one" />
-              <div className="visual-arc arc-two" />
-              <div className="hero-photo" />
-              <div className="photo-label label-top">
-                <span className="label-icon">✦</span>
-                <span>
-                  <b>Pass it along</b>
-                  <small>Good things go further</small>
-                </span>
-              </div>
-              <div className="photo-label label-bottom">
-                <span className="label-heart">♡</span>
-                <span>
-                  <b>Borrow with confidence</b>
-                  <small>A little trust goes a long way</small>
-                </span>
-              </div>
-              <div className="visual-spark spark-one">✳</div>
-              <div className="visual-spark spark-two">✦</div>
-            </div>
+            <ShelfScanVisual />
           </div>
-          <a
-            href="#how-it-works"
-            className="scroll-cue"
-            onClick={(event) => scrollTo(event, 'how-it-works')}
-          >
-            <span /> Scroll to explore
-          </a>
         </section>
 
-        <section className="feature-strip" id="why-lendr" aria-label="What makes Lendr useful">
+        <section className="feature-strip" aria-label="Features">
           <div className="feature-strip-inner">
-            <FeatureCard icon="▧" title="Track with photos">
-              See an item’s condition when it leaves and when it comes back.
+            <FeatureCard icon={<Camera size={19} />} title="List a whole room at once">
+              Take a photo and Lendr drafts a listing for everything it spots.
             </FeatureCard>
-            <FeatureCard icon="◷" title="Remember return dates">
-              A friendly nudge helps everyone stay on the same page.
+            <FeatureCard icon={<CalendarClock size={19} />} title="Due dates on every loan">
+              Borrowers get a reminder before it's due.
             </FeatureCard>
-            <FeatureCard icon="♡" title="Grow your circle">
-              Build a little trust with every loan and return.
+            <FeatureCard icon={<Star size={19} />} title="Ratings after each return">
+              See who's reliable before you hand something over.
             </FeatureCard>
           </div>
         </section>
 
         <section className="how-section" id="how-it-works">
           <div className="how-heading">
-            <span className="eyebrow">SHARING, MADE SIMPLE</span>
+            <span className="eyebrow">How it works</span>
             <h2>
-              Good things go further
+              Request, use,
               <br />
-              when we share.
+              bring it back.
             </h2>
-            <p>
-              Lendr keeps the little details in one place, so borrowing from a neighbor feels easy.
-            </p>
           </div>
-          <div className="steps">
-            <div className="step">
-              <span className="step-number">01</span>
-              <div>
-                <h3>Find something useful</h3>
-                <p>Browse what people on campus are happy to lend.</p>
-              </div>
-            </div>
-            <div className="step">
-              <span className="step-number">02</span>
-              <div>
-                <h3>Agree on the details</h3>
-                <p>Set a return date and note the item’s condition together.</p>
-              </div>
-            </div>
-            <div className="step">
-              <span className="step-number">03</span>
-              <div>
-                <h3>Bring it back with care</h3>
-                <p>Confirm the return and keep your sharing circle thriving.</p>
-              </div>
-            </div>
-          </div>
+          <ol className="steps">
+            {STEPS.map(({ title, text }, index) => (
+              <li className="step" key={title}>
+                <span className="step-number">0{index + 1}</span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </section>
 
-        <section className="get-started" id="get-started">
+        <section className="get-started">
           <div>
-            <span className="eyebrow">YOUR NEIGHBORHOOD IS FULL OF GOOD THINGS</span>
-            <h2>Ready to share a little more?</h2>
-            <p>Make borrowing and lending feel easy from the very first hello.</p>
+            <h2>Got a NetID? You're in.</h2>
+            <p>Make an account with your Illinois email and add your first item.</p>
           </div>
-          <Button href="#how-it-works" variant="light">
-            See how it works <span aria-hidden="true">→</span>
-          </Button>
+          <Link className="action-button action-button-orange-tint" to="/signup">
+            Sign up <ArrowRight size={16} aria-hidden="true" />
+          </Link>
         </section>
       </main>
 
       <footer className="site-footer">
         <Logo light />
-        <span>Borrow a little. Share a lot.</span>
       </footer>
     </div>
   )

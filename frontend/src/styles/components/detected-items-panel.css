@@ -194,21 +194,21 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--grey-200);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   background: var(--grey-25);
   transition: background 180ms;
 }
 .detected-card-select {
   position: relative;
   align-self: start;
-  border-radius: 8px;
+  border-radius: var(--radius-photo);
   cursor: pointer;
 }
 .detected-card-photo {
   display: block;
   width: 96px;
   height: 96px;
-  border-radius: 8px;
+  border-radius: var(--radius-photo);
   object-fit: cover;
   background: var(--grey-100);
 }

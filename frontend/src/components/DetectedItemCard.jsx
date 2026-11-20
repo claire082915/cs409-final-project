@@ -26,7 +26,7 @@ export default function DetectedItemCard({ draft, index, onChange }) {
       {/* Unchecked fields can't be focused or sent */}
       <div className="detected-card-fields" inert={!draft.selected}>
         <label className="form-field">
-          <span>Item name</span>
+          <span className="cap-top">Item name</span>
           <input
             value={draft.name}
             onChange={(event) => setField('name', event.target.value)}

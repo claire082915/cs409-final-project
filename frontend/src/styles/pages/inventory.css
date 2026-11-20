@@ -47,6 +47,7 @@
 .item-photo-upload {
   aspect-ratio: 1;
   overflow: hidden;
+  border-radius: var(--radius-photo);
 }
 /* The dashed outline only invites a first photo */
 .item-photo-upload:has(img) {

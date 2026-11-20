@@ -111,7 +111,7 @@
   gap: 23px;
   padding: 18px;
   border: 1px solid var(--grey-50);
-  border-radius: 11px;
+  border-radius: var(--radius-card);
   background: var(--grey-25);
 }
 .borrow-item-photo,
@@ -119,8 +119,9 @@
   min-height: 205px;
 }
 .borrow-item-details {
-  align-self: center;
+  align-self: start;
   min-width: 0;
+  margin-top: -3px;
   padding-right: 20px;
 }
 .browse-request-modal .borrow-item-details h2 {
@@ -177,10 +178,6 @@
   min-width: 130px;
 }
 @media (max-width: 560px) {
-  /* The 560px basis would set the height once the toolbar is a column */
-  /* The menus move to their own row so the input keeps its width */
-}
-@media (max-width: 560px) {
   .browse-request-modal {
     padding: 13px;
   }
@@ -195,6 +192,7 @@
     max-height: 200px;
   }
   .borrow-item-details {
+    margin-top: 0;
     padding: 0 2px 4px;
   }
   .browse-request-modal .borrow-item-details h2 {

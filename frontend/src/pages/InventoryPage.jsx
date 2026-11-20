@@ -378,7 +378,7 @@ export default function InventoryPage() {
                   </PhotoDropZone>
                   <div className="item-form-main">
                     <label className="form-field">
-                      <span>
+                      <span className="cap-top">
                         Item name{' '}
                         <span className="field-required" aria-hidden="true">
                           *
