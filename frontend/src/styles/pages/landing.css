@@ -114,6 +114,7 @@
   --hero-photo-height: 320px;
   --hero-photo-width: 300px;
   --hero-photo-right: 94px;
+  --scan-cycle: 8.8s;
   height: 400px;
   position: relative;
 }
@@ -299,16 +300,9 @@
   color: var(--slate-600);
 }
 .how-section {
-  max-width: 1100px;
+  max-width: 800px;
   margin: auto;
-  padding: 82px 30px 87px;
-  display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
-  gap: 85px;
-  align-items: center;
-}
-.how-heading .eyebrow {
-  font-size: 16px;
+  padding: 56px 30px;
 }
 .how-heading h2,
 .get-started h2 {
@@ -319,6 +313,7 @@
 }
 .how-heading h2 {
   font-size: 36px;
+  margin: 0 0 4px;
 }
 .steps {
   display: grid;
@@ -334,6 +329,7 @@
 }
 .step:last-child {
   border: 0;
+  padding-bottom: 0;
 }
 .step-number {
   font: 700 16px Manrope;
@@ -405,17 +401,17 @@
     transform: translateY(30px) rotate(-4deg) scale(0.95);
   }
 }
-/* The sweep takes 2s of the 13s cycle, matching ShelfScanVisual. */
+/* The sweep takes 2s, matching the box delays in ShelfScanVisual. */
 @keyframes scan-sweep {
   0% {
     top: 0;
     opacity: 1;
   }
-  15.38% {
+  22.73% {
     top: 100%;
     opacity: 1;
   }
-  16.38%,
+  24.2%,
   100% {
     top: 100%;
     opacity: 0;
@@ -426,12 +422,12 @@
     opacity: 0;
     transform: scale(0.85);
   }
-  3%,
-  70% {
+  4.43%,
+  55.57% {
     opacity: 1;
     transform: none;
   }
-  74%,
+  61.48%,
   100% {
     opacity: 0;
     transform: none;
@@ -464,16 +460,16 @@
   animation: photo-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s backwards;
 }
 .scan-line {
-  animation: scan-sweep 13s linear 1s infinite;
+  animation: scan-sweep var(--scan-cycle) linear 1s infinite;
 }
 .scan-box {
-  animation: found-in-cycle 13s cubic-bezier(0.2, 0.7, 0.2, 1) infinite backwards;
+  animation: found-in-cycle var(--scan-cycle) cubic-bezier(0.2, 0.7, 0.2, 1) infinite backwards;
 }
 /* Show the result cards after the sweep and stagger their movement. */
 .photo-label {
   opacity: 0;
   animation:
-    found-in-cycle 13s cubic-bezier(0.2, 0.7, 0.2, 1) 3.15s infinite backwards,
+    found-in-cycle var(--scan-cycle) cubic-bezier(0.2, 0.7, 0.2, 1) 3.15s infinite backwards,
     label-float 3.2s ease-in-out infinite alternate;
 }
 .label-bottom {
@@ -483,7 +479,6 @@
 @supports (animation-timeline: view()) {
   .feature-card,
   .how-heading,
-  .step,
   .get-started > * {
     animation: rise-in linear backwards;
     animation-timeline: view();
@@ -504,7 +499,6 @@
   .hero-photo,
   .feature-card,
   .how-heading,
-  .step,
   .get-started > * {
     animation: none;
   }
@@ -526,9 +520,6 @@
   }
   .visual-sun {
     right: 65px;
-  }
-  .how-section {
-    gap: 40px;
   }
   .feature-card {
     padding-left: 15px;
@@ -620,9 +611,7 @@
     height: 31px;
   }
   .how-section {
-    padding: 56px 23px;
-    grid-template-columns: 1fr;
-    gap: 25px;
+    padding-inline: 23px;
   }
   .how-heading h2 {
     font-size: 32px;

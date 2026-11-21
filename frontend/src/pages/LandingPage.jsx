@@ -53,11 +53,11 @@ export default function LandingPage() {
               <h1 id="hero-title">
                 Borrow it from
                 <br />
-                someone <span>on campus.</span>
+                someone <span>on campus</span>
               </h1>
               <p className="hero-description">
-                Lendr helps students on campus borrow from each other. Borrow a camera for the
-                weekend or an iClicker for class, and always know when it's due back.
+                Borrow a camera for the weekend or an iClicker for class, and list things you want
+                to lend.
               </p>
               <div className="hero-actions">
                 <Link className="action-button action-button-orange-tint" to="/signup">
@@ -93,12 +93,7 @@ export default function LandingPage() {
 
         <section className="how-section" id="how-it-works">
           <div className="how-heading">
-            <span className="eyebrow">How it works</span>
-            <h2>
-              Request, use,
-              <br />
-              bring it back.
-            </h2>
+            <h2>How it works</h2>
           </div>
           <ol className="steps">
             {STEPS.map(({ title, text }, index) => (
