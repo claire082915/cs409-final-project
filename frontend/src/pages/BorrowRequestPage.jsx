@@ -29,6 +29,7 @@ import { MOCK_RECEIVED, MOCK_SENT } from '../lib/mockRequests.js'
 import { setPendingRequestCount } from '../lib/pendingRequestCount.js'
 import '../styles/components/confirm-dialog.css'
 import '../styles/pages/borrow-request.css'
+import TrustBadge from '../components/TrustBadge.jsx'
 
 // Received lists requests for your items, sent lists the ones you made
 const VIEWS = {
@@ -124,7 +125,12 @@ function averageRating(request) {
   return request.borrower.reputation?.average ?? 0
 }
 
-// Items come in the order of their oldest request, then each item's best rated borrower comes first
+// Trusted borrowers come first so their requests are reviewed first
+function trustRank(request) {
+  return request.borrower.trust === 'trusted' ? 1 : 0
+}
+
+// Items come in the order of their oldest request, then each item's trusted, best rated borrower comes first
 function groupByItem(requests) {
   const groups = new Map()
   for (const request of oldestFirst(requests)) {
@@ -136,7 +142,9 @@ function groupByItem(requests) {
   const sortedGroups = [...groups.values()]
   // The sort is stable, so equal ratings stay oldest first
   for (const group of sortedGroups) {
-    group.requests.sort((a, b) => averageRating(b) - averageRating(a))
+    group.requests.sort(
+      (a, b) => trustRank(b) - trustRank(a) || averageRating(b) - averageRating(a),
+    )
   }
   return sortedGroups
 }
@@ -148,7 +156,12 @@ function ReceivedEntry({ request, onApprove, onDecline }) {
       <RequestDetails
         request={request}
         person={request.borrower}
-        personDetail={<Reputation reputation={request.borrower.reputation} />}
+        personDetail={
+          <>
+            <TrustBadge trust={request.borrower.trust} />
+            <Reputation reputation={request.borrower.reputation} />
+          </>
+        }
       />
       <div className="request-actions">
         <button

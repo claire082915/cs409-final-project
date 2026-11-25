@@ -7,6 +7,7 @@ import Rating from '../models/rating.js'
 import { isDuplicateKeyError } from '../lib/duplicateKey.js'
 import { isOnLoan, loanedItemIds } from '../lib/availability.js'
 import { reputationsByUser } from '../lib/reputation.js'
+import { trustByUser } from '../lib/trust.js'
 
 // Loans due within this many days count as due soon
 const dueSoonDays = 3
@@ -160,9 +161,11 @@ lentRoute.get(async function (req, res) {
   // Owners see each borrower's rating so they can decide on a request
   const borrowerIds = loans.map((loan) => loan.borrower._id)
   const reputations = await reputationsByUser(borrowerIds)
+  const trusts = await trustByUser(borrowerIds, reputations)
   const loansWithDetails = await withItemAvailability(loans)
   for (const loan of loansWithDetails) {
     loan.borrower.reputation = reputations.get(String(loan.borrower._id)) ?? null
+    loan.borrower.trust = trusts.get(String(loan.borrower._id)) ?? 'new'
   }
   return res.status(200).json({ message: 'OK', data: loansWithDetails })
 })

@@ -1,0 +1,7 @@
+.trust-badge {
+  color: var(--green-700);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
