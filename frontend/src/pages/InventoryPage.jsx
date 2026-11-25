@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { LoaderCircle, Pencil, Plus, PackageOpen, Sparkles, X } from 'lucide-react'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { fadeInCards } from '../lib/fadeInCards.js'
+import { countBy } from 'lodash-es'
+import { LoaderCircle, Pencil, Plus, PackageOpen, SearchX, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import SearchField from '../components/SearchField.jsx'
-import SourceSwitch from '../components/SourceSwitch.jsx'
 import ItemCard from '../components/ItemCard.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
@@ -25,7 +27,6 @@ import {
   openPicker,
   useDetectionTask,
 } from '../lib/detectionTask.js'
-import { MOCK_INVENTORY } from '../lib/mockInventory.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import '../styles/pages/inventory.css'
@@ -43,14 +44,43 @@ function formFromItem(item) {
   }
 }
 
+// Clear button when filters match nothing, like Browse
+function InventoryEmptyState({ tab, isFiltering, onClearFilters }) {
+  if (isFiltering) {
+    return (
+      <EmptyState icon={SearchX} title="No matching items">
+        <button
+          type="button"
+          className="action-button action-button-neutral"
+          onClick={onClearFilters}
+        >
+          Clear filters
+        </button>
+      </EmptyState>
+    )
+  }
+  if (tab === 'lent') {
+    return (
+      <EmptyState icon={PackageOpen} title="Nothing lent out">
+        <span>Items show up here once someone has borrowed them.</span>
+      </EmptyState>
+    )
+  }
+  return (
+    <EmptyState icon={PackageOpen} title="No items yet">
+      <span>Add an item so people nearby can borrow it.</span>
+    </EmptyState>
+  )
+}
+
 export default function InventoryPage() {
   const { profile } = useAuth()
-  const [source, setSource] = useState(() => localStorage.getItem('lendrInventorySource') || 'mock')
-  const [items, setItems] = useState(MOCK_INVENTORY)
+  const [items, setItems] = useState([])
   const [tab, setTab] = useState('available')
+  const [gridRef] = useAutoAnimate(fadeInCards)
   const [query, setQuery] = useState('')
   const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
   // Null while adding a new item
@@ -103,18 +133,11 @@ export default function InventoryPage() {
   }
 
   const addItem = async (fields) => {
-    if (source === 'mock') {
-      const photos = photoPreview ? [photoPreview] : []
-      return { _id: `mock-${Date.now()}`, ...fields, available: true, photos }
-    }
     const photos = photoFile ? [await uploadPhoto(photoFile)] : []
     return apiFetch('items', { method: 'POST', body: { ...fields, photos } })
   }
 
   const editItem = async (fields) => {
-    if (source === 'mock') {
-      return { ...editingItem, ...fields, photos: photoPreview ? [photoPreview] : [] }
-    }
     const photos = photoFile ? [await uploadPhoto(photoFile)] : editingItem.photos
     return apiFetch(`items/${editingItem._id}`, { method: 'PATCH', body: { ...fields, photos } })
   }
@@ -166,9 +189,7 @@ export default function InventoryPage() {
   const deleteItem = async () => {
     setDeleting(true)
     try {
-      if (source === 'backend') {
-        await apiFetch(`items/${deletingItem._id}`, { method: 'DELETE' })
-      }
+      await apiFetch(`items/${deletingItem._id}`, { method: 'DELETE' })
       setItems((current) => current.filter((item) => item._id !== deletingItem._id))
       setIsFormOpen(false)
       toast.success(`${deletingItem.name} deleted`)
@@ -181,13 +202,6 @@ export default function InventoryPage() {
   }
 
   useEffect(() => {
-    localStorage.setItem('lendrInventorySource', source)
-    if (source !== 'backend') {
-      setItems(MOCK_INVENTORY)
-      setError('')
-      return
-    }
-
     let cancelled = false
     setLoading(true)
     setError('')
@@ -205,7 +219,7 @@ export default function InventoryPage() {
     return () => {
       cancelled = true
     }
-  }, [source, profile.username])
+  }, [profile.username])
 
   // Escape mid-save would drop the form with the save still running, and confirm dialogs handle their own Escape
   useEffect(() => {
@@ -221,18 +235,29 @@ export default function InventoryPage() {
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [isFormOpen, saving, isDiscardOpen, deletingItem, hasUnsavedChanges])
 
+  const tabItems = useMemo(
+    () =>
+      items.filter((item) =>
+        tab === 'available' ? item.available !== false : item.available === false,
+      ),
+    [items, tab],
+  )
   const visibleItems = useMemo(
     () =>
-      items.filter((item) => {
-        const matchesTab = tab === 'available' ? item.available !== false : item.available === false
+      tabItems.filter((item) => {
         const matchesQuery = `${item.name} ${item.description}`
           .toLowerCase()
           .includes(query.toLowerCase())
         const matchesCategory =
           selectedCategories.size === 0 || selectedCategories.has(item.category)
-        return matchesTab && matchesQuery && matchesCategory
+        return matchesQuery && matchesCategory
       }),
-    [items, tab, query, selectedCategories],
+    [tabItems, query, selectedCategories],
+  )
+  const categoryCounts = useMemo(() => countBy(tabItems, 'category'), [tabItems])
+  // Skip categories with no items, but keep ticked ones so they can still be unticked
+  const menuCategories = ITEM_CATEGORIES.filter(
+    (category) => categoryCounts[category] || selectedCategories.has(category),
   )
   const isFiltering = query || selectedCategories.size > 0
   const availableCount = items.filter((item) => item.available !== false).length
@@ -304,11 +329,11 @@ export default function InventoryPage() {
             selected={tab}
             onChange={setTab}
           />
-          <SourceSwitch source={source} onChange={setSource} label="Inventory data source" />
         </div>
         <SearchField value={query} onChange={setQuery} placeholder="Search your items">
           <FilterMenu
-            options={ITEM_CATEGORIES}
+            options={menuCategories}
+            counts={categoryCounts}
             selected={selectedCategories}
             onChange={setSelectedCategories}
             allLabel="All categories"
@@ -325,18 +350,20 @@ export default function InventoryPage() {
         {loading ? (
           <AppLoader inline label="Loading your items…" />
         ) : visibleItems.length ? (
-          <section className="item-grid" aria-label={`${tab} items`}>
+          <section className="item-grid" aria-label={`${tab} items`} ref={gridRef}>
             {visibleItems.map((item) => (
               <ItemCard key={item._id} item={item} onOpen={() => openForm(item)} />
             ))}
           </section>
         ) : (
-          <EmptyState
-            icon={PackageOpen}
-            title={isFiltering ? 'No matching items' : `No ${tab} items`}
-          >
-            {!isFiltering && <span>Your items will appear here.</span>}
-          </EmptyState>
+          <InventoryEmptyState
+            tab={tab}
+            isFiltering={isFiltering}
+            onClearFilters={() => {
+              setQuery('')
+              setSelectedCategories(new Set())
+            }}
+          />
         )}
         {isFormOpen && (
           <div

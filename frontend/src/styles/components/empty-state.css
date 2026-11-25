@@ -18,3 +18,6 @@
   color: var(--slate-700);
   font-size: 15px;
 }
+.empty-state .action-button {
+  margin-top: 4px;
+}

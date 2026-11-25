@@ -22,7 +22,7 @@ function countSelection(selected, allLabel, singularLabel, pluralLabel) {
   return `${selected.size} ${noun}`
 }
 
-function CheckOption({ id, label }) {
+function CheckOption({ id, label, count }) {
   return (
     <MenuItem id={id} className="field-option">
       {({ isSelected }) => (
@@ -31,6 +31,7 @@ function CheckOption({ id, label }) {
             {isSelected && <Check size={14} aria-hidden="true" />}
           </span>
           {label}
+          {count !== undefined && <span className="filter-menu-count">{count}</span>}
         </>
       )}
     </MenuItem>
@@ -38,7 +39,16 @@ function CheckOption({ id, label }) {
 }
 
 // Multiple selection keeps the menu open so several options can be ticked in a row
-export default function FilterMenu({ options, selected, onChange, allLabel, pluralLabel, label }) {
+// Counts are optional, keyed by option, and show at the right of each option
+export default function FilterMenu({
+  options,
+  selected,
+  onChange,
+  allLabel,
+  pluralLabel,
+  label,
+  counts,
+}) {
   // The all option is ticked only while no single option is
   const tickedKeys = selected.size === 0 ? new Set([allLabel]) : selected
 
@@ -70,9 +80,15 @@ export default function FilterMenu({ options, selected, onChange, allLabel, plur
           onSelectionChange={updateTicks}
         >
           <CheckOption id={allLabel} label={allLabel} />
-          <Separator className="filter-menu-separator" />
+          {/* Skip the divider when there is nothing under it */}
+          {options.length > 0 && <Separator className="filter-menu-separator" />}
           {options.map((option) => (
-            <CheckOption key={option} id={option} label={option} />
+            <CheckOption
+              key={option}
+              id={option}
+              label={option}
+              count={counts && (counts[option] ?? 0)}
+            />
           ))}
         </Menu>
       </Popover>

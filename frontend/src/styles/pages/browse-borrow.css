@@ -72,9 +72,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.browse-clear-filters {
-  margin-top: 4px;
-}
 .browse-message {
   display: flex;
   align-items: center;

@@ -182,7 +182,6 @@
   outline: none;
   background: var(--surface);
   border-color: var(--brand-green);
-  box-shadow: 0 0 0 4px #357d7022;
 }
 
 .auth-panel .action-button {
@@ -281,22 +280,12 @@
 .netid-wrap {
   display: flex;
   border-radius: 0.65rem;
-  transition: box-shadow 0.15s ease;
-}
-
-.netid-wrap:focus-within {
-  box-shadow: 0 0 0 4px #357d7022;
 }
 
 .netid-wrap input {
   min-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-/* The ring sits on the wrap so it goes around the segment too */
-.netid-wrap input:focus {
-  box-shadow: none;
 }
 
 .netid-suffix {

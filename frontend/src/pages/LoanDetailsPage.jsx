@@ -1,43 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { fadeInCards } from '../lib/fadeInCards.js'
+import { ArrowLeftRight, CalendarDays, CircleAlert, PackageOpen, SearchX } from 'lucide-react'
+import { countBy, orderBy } from 'lodash-es'
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  BookOpen,
-  CalendarDays,
-  Check,
-  CircleAlert,
-  Clock3,
-  PackageOpen,
-  RefreshCw,
-  RotateCcw,
-  Search,
-} from 'lucide-react'
-import { Link } from 'react-router-dom'
+  endOfMonth,
+  endOfWeek,
+  getLocalTimeZone,
+  parseDate,
+  today as todayDate,
+} from '@internationalized/date'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
-import SourceSwitch from '../components/SourceSwitch.jsx'
+import DueDateMenu from '../components/DueDateMenu.jsx'
+import FilterMenu from '../components/FilterMenu.jsx'
+import SearchField from '../components/SearchField.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_LOANS } from '../lib/mockLoans.js'
 import '../styles/pages/loan-details.css'
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'in-progress', label: 'In progress' },
-  { id: 'pending', label: 'Pending' },
-  { id: 'history', label: 'History' },
-]
-
-function cloneMockLoans() {
-  return {
-    borrowed: MOCK_LOANS.borrowed.map((loan) => ({ ...loan })),
-    lent: MOCK_LOANS.lent.map((loan) => ({ ...loan })),
-  }
-}
+// Badge labels for the filter menu, open loans first with the ones needing action on top
+const STATUS_LABELS = ['Overdue', 'Awaiting confirmation', 'Active', 'Completed']
+// Requests that were never approved live on Borrow Requests instead
+const LOAN_STATUSES = ['approved', 'returned', 'confirmed']
+// Custom row starts at two weeks, a common loan length
+const ANY_DUE_DATE = { range: 'any', amount: 2, unit: 'weeks' }
 
 function personName(person) {
   return person?.displayName || (person?.username ? `@${person.username}` : 'Community member')
@@ -55,7 +46,6 @@ function formatDate(value) {
 }
 
 function getStatus(loan) {
-  if (loan.status === 'requested') return { id: 'pending', label: 'Pending' }
   if (
     loan.status === 'approved' &&
     new Date(`${String(loan.dueDate).slice(0, 10)}T23:59:59`) < new Date()
@@ -63,18 +53,48 @@ function getStatus(loan) {
     return { id: 'overdue', label: 'Overdue' }
   }
   if (loan.status === 'approved') return { id: 'active', label: 'Active' }
-  if (loan.status === 'returned') return { id: 'returned', label: 'Return pending confirmation' }
-  if (loan.status === 'confirmed') return { id: 'completed', label: 'Completed' }
-  if (loan.status === 'rejected') return { id: 'declined', label: 'Declined' }
-  if (loan.status === 'cancelled') return { id: 'cancelled', label: 'Cancelled' }
-  return { id: 'unknown', label: loan.status || 'Unknown' }
+  if (loan.status === 'returned') return { id: 'returned', label: 'Awaiting confirmation' }
+  return { id: 'completed', label: 'Completed' }
 }
 
-function matchesFilter(loan, filter) {
-  if (filter === 'all') return true
-  if (filter === 'in-progress') return ['approved', 'returned'].includes(loan.status)
-  if (filter === 'pending') return loan.status === 'requested'
-  return ['confirmed', 'rejected', 'cancelled'].includes(loan.status)
+function isLoan(loan) {
+  return LOAN_STATUSES.includes(loan.status)
+}
+
+function matchesStatuses(loan, selectedStatuses) {
+  return selectedStatuses.size === 0 || selectedStatuses.has(getStatus(loan).label)
+}
+
+function isFinished(loan) {
+  return loan.status === 'confirmed'
+}
+
+// Last day a loan can be due and still match the due date filter
+function dueCutoff({ range, amount, unit }, today) {
+  if (range === 'week') return endOfWeek(today, navigator.language)
+  if (range === 'month') return endOfMonth(today)
+  return today.add({ [unit]: amount })
+}
+
+// Overdue loans fall out since their due date has passed
+function matchesDueDate(loan, dueFilter) {
+  if (dueFilter.range === 'any') return true
+  if (isFinished(loan)) return false
+  const today = todayDate(getLocalTimeZone())
+  const dueDate = parseDate(String(loan.dueDate).slice(0, 10))
+  return dueDate.compare(today) >= 0 && dueDate.compare(dueCutoff(dueFilter, today)) <= 0
+}
+
+function loanTime(loan) {
+  return new Date(loan.dueDate || loan.createdAt || 0).getTime()
+}
+
+// Open loans first by soonest due date so overdue ones lead, then completed loans latest first
+function sortLoans(loans) {
+  return orderBy(loans, [
+    isFinished,
+    (loan) => (isFinished(loan) ? -loanTime(loan) : loanTime(loan)),
+  ])
 }
 
 function otherPerson(loan, direction) {
@@ -87,16 +107,8 @@ function LoanCard({ loan, direction, onAction }) {
   const image = loan.item?.photos?.[0]
   const action =
     direction === 'borrowed'
-      ? loan.status === 'approved'
-        ? { id: 'return', label: 'Mark as returned', icon: RotateCcw }
-        : loan.status === 'requested'
-          ? { id: 'cancel', label: 'Cancel request', icon: CircleAlert }
-          : null
-      : loan.status === 'returned'
-        ? { id: 'confirm', label: 'Confirm return', icon: Check }
-        : loan.status === 'requested'
-          ? { id: 'review', label: 'Review request', icon: BookOpen }
-          : null
+      ? loan.status === 'approved' && { id: 'return', label: 'Return' }
+      : loan.status === 'returned' && { id: 'confirm', label: 'Confirm' }
 
   return (
     <article className="loan-card">
@@ -108,17 +120,11 @@ function LoanCard({ loan, direction, onAction }) {
         )}
       </div>
       <div className="loan-card-main">
-        <div className="loan-card-heading">
-          <div className="loan-card-title-wrap">
-            <h2>{loan.item?.name || 'Deleted item'}</h2>
-            <span className={`loan-status status-${status.id}`}>
-              {status.id === 'overdue' && <CircleAlert size={13} />}
-              {status.label}
-            </span>
-          </div>
-          <span className={`loan-direction direction-${direction}`}>
-            {direction === 'borrowed' ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
-            {direction === 'borrowed' ? 'Borrowed' : 'Lent'}
+        <div className="loan-card-title-wrap">
+          <h2>{loan.item?.name || 'Deleted item'}</h2>
+          <span className={`loan-status status-${status.id}`}>
+            {status.id === 'overdue' && <CircleAlert size={13} />}
+            {status.label}
           </span>
         </div>
         <div className="loan-card-person">
@@ -133,58 +139,67 @@ function LoanCard({ loan, direction, onAction }) {
           </span>
         </div>
         <div className="loan-card-meta">
-          <span>
-            <CalendarDays size={14} />
-            Due {formatDate(loan.dueDate)}
-          </span>
-          {loan.createdAt && (
-            <span>
-              <Clock3 size={14} />
-              Started {formatDate(loan.createdAt)}
-            </span>
-          )}
+          <CalendarDays size={14} />
+          Due {formatDate(loan.dueDate)}
         </div>
-        {action &&
-          (action.id === 'review' ? (
-            <Link className="loan-action loan-action-secondary" to="/borrow-request">
-              <BookOpen size={15} />
-              {action.label}
-            </Link>
-          ) : (
-            <button
-              className={`loan-action${action.id === 'return' || action.id === 'confirm' ? ' loan-action-primary' : ' loan-action-secondary'}`}
-              type="button"
-              onClick={() => onAction({ loan, action: action.id, direction })}
-            >
-              <action.icon size={15} />
-              {action.label}
-            </button>
-          ))}
       </div>
+      {action && (
+        <div className="loan-card-actions">
+          <button
+            className="action-button action-button-teal-tint"
+            type="button"
+            onClick={() => onAction({ loan, action: action.id, direction })}
+          >
+            {action.label}
+          </button>
+        </div>
+      )}
     </article>
   )
 }
 
+// Clear button when filters match nothing, like Browse
+function LoansEmptyState({ direction, isFiltering, onClearFilters }) {
+  if (isFiltering) {
+    return (
+      <EmptyState icon={SearchX} title="No matching loans">
+        <button
+          type="button"
+          className="action-button action-button-neutral"
+          onClick={onClearFilters}
+        >
+          Clear filters
+        </button>
+      </EmptyState>
+    )
+  }
+  return (
+    <EmptyState icon={ArrowLeftRight} title="No loans yet">
+      <span>
+        {direction === 'borrowed'
+          ? 'Requests you send show up here once they’re approved.'
+          : 'Requests you approve show up here.'}
+      </span>
+    </EmptyState>
+  )
+}
+
 export default function LoanDetailsPage() {
-  const [source, setSource] = useState(() => localStorage.getItem('lendrLoansSource') || 'mock')
   const [direction, setDirection] = useState('borrowed')
-  const [filter, setFilter] = useState('all')
+  const [selectedStatuses, setSelectedStatuses] = useState(new Set())
+  const [dueFilter, setDueFilter] = useState(ANY_DUE_DATE)
   const [query, setQuery] = useState('')
-  const [loans, setLoans] = useState(cloneMockLoans)
-  const [loading, setLoading] = useState(false)
+  const [loans, setLoans] = useState({ borrowed: [], lent: [] })
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionTarget, setActionTarget] = useState(null)
   const [acting, setActing] = useState(false)
   const loadSequence = useRef(0)
+  const [listRef] = useAutoAnimate(fadeInCards)
 
-  const loadLoans = async (dataSource = source) => {
+  const loadLoans = async () => {
     const sequence = ++loadSequence.current
     setError('')
-    if (dataSource === 'mock') {
-      setLoans(cloneMockLoans())
-      setLoading(false)
-      return
-    }
     setLoading(true)
     try {
       const [borrowed, lent] = await Promise.all([
@@ -204,48 +219,40 @@ export default function LoanDetailsPage() {
   }
 
   useEffect(() => {
-    localStorage.setItem('lendrLoansSource', source)
-    loadLoans(source)
-  }, [source])
+    loadLoans()
+  }, [])
 
-  const allCurrent = loans[direction] || []
-  const visibleLoans = useMemo(
-    () =>
-      allCurrent
-        .filter((loan) => matchesFilter(loan, filter))
-        .filter((loan) =>
-          `${loan.item?.name || ''} ${personName(otherPerson(loan, direction))}`
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-        )
-        .sort((a, b) => {
-          const aDate = new Date(a.dueDate || a.createdAt || 0).getTime()
-          const bDate = new Date(b.dueDate || b.createdAt || 0).getTime()
-          return aDate - bDate
-        }),
-    [allCurrent, filter, query, direction],
-  )
-
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        FILTERS.map(({ id }) => [id, allCurrent.filter((loan) => matchesFilter(loan, id)).length]),
-      ),
+  const borrowedLoans = loans.borrowed.filter(isLoan)
+  const lentLoans = loans.lent.filter(isLoan)
+  const allCurrent = direction === 'borrowed' ? borrowedLoans : lentLoans
+  const visibleLoans = useMemo(() => {
+    const matchingLoans = allCurrent
+      .filter((loan) => matchesStatuses(loan, selectedStatuses))
+      .filter((loan) => matchesDueDate(loan, dueFilter))
+      .filter((loan) =>
+        `${loan.item?.name || ''} ${personName(otherPerson(loan, direction))}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
+      )
+    return sortLoans(matchingLoans)
+  }, [allCurrent, selectedStatuses, dueFilter, query, direction])
+  const statusCounts = useMemo(
+    () => countBy(allCurrent, (loan) => getStatus(loan).label),
     [allCurrent],
   )
+  // Skip statuses with no loans, but keep ticked ones so they can still be unticked
+  const menuStatuses = STATUS_LABELS.filter(
+    (label) => statusCounts[label] || selectedStatuses.has(label),
+  )
+  const isFiltering = query || selectedStatuses.size > 0 || dueFilter.range !== 'any'
 
   const updateLoan = async () => {
     if (!actionTarget) return
     const { loan, action, direction: loanDirection } = actionTarget
     setActing(true)
     try {
-      if (source === 'backend') {
-        const endpoint =
-          action === 'return' ? 'return' : action === 'confirm' ? 'confirm' : 'cancel'
-        await apiFetch(`loans/${loan._id}/${endpoint}`, { method: 'PATCH' })
-      }
-      const nextStatus =
-        action === 'return' ? 'returned' : action === 'confirm' ? 'confirmed' : 'cancelled'
+      await apiFetch(`loans/${loan._id}/${action}`, { method: 'PATCH' })
+      const nextStatus = action === 'return' ? 'returned' : 'confirmed'
       setLoans((current) => ({
         ...current,
         [loanDirection]: current[loanDirection].map((entry) =>
@@ -255,7 +262,6 @@ export default function LoanDetailsPage() {
       const messages = {
         return: 'Return marked. The lender will confirm it.',
         confirm: 'Return confirmed.',
-        cancel: 'Borrow request cancelled.',
       }
       toast.success(messages[action])
       setActionTarget(null)
@@ -279,71 +285,17 @@ export default function LoanDetailsPage() {
         `This confirms that ${actionTarget?.loan.item?.name || 'the item'} has been returned.`,
         'Confirm return',
       ],
-      cancel: [
-        'Cancel this request?',
-        `Your request to borrow ${actionTarget?.loan.item?.name || 'this item'} will be withdrawn.`,
-        'Cancel request',
-      ],
     }[selectedAction] || []
 
   return (
     <AppShell>
       <main className="loans-page">
-        <header className="page-heading loans-heading">
+        <header className="page-heading">
           <div>
             <h1>My Loans</h1>
             <p>Keep track of items you’ve borrowed and shared.</p>
           </div>
-          <div className="loans-heading-actions">
-            <button
-              className="loans-refresh"
-              type="button"
-              onClick={() => loadLoans()}
-              disabled={loading}
-              aria-label="Refresh loans"
-            >
-              <RefreshCw size={16} />
-              Refresh
-            </button>
-            <SourceSwitch source={source} onChange={setSource} label="Loans data source" />
-          </div>
         </header>
-
-        <section className="loans-summary" aria-label="Loan summary">
-          <div>
-            <span className="loans-summary-icon borrowed">
-              <ArrowDownLeft size={18} />
-            </span>
-            <span>
-              <small>Borrowed</small>
-              <strong>{loans.borrowed.length}</strong>
-            </span>
-          </div>
-          <div>
-            <span className="loans-summary-icon lent">
-              <ArrowUpRight size={18} />
-            </span>
-            <span>
-              <small>Lent</small>
-              <strong>{loans.lent.length}</strong>
-            </span>
-          </div>
-          <div>
-            <span className="loans-summary-icon pending">
-              <Clock3 size={18} />
-            </span>
-            <span>
-              <small>Needs attention</small>
-              <strong>
-                {
-                  [...loans.borrowed, ...loans.lent].filter((loan) =>
-                    ['requested', 'returned'].includes(loan.status),
-                  ).length
-                }
-              </strong>
-            </span>
-          </div>
-        </section>
 
         <div className="loans-toolbar">
           <ViewSwitch
@@ -353,7 +305,7 @@ export default function LoanDetailsPage() {
                 id: 'borrowed',
                 label: (
                   <>
-                    <ArrowDownLeft size={15} /> Borrowed <small>{loans.borrowed.length}</small>
+                    Borrowed<small>{borrowedLoans.length}</small>
                   </>
                 ),
               },
@@ -361,7 +313,7 @@ export default function LoanDetailsPage() {
                 id: 'lent',
                 label: (
                   <>
-                    <ArrowUpRight size={15} /> Lent <small>{loans.lent.length}</small>
+                    Lent<small>{lentLoans.length}</small>
                   </>
                 ),
               },
@@ -369,32 +321,19 @@ export default function LoanDetailsPage() {
             selected={direction}
             onChange={setDirection}
           />
-          <label className="loans-search">
-            <Search size={16} aria-hidden="true" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search loans"
-              aria-label="Search loans"
-            />
-          </label>
         </div>
-
-        <ViewSwitch
-          className="loans-filters"
-          label="Filter loans"
-          options={FILTERS.map(({ id, label }) => ({
-            id,
-            label: (
-              <>
-                {label}
-                <small>{counts[id]}</small>
-              </>
-            ),
-          }))}
-          selected={filter}
-          onChange={setFilter}
-        />
+        <SearchField value={query} onChange={setQuery} placeholder="Search loans">
+          <FilterMenu
+            options={menuStatuses}
+            counts={statusCounts}
+            selected={selectedStatuses}
+            onChange={setSelectedStatuses}
+            allLabel="All statuses"
+            pluralLabel="statuses"
+            label="status"
+          />
+          <DueDateMenu value={dueFilter} onChange={setDueFilter} />
+        </SearchField>
 
         {error && (
           <p className="loans-error" role="alert">
@@ -404,7 +343,7 @@ export default function LoanDetailsPage() {
         {loading ? (
           <AppLoader inline label="Loading your loans…" />
         ) : visibleLoans.length ? (
-          <section className="loans-list" aria-label={`${direction} loans`}>
+          <section className="loans-list" aria-label={`${direction} loans`} ref={listRef}>
             {visibleLoans.map((loan) => (
               <LoanCard
                 key={loan._id}
@@ -415,29 +354,15 @@ export default function LoanDetailsPage() {
             ))}
           </section>
         ) : (
-          <EmptyState
-            icon={PackageOpen}
-            title={
-              query
-                ? 'No matching loans'
-                : filter === 'all'
-                  ? `No ${direction} loans yet`
-                  : `No ${filter === 'in-progress' ? 'in-progress' : filter} loans`
-            }
-          >
-            <span>
-              {query
-                ? 'Try a different name or item.'
-                : direction === 'borrowed'
-                  ? 'Browse shared items to find something you need.'
-                  : 'Your lending activity will show up here.'}
-            </span>
-            {direction === 'borrowed' && !query && filter === 'all' && (
-              <Link to="/browse" className="loans-browse-link">
-                Browse items
-              </Link>
-            )}
-          </EmptyState>
+          <LoansEmptyState
+            direction={direction}
+            isFiltering={isFiltering}
+            onClearFilters={() => {
+              setQuery('')
+              setSelectedStatuses(new Set())
+              setDueFilter(ANY_DUE_DATE)
+            }}
+          />
         )}
 
         <ConfirmDialog

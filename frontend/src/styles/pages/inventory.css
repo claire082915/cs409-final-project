@@ -7,10 +7,6 @@
   gap: 10px;
 }
 .inventory-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 14px;
 }
 /* Its own row under the toolbar so the placeholder has room at any width, same cap as Browse */
@@ -112,14 +108,6 @@
   }
   .inventory-add-button {
     align-self: stretch;
-  }
-  .inventory-toolbar {
-    align-items: flex-start;
-    flex-direction: column-reverse;
-    gap: 9px;
-  }
-  .inventory-toolbar .source-switch {
-    align-self: flex-end;
   }
 }
 /* Condition is locked while the item is lent */

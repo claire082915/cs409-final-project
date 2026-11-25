@@ -43,7 +43,6 @@
   /* Teal is dark, so it needs a stronger tint than the orange's 12% to not look grey, picked by eye */
   --tint-teal: color-mix(in srgb, var(--brand-teal) 15%, white);
   --tint-teal-hover: color-mix(in srgb, var(--brand-teal) 22%, white);
-  --focus-glow: 0 0 0 3px #3186752a;
   --card-shadow: 0 4px 15px #17455108;
   --ink: var(--slate-900);
   --page-bg: var(--grey-100);
@@ -189,31 +188,6 @@ a {
   align-items: center;
   gap: 23px;
 }
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 20px;
-  min-height: 45px;
-  border-radius: 7px;
-  font-size: 11px;
-  font-weight: 700;
-  transition:
-    transform 0.15s,
-    background 0.15s;
-}
-.button:hover {
-  transform: translateY(-2px);
-}
-.button-primary {
-  color: white;
-  background: var(--brand-orange);
-  box-shadow: 0 5px 13px #cc58222a;
-}
-.button-primary:hover {
-  background: var(--brand-orange-dark);
-}
 /* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action] {
   color: var(--brand-orange-dark);
@@ -222,10 +196,6 @@ a {
 }
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
   background: color-mix(in srgb, var(--brand-orange) 20%, white);
-}
-.button-light {
-  color: var(--slate-850);
-  background: var(--surface);
 }
 .action-button {
   display: inline-flex;

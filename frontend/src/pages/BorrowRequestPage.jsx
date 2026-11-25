@@ -9,11 +9,10 @@ import {
   Modal,
   ModalOverlay,
 } from 'react-aria-components'
-import { CalendarDays, Check, ChevronRight, MapPin, PackageOpen, Send } from 'lucide-react'
+import { CalendarDays, ChevronRight, Inbox, MapPin, PackageOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
-import SourceSwitch from '../components/SourceSwitch.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
@@ -25,21 +24,15 @@ import Reputation from '../components/Reputation.jsx'
 import Tooltip from '../components/Tooltip.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_RECEIVED, MOCK_SENT } from '../lib/mockRequests.js'
-import { setPendingRequestCount } from '../lib/pendingRequestCount.js'
 import '../styles/components/confirm-dialog.css'
 import '../styles/pages/borrow-request.css'
 import TrustBadge from '../components/TrustBadge.jsx'
 
 // Received lists requests for your items, sent lists the ones you made
 const VIEWS = {
-  received: { label: 'Received', endpoint: 'loans/lent?status=requested', mock: MOCK_RECEIVED },
-  sent: { label: 'Sent', endpoint: 'loans/borrowed?status=requested', mock: MOCK_SENT },
+  received: { label: 'Received', endpoint: 'loans/lent?status=requested' },
+  sent: { label: 'Sent', endpoint: 'loans/borrowed?status=requested' },
 }
-const VIEW_OPTIONS = [
-  { id: 'received', label: VIEWS.received.label },
-  { id: 'sent', label: VIEWS.sent.label },
-]
 
 // Received requests are a queue, so whoever asked first gets an answer first
 // The backend sends newest first, which suits sent requests
@@ -358,22 +351,22 @@ function OwnerArea({ campusArea }) {
 function EmptyRequests({ view }) {
   if (view === 'sent') {
     return (
-      <EmptyState icon={Send} title="No requests sent">
+      <EmptyState icon={Inbox} title="No requests sent">
         <span>Requests you send from Browse show up here.</span>
       </EmptyState>
     )
   }
   return (
-    <EmptyState icon={Check} title="You're all caught up">
-      <span>New requests will show up here.</span>
+    <EmptyState icon={Inbox} title="You’re all caught up">
+      <span>New requests show up here.</span>
     </EmptyState>
   )
 }
 
 export default function BorrowRequestPage() {
-  const [source, setSource] = useState(() => localStorage.getItem('lendrRequestSource') || 'mock')
   const [view, setView] = useState('received')
   const [requests, setRequests] = useState([])
+  const [requestCounts, setRequestCounts] = useState({ received: 0, sent: 0 })
   const [approvingRequest, setApprovingRequest] = useState(null)
   const [decliningRequest, setDecliningRequest] = useState(null)
   const [cancelingRequest, setCancelingRequest] = useState(null)
@@ -383,13 +376,6 @@ export default function BorrowRequestPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    localStorage.setItem('lendrRequestSource', source)
-    if (source === 'mock') {
-      setRequests(VIEWS[view].mock)
-      setError('')
-      setLoading(false)
-      return
-    }
     let cancelled = false
     setLoading(true)
     setError('')
@@ -409,12 +395,26 @@ export default function BorrowRequestPage() {
     return () => {
       cancelled = true
     }
-  }, [source, view])
+  }, [view])
 
-  // Keeps the sidebar badge in step with the received list
+  // Both counts load up front so the switch can show them before either view is opened
   useEffect(() => {
-    if (view === 'received' && !loading && !error) {
-      setPendingRequestCount(requests.length)
+    let cancelled = false
+    Promise.all([apiFetch(VIEWS.received.endpoint), apiFetch(VIEWS.sent.endpoint)])
+      .then(([received, sent]) => {
+        if (!cancelled) setRequestCounts({ received: received.length, sent: sent.length })
+      })
+      // The counts stay at 0 if they can't load, the list shows its own error
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // The shown view's count follows its list as requests are answered
+  useEffect(() => {
+    if (!loading && !error) {
+      setRequestCounts((counts) => ({ ...counts, [view]: requests.length }))
     }
   }, [view, loading, error, requests])
 
@@ -425,13 +425,10 @@ export default function BorrowRequestPage() {
     setLoading(true)
   }
 
-  // Mock requests only leave the list, backend ones change status for real
   const updateRequest = async (request, action, body, doneMessage) => {
     setActing(true)
     try {
-      if (source === 'backend') {
-        await apiFetch(`loans/${request._id}/${action}`, { method: 'PATCH', body })
-      }
+      await apiFetch(`loans/${request._id}/${action}`, { method: 'PATCH', body })
       setRequests((current) => remainingRequests(current, request, action))
       toast.success(doneMessage)
       setApprovingRequest(null)
@@ -451,12 +448,19 @@ export default function BorrowRequestPage() {
             <h1>Borrow Requests</h1>
             <p>Requests for your items and ones you've sent.</p>
           </div>
-          <SourceSwitch source={source} onChange={setSource} label="Request data source" />
         </header>
         <ViewSwitch
           className="requests-views"
           label="Requests to show"
-          options={VIEW_OPTIONS}
+          options={Object.entries(VIEWS).map(([id, { label }]) => ({
+            id,
+            label: (
+              <>
+                {label}
+                <small>{requestCounts[id]}</small>
+              </>
+            ),
+          }))}
           selected={view}
           onChange={showView}
         />

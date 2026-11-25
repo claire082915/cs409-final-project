@@ -96,13 +96,10 @@ export default function LandingPage() {
             <h2>How it works</h2>
           </div>
           <ol className="steps">
-            {STEPS.map(({ title, text }, index) => (
+            {STEPS.map(({ title, text }) => (
               <li className="step" key={title}>
-                <span className="step-number">0{index + 1}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
+                <h3>{title}</h3>
+                <p>{text}</p>
               </li>
             ))}
           </ol>

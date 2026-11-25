@@ -24,12 +24,12 @@ export default function ErrorPage() {
         <div className="error-page-actions">
           <button
             type="button"
-            className="button button-primary"
+            className="action-button action-button-orange-tint"
             onClick={() => window.location.reload()}
           >
             Reload page
           </button>
-          <Link className="button button-light" to="/">
+          <Link className="action-button action-button-neutral" to="/">
             Go home
           </Link>
         </div>

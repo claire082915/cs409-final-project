@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.10.2",
     "@internationalized/date": "^3.12.4",
     "@vitejs/plugin-react": "^6.1.1",
     "firebase": "^13.3.0",

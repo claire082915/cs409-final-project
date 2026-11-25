@@ -17,7 +17,6 @@ import DetectedItemsPanel from './DetectedItemsPanel.jsx'
 import DetectionTaskButton from './DetectionTaskButton.jsx'
 import NotificationsMenu from './NotificationsMenu.jsx'
 import Logo from './Logo.jsx'
-import { usePendingRequestCount } from '../lib/pendingRequestCount.js'
 import Tooltip from './Tooltip.jsx'
 import TopbarSearch from './TopbarSearch.jsx'
 import '../styles/components/app-shell.css'
@@ -28,38 +27,20 @@ const navigation = [
   { label: 'Browse Items', mobileLabel: 'Browse', to: '/browse', icon: Compass },
   { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Package },
   { label: 'My Loans', mobileLabel: 'Loans', to: '/loan-details', icon: ArrowLeftRight },
-  {
-    label: 'Borrow Requests',
-    mobileLabel: 'Requests',
-    to: '/borrow-request',
-    icon: Inbox,
-    showsRequestCount: true,
-  },
+  { label: 'Borrow Requests', mobileLabel: 'Requests', to: '/borrow-request', icon: Inbox },
   { label: 'Account', to: '/account', icon: CircleUserRound },
 ]
 const mobileNavigation = navigation.filter((link) => link.mobileLabel)
 const COLLAPSED_KEY = 'sidebarCollapsed'
 
-// Collapsed links only show icons so the tooltip names them, the request badge says what it counts
-function SidebarLink({ link, collapsed, requestCount }) {
-  const { label, to, icon: Icon, showsRequestCount } = link
-  const hasBadge = showsRequestCount && requestCount > 0
-  // Only received requests count, since those are the ones waiting on this user
-  const countLabel = `${requestCount} waiting for your reply`
-  let tooltip = collapsed ? label : ''
-  if (hasBadge) {
-    tooltip = collapsed ? `${label}, ${countLabel}` : countLabel
-  }
+// Collapsed links only show icons so the tooltip names them
+function SidebarLink({ link, collapsed }) {
+  const { label, to, icon: Icon } = link
   return (
-    <Tooltip text={tooltip} placement="right">
-      <NavLink
-        to={to}
-        className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}
-        aria-label={hasBadge ? `${label}, ${countLabel}` : undefined}
-      >
+    <Tooltip text={collapsed ? label : ''} placement="right">
+      <NavLink to={to} className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}>
         <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
         <span className="sidebar-label">{label}</span>
-        {hasBadge && <span className="sidebar-badge">{requestCount}</span>}
       </NavLink>
     </Tooltip>
   )
@@ -68,7 +49,6 @@ function SidebarLink({ link, collapsed, requestCount }) {
 function Sidebar({ collapsed, onToggle }) {
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
-  const pendingRequestCount = usePendingRequestCount()
   return (
     <aside className="app-sidebar" aria-label="Main sidebar">
       <div className="sidebar-brand">
@@ -87,12 +67,7 @@ function Sidebar({ collapsed, onToggle }) {
       </div>
       <nav className="sidebar-nav" aria-label="Main navigation">
         {navigation.map((link) => (
-          <SidebarLink
-            key={link.label}
-            link={link}
-            collapsed={collapsed}
-            requestCount={pendingRequestCount}
-          />
+          <SidebarLink key={link.label} link={link} collapsed={collapsed} />
         ))}
       </nav>
     </aside>

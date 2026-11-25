@@ -11,9 +11,12 @@
   color: var(--text-muted);
   background: var(--surface);
 }
+/* Keep the magnifier full size when the filter menus crowd the field */
+.search-field > svg {
+  flex: none;
+}
 .search-field:focus-within {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
 }
 .search-field input {
   width: 100%;

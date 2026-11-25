@@ -14,6 +14,11 @@
   box-shadow: 0 8px 20px #17455114;
 }
 
+/* Filter menus fit their options so they don't grow with the label on their button */
+.filter-menu-popover {
+  min-width: 0;
+}
+
 .field-list {
   outline: 0;
 }
@@ -56,15 +61,18 @@
   font-weight: 700;
 }
 
-.filter-menu-popover {
-  min-width: 190px;
-}
-
 .filter-menu-separator {
   height: 1px;
   margin: 4px 0;
   border: 0;
   background: var(--grey-200);
+}
+
+/* Right after the label and muted, like the counts in the view switch */
+.filter-menu-count {
+  margin-left: -2px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 /* Holds the check's space even when unticked so names line up */
@@ -75,8 +83,67 @@
 }
 
 /* Orange tick, more specific than the grey menu icon rule */
-.field-option .filter-menu-check svg {
+.field-option .filter-menu-check svg,
+.due-date-custom .filter-menu-check svg {
   color: var(--brand-orange);
+}
+
+.due-date-dialog {
+  outline: 0;
+}
+
+/* Lines its tick and text up with the preset options above it */
+.due-date-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 9px;
+  color: var(--slate-750);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.due-date-custom-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.due-date-custom-pick[aria-pressed='true'] {
+  font-weight: 700;
+}
+
+.due-date-amount input,
+.due-date-custom .select-menu-button {
+  height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--grey-250);
+  border-radius: 5px;
+  color: var(--slate-750);
+  background: var(--surface);
+  font: inherit;
+}
+
+.due-date-amount input {
+  width: 38px;
+  text-align: center;
+  outline: 0;
+}
+
+.due-date-custom .select-menu-button {
+  padding: 0 6px 0 8px;
+}
+
+.due-date-amount input:focus,
+.due-date-custom .select-menu-button[data-focus-visible] {
+  border-color: var(--brand-green);
+  text-decoration: none;
 }
 
 .field-option[data-disabled],
@@ -104,7 +171,7 @@
 }
 
 .date-picker-group[data-focus-within] {
-  border-color: var(--green-400);
+  border-color: var(--brand-green);
 }
 
 .date-picker-group[data-invalid] {
@@ -156,7 +223,7 @@
 
 .date-picker-button[data-focus-visible],
 .calendar-nav[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--green-400);
+  box-shadow: 0 0 0 2px var(--brand-green);
 }
 
 .date-picker-dialog {
@@ -212,7 +279,7 @@
 }
 
 .calendar-cell[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--green-400);
+  box-shadow: inset 0 0 0 2px var(--brand-green);
 }
 
 .calendar-cell[data-selected] {
@@ -283,7 +350,6 @@
 .form-field input:not([type]):focus,
 .form-field textarea:focus {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
 }
 /* Shown but not editable, like Email and the demo username on Account */
 .form-field input:not([type]):read-only {
@@ -309,7 +375,6 @@
 .select-field .select-menu-button[data-focus-visible],
 .select-field .select-menu-button[data-pressed] {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
   text-decoration: none;
 }
 .select-field .select-menu-button[data-disabled] {

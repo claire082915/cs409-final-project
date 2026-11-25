@@ -317,24 +317,40 @@
 }
 .steps {
   display: grid;
-  margin: 0;
+  margin: 28px 0 0;
   padding: 0;
   list-style: none;
 }
 .step {
-  display: flex;
-  gap: 18px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--slate-200);
+  position: relative;
+  padding: 0 0 32px 34px;
 }
 .step:last-child {
-  border: 0;
   padding-bottom: 0;
 }
-.step-number {
-  font: 700 16px Manrope;
-  color: var(--brand-orange-dark);
-  padding-top: 2px;
+/* Dot centered on the step title */
+.step::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7.5px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 2px solid var(--brand-orange);
+  border-radius: 50%;
+}
+/* Dashes between this circle and the next, drawn with a gradient since a dashed border renders blurry */
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 23.5px;
+  bottom: -3.5px;
+  width: 2px;
+  background: linear-gradient(var(--brand-orange) 4px, transparent 4px) 0 0 / 2px 8px;
+  /* Spread whole dashes evenly so none get cut off at the ends */
+  background-repeat: no-repeat space;
 }
 .step h3 {
   font: 700 18px Manrope;

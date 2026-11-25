@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  ArrowLeftRight,
   ArrowRight,
   BookOpen,
   CheckCircle2,
@@ -7,11 +8,11 @@ import {
   Clock3,
   HandCoins,
   Package,
-  RefreshCw,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import { apiFetch } from '../lib/api.js'
 import '../styles/pages/dashboard.css'
 
@@ -133,14 +134,6 @@ export default function DashboardPage() {
             <h1>Hi {greeting}!</h1>
             <p>Here’s what’s happening with your account.</p>
           </div>
-          <button
-            className="dashboard-refresh"
-            onClick={load}
-            disabled={loading}
-            aria-label="Refresh dashboard"
-          >
-            <RefreshCw size={16} /> Refresh
-          </button>
         </div>
 
         <section className="dashboard-stats" aria-label="Loan summary">
@@ -175,14 +168,9 @@ export default function DashboardPage() {
           ) : loading ? (
             <AppLoader inline label="Loading your recent loans…" />
           ) : activity.length === 0 ? (
-            <div className="dashboard-empty">
-              <Package size={25} />
-              <strong>No activity yet</strong>
-              <span>Your loan requests and lending activity will show up here.</span>
-              <Link to="/browse">
-                Browse items <ArrowRight size={14} />
-              </Link>
-            </div>
+            <EmptyState icon={ArrowLeftRight} title="No activity yet">
+              <span>Requests and loans show up here.</span>
+            </EmptyState>
           ) : (
             <div className="activity-list">
               {activity.map((loan) => {
