@@ -9,9 +9,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
+import { refreshPendingActions, usePendingActions } from '../lib/pendingActions.js'
 import Avatar from './Avatar.jsx'
 import DetectedItemsPanel from './DetectedItemsPanel.jsx'
 import DetectionTaskButton from './DetectionTaskButton.jsx'
@@ -26,27 +27,44 @@ const navigation = [
   { label: 'Home', mobileLabel: 'Home', to: '/dashboard', icon: Home },
   { label: 'Browse Items', mobileLabel: 'Browse', to: '/browse', icon: Compass },
   { label: 'My Items', mobileLabel: 'Items', to: '/inventory', icon: Package },
-  { label: 'My Loans', mobileLabel: 'Loans', to: '/loan-details', icon: ArrowLeftRight },
-  { label: 'Borrow Requests', mobileLabel: 'Requests', to: '/borrow-request', icon: Inbox },
+  {
+    label: 'My Loans',
+    mobileLabel: 'Loans',
+    to: '/loan-details',
+    icon: ArrowLeftRight,
+    pendingKey: 'loans',
+  },
+  {
+    label: 'Borrow Requests',
+    mobileLabel: 'Requests',
+    to: '/borrow-request',
+    icon: Inbox,
+    pendingKey: 'requests',
+  },
   { label: 'Account', to: '/account', icon: CircleUserRound },
 ]
 const mobileNavigation = navigation.filter((link) => link.mobileLabel)
 const COLLAPSED_KEY = 'sidebarCollapsed'
 
 // Collapsed links only show icons so the tooltip names them
-function SidebarLink({ link, collapsed }) {
+function SidebarLink({ link, collapsed, pending }) {
   const { label, to, icon: Icon } = link
   return (
     <Tooltip text={collapsed ? label : ''} placement="right">
       <NavLink to={to} className={({ isActive }) => `sidebar-link${isActive ? ' is-active' : ''}`}>
         <Icon size={17} strokeWidth={2.1} aria-hidden="true" />
         <span className="sidebar-label">{label}</span>
+        {pending && <PendingDot />}
       </NavLink>
     </Tooltip>
   )
 }
 
-function Sidebar({ collapsed, onToggle }) {
+function PendingDot() {
+  return <span className="pending-dot" role="img" aria-label="Needs your action" />
+}
+
+function Sidebar({ collapsed, onToggle, pendingActions }) {
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
   return (
@@ -67,7 +85,12 @@ function Sidebar({ collapsed, onToggle }) {
       </div>
       <nav className="sidebar-nav" aria-label="Main navigation">
         {navigation.map((link) => (
-          <SidebarLink key={link.label} link={link} collapsed={collapsed} />
+          <SidebarLink
+            key={link.label}
+            link={link}
+            collapsed={collapsed}
+            pending={pendingActions[link.pendingKey] > 0}
+          />
         ))}
       </nav>
     </aside>
@@ -102,6 +125,11 @@ function Topbar({ withSearch }) {
 export default function AppShell({ children, withSidebar = true, withSearch = true }) {
   // Remember the choice since each page mounts its own shell
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === 'true')
+  const pendingActions = usePendingActions()
+
+  useEffect(() => {
+    refreshPendingActions()
+  }, [])
 
   const toggleCollapsed = () => {
     localStorage.setItem(COLLAPSED_KEY, String(!collapsed))
@@ -117,7 +145,9 @@ export default function AppShell({ children, withSidebar = true, withSearch = tr
 
   return (
     <div className={shellClass}>
-      {withSidebar && <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />}
+      {withSidebar && (
+        <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} pendingActions={pendingActions} />
+      )}
       <div className="app-main">
         <Topbar withSearch={withSearch} />
         <div className="app-content">{children}</div>
@@ -126,13 +156,16 @@ export default function AppShell({ children, withSidebar = true, withSearch = tr
       <DetectedItemsPanel />
       {withSidebar && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          {mobileNavigation.map(({ label, mobileLabel, to, icon: Icon }) => (
+          {mobileNavigation.map(({ label, mobileLabel, to, icon: Icon, pendingKey }) => (
             <NavLink
               key={label}
               to={to}
               className={({ isActive }) => `mobile-nav-link${isActive ? ' is-active' : ''}`}
             >
-              <Icon size={19} aria-hidden="true" />
+              <span className="nav-icon">
+                <Icon size={19} aria-hidden="true" />
+                {pendingActions[pendingKey] > 0 && <PendingDot />}
+              </span>
               <span>{mobileLabel}</span>
             </NavLink>
           ))}

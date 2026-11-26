@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { fadeInCards } from '../lib/fadeInCards.js'
 import { useInView } from 'react-intersection-observer'
+import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from 'use-debounce'
 import { uniqBy } from 'lodash-es'
 import { toast } from 'sonner'
@@ -17,13 +18,14 @@ import FilterMenu, { describeSelection } from '../components/FilterMenu.jsx'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
 import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
 import { apiFetch } from '../lib/api.js'
+import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
 import '../styles/pages/browse-borrow.css'
 
 // Waits for a pause in typing before asking the backend
 const SEARCH_DELAY_MS = 300
 
-function browseParams({ query, categories, areas }, skip) {
-  const params = new URLSearchParams({ skip })
+function browseParams({ query, categories, areas }) {
+  const params = new URLSearchParams()
   if (query) {
     params.set('q', query)
   }
@@ -37,7 +39,9 @@ function browseParams({ query, categories, areas }, skip) {
 }
 
 function loadBrowsePage(filters, skip) {
-  return apiFetch(`items/browse?${browseParams(filters, skip)}`)
+  const params = browseParams(filters)
+  params.set('skip', skip)
+  return apiFetch(`items/browse?${params}`)
 }
 
 // Tells an empty catalog apart from filters that match nothing
@@ -67,10 +71,13 @@ export default function BrowseBorrowPage() {
   const [total, setTotal] = useState(0)
   // Results fetched so far, counting repeats, so paging always moves forward
   const [nextSkip, setNextSkip] = useState(0)
-  const [query, setQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [debouncedQuery] = useDebounce(query.trim(), SEARCH_DELAY_MS)
-  const [selectedCategories, setSelectedCategories] = useState(new Set())
-  const [selectedAreas, setSelectedAreas] = useState(new Set())
+  const [selectedCategories, setSelectedCategories] = useState(
+    () => new Set(searchParams.getAll('category')),
+  )
+  const [selectedAreas, setSelectedAreas] = useState(() => new Set(searchParams.getAll('area')))
   const [selectedItem, setSelectedItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -83,6 +90,7 @@ export default function BrowseBorrowPage() {
 
   const filters = { query: debouncedQuery, categories: selectedCategories, areas: selectedAreas }
   const hasFilters = debouncedQuery !== '' || selectedCategories.size > 0 || selectedAreas.size > 0
+  useFiltersInUrl(browseParams(filters))
 
   useEffect(() => {
     const id = ++searchId.current

@@ -19,7 +19,6 @@
   font-size: clamp(27px, 3vw, 35px);
   letter-spacing: -0.04em;
 }
-/* Rating sits under the photo, like on Account */
 .profile-photo-column {
   display: grid;
   flex: none;

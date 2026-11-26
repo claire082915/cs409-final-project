@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   Button,
   Dialog,
@@ -24,7 +24,11 @@ import Reputation from '../components/Reputation.jsx'
 import Tooltip from '../components/Tooltip.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
+import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
+import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
+import { refreshPendingActions } from '../lib/pendingActions.js'
 import '../styles/components/confirm-dialog.css'
+import '../styles/components/loan-status.css'
 import '../styles/pages/borrow-request.css'
 import TrustBadge from '../components/TrustBadge.jsx'
 
@@ -79,7 +83,7 @@ function ItemTitle({ item }) {
   return (
     <>
       <span className="request-item-name truncate">{item.name}</span>
-      {item.available === false && <span className="request-on-loan">Lent</span>}
+      {item.available === false && <span className="loan-status status-pending">Lent</span>}
     </>
   )
 }
@@ -123,7 +127,6 @@ function trustRank(request) {
   return request.borrower.trust === 'trusted' ? 1 : 0
 }
 
-// Items come in the order of their oldest request, then each item's trusted, best rated borrower comes first
 function groupByItem(requests) {
   const groups = new Map()
   for (const request of oldestFirst(requests)) {
@@ -133,6 +136,9 @@ function groupByItem(requests) {
     groups.get(request.item._id).requests.push(request)
   }
   const sortedGroups = [...groups.values()]
+  // The sort is stable, so lent and available items each stay oldest first
+  const isLent = (group) => Number(group.item.available === false)
+  sortedGroups.sort((a, b) => isLent(a) - isLent(b))
   // The sort is stable, so equal ratings stay oldest first
   for (const group of sortedGroups) {
     group.requests.sort(
@@ -142,17 +148,20 @@ function groupByItem(requests) {
   return sortedGroups
 }
 
-function ReceivedEntry({ request, onApprove, onDecline }) {
+function ReceivedEntry({ request, isHighlighted, onApprove, onDecline }) {
   const isOnLoan = request.item.available === false
   return (
-    <div className="request-entry">
+    <div
+      id={`loan-${request._id}`}
+      className={`request-entry${isHighlighted ? ' highlighted' : ''}`}
+    >
       <RequestDetails
         request={request}
         person={request.borrower}
         personDetail={
           <>
-            <TrustBadge trust={request.borrower.trust} />
             <Reputation reputation={request.borrower.reputation} />
+            <TrustBadge trust={request.borrower.trust} />
           </>
         }
       />
@@ -189,7 +198,7 @@ function requestCountLabel(group) {
 }
 
 // Every item starts open and can fold down to its count
-function ItemRequests({ group, onApprove, onDecline }) {
+function ItemRequests({ group, highlightId, onApprove, onDecline }) {
   return (
     <Disclosure className="request-group" defaultExpanded>
       <Heading level={2} className="request-group-heading">
@@ -207,6 +216,7 @@ function ItemRequests({ group, onApprove, onDecline }) {
           <ReceivedEntry
             key={request._id}
             request={request}
+            isHighlighted={request._id === highlightId}
             onApprove={onApprove}
             onDecline={onDecline}
           />
@@ -216,13 +226,14 @@ function ItemRequests({ group, onApprove, onDecline }) {
   )
 }
 
-function ReceivedRequests({ requests, onApprove, onDecline }) {
+function ReceivedRequests({ requests, highlightId, onApprove, onDecline }) {
   return (
     <div className="request-list">
       {groupByItem(requests).map((group) => (
         <ItemRequests
           key={group.item._id}
           group={group}
+          highlightId={highlightId}
           onApprove={onApprove}
           onDecline={onDecline}
         />
@@ -232,11 +243,15 @@ function ReceivedRequests({ requests, onApprove, onDecline }) {
 }
 
 // The photo opens the item too but is skipped by keyboard
-function SentRequests({ requests, onOpenItem, onCancel }) {
+function SentRequests({ requests, highlightId, onOpenItem, onCancel }) {
   return (
     <div className="request-list">
       {requests.map((request) => (
-        <article className="request-row" key={request._id}>
+        <article
+          key={request._id}
+          id={`loan-${request._id}`}
+          className={`request-row${request._id === highlightId ? ' highlighted' : ''}`}
+        >
           <button
             type="button"
             className="request-item-open"
@@ -364,7 +379,8 @@ function EmptyRequests({ view }) {
 }
 
 export default function BorrowRequestPage() {
-  const [view, setView] = useState('received')
+  const [searchParams] = useSearchParams()
+  const [view, setView] = useState(searchParams.get('view') ?? 'received')
   const [requests, setRequests] = useState([])
   const [requestCounts, setRequestCounts] = useState({ received: 0, sent: 0 })
   const [approvingRequest, setApprovingRequest] = useState(null)
@@ -374,6 +390,7 @@ export default function BorrowRequestPage() {
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [error, setError] = useState('')
+  const highlightId = useHighlightedLoan(!loading)
 
   useEffect(() => {
     let cancelled = false
@@ -396,6 +413,8 @@ export default function BorrowRequestPage() {
       cancelled = true
     }
   }, [view])
+
+  useFiltersInUrl(new URLSearchParams(view === 'sent' ? { view } : {}))
 
   // Both counts load up front so the switch can show them before either view is opened
   useEffect(() => {
@@ -430,6 +449,7 @@ export default function BorrowRequestPage() {
     try {
       await apiFetch(`loans/${request._id}/${action}`, { method: 'PATCH', body })
       setRequests((current) => remainingRequests(current, request, action))
+      refreshPendingActions()
       toast.success(doneMessage)
       setApprovingRequest(null)
       setDecliningRequest(null)
@@ -484,12 +504,14 @@ export default function BorrowRequestPage() {
             {view === 'received' ? (
               <ReceivedRequests
                 requests={requests}
+                highlightId={highlightId}
                 onApprove={setApprovingRequest}
                 onDecline={setDecliningRequest}
               />
             ) : (
               <SentRequests
                 requests={requests}
+                highlightId={highlightId}
                 onOpenItem={setViewingRequest}
                 onCancel={setCancelingRequest}
               />

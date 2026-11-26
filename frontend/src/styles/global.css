@@ -368,3 +368,14 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* 3s matches HIGHLIGHT_MS in useHighlightedLoan.js */
+.highlighted {
+  animation: highlight-fade 3s ease-out;
+}
+/* No end frame, so it fades back to the card's own background */
+@keyframes highlight-fade {
+  0%,
+  50% {
+    background-color: color-mix(in srgb, var(--brand-orange) 7.5%, white);
+  }
+}

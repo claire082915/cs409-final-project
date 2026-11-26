@@ -1,7 +1,19 @@
+.trust-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--radius-control);
   color: var(--green-700);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 18px;
+  background: color-mix(in srgb, var(--brand-green) 12%, white);
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }

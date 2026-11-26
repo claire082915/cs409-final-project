@@ -5,6 +5,7 @@ import Loan from '../models/loan.js'
 import requireUser, { requireIdToken } from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
 import { reputation } from '../lib/reputation.js'
+import { trustByUser } from '../lib/trust.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 import { demoUsernameError } from '../lib/demoAccount.js'
 
@@ -105,9 +106,10 @@ router.get('/:username', requireUser, async (req, res) => {
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
   // Only loans that came back count toward someone's lending record
   const finished = { $in: ['returned', 'confirmed'] }
-  const [lentCount, borrowedCount] = await Promise.all([
+  const [lentCount, borrowedCount, trusts] = await Promise.all([
     Loan.countDocuments({ owner: user._id, status: finished }),
     Loan.countDocuments({ borrower: user._id, status: finished }),
+    trustByUser([user._id]),
   ])
   const profile = {
     username: user.username,
@@ -119,6 +121,7 @@ router.get('/:username', requireUser, async (req, res) => {
     borrowedCount,
     items: itemsWithAvailability,
     reputation: await reputation(user._id),
+    trust: trusts.get(String(user._id)) ?? 'new',
   }
   res.json({ message: 'OK', data: profile })
 })

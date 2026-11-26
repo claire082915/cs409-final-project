@@ -80,6 +80,26 @@ body:has(.app-shell) #root {
 .sidebar-link.is-active svg {
   color: var(--orange-400);
 }
+.nav-icon {
+  position: relative;
+  display: grid;
+}
+.pending-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-orange);
+}
+.nav-icon .pending-dot {
+  position: absolute;
+  top: -3px;
+  right: -6px;
+}
+.app-sidebar .pending-dot {
+  margin-left: auto;
+  background: var(--orange-400);
+}
 .sidebar-toggle {
   width: 32px;
   height: 32px;
@@ -115,8 +135,15 @@ body:has(.app-shell) #root {
   display: none;
 }
 .is-sidebar-collapsed .sidebar-link {
+  position: relative;
   justify-content: center;
   padding: 0;
+}
+/* Puts the dot on the 17px icon's top right corner */
+.is-sidebar-collapsed .pending-dot {
+  position: absolute;
+  top: 10px;
+  left: calc(50% + 6.5px);
 }
 /* Page title on the left, its actions on the right */
 .page-heading {

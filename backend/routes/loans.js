@@ -38,6 +38,8 @@ const lentRoute = router.route('/lent')
 const borrowedRoute = router.route('/borrowed')
 // List borrowed loans that are overdue or due soon (GET /api/loans/reminders)
 const remindersRoute = router.route('/reminders')
+// Count requests and loans waiting on you (GET /api/loans/pending)
+const pendingRoute = router.route('/pending')
 // View a loan (GET /api/loans/:id)
 const loansIdRoute = router.route('/:id')
 // Approve a loan (PATCH /api/loans/:id/approve)
@@ -160,8 +162,10 @@ lentRoute.get(async function (req, res) {
 
   // Owners see each borrower's rating so they can decide on a request
   const borrowerIds = loans.map((loan) => loan.borrower._id)
-  const reputations = await reputationsByUser(borrowerIds)
-  const trusts = await trustByUser(borrowerIds, reputations)
+  const [reputations, trusts] = await Promise.all([
+    reputationsByUser(borrowerIds),
+    trustByUser(borrowerIds),
+  ])
   const loansWithDetails = await withItemAvailability(loans)
   for (const loan of loansWithDetails) {
     loan.borrower.reputation = reputations.get(String(loan.borrower._id)) ?? null
@@ -193,6 +197,15 @@ remindersRoute.get(async function (req, res) {
     borrowedLoansSortedByDueDate(req.userId, 'due-soon'),
   ])
   return res.status(200).json({ message: 'OK', data: { overdue, dueSoon } })
+})
+
+pendingRoute.get(async function (req, res) {
+  const [requests, returns, overdue] = await Promise.all([
+    Loan.countDocuments({ owner: req.userId, status: 'requested' }),
+    Loan.countDocuments({ owner: req.userId, status: 'returned' }),
+    Loan.countDocuments({ ...statusFilter('overdue'), borrower: req.userId }),
+  ])
+  return res.status(200).json({ message: 'OK', data: { requests, loans: returns + overdue } })
 })
 
 loansIdRoute.get(async function (req, res) {

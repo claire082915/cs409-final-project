@@ -54,33 +54,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.loan-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex: none;
-  height: 24px;
-  padding: 0 9px;
-  border-radius: 20px;
-  /* Same tints as the item tags, green for a loan that is out */
-  color: var(--green-700);
-  background: color-mix(in srgb, var(--brand-green) 12%, white);
-  font-size: 12px;
-  font-weight: 700;
-}
-.status-overdue {
-  color: var(--error);
-  background: color-mix(in srgb, var(--error) 12%, white);
-}
-.status-returned {
-  color: var(--brand-teal);
-  background: var(--tint-teal);
-}
-/* Completed loans need nothing, so they stay quiet */
-.status-completed {
-  color: var(--slate-500);
-  background: var(--grey-150);
-}
 .loan-card-person {
   display: flex;
   align-items: center;

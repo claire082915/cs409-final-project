@@ -1,208 +1,339 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  ArrowLeftRight,
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  CircleAlert,
-  Clock3,
-  HandCoins,
-  Package,
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CalendarCheck, ChevronRight, CircleCheck, History, PackageOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { orderBy } from 'lodash-es'
+import { useAuth } from '../auth/AuthContext.jsx'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
+import DueDateMenu from '../components/DueDateMenu.jsx'
 import EmptyState from '../components/EmptyState.jsx'
+import InfoTip from '../components/InfoTip.jsx'
+import LoanStatus from '../components/LoanStatus.jsx'
 import { apiFetch } from '../lib/api.js'
+import { matchesDueDate } from '../lib/dueDate.js'
+import { getStatus, isOverdue } from '../lib/loanStatus.js'
 import '../styles/pages/dashboard.css'
 
-function personName(user) {
-  return user?.displayName || (user?.username ? `@${user.username}` : 'Someone')
+const ATTENTION_ORDER = ['overdue', 'returned', 'pending']
+const DEFAULT_DUE_FILTER = { range: 'custom', amount: 7, unit: 'days' }
+const DUE_FILTER_KEY = 'dashboardDueFilter'
+// Picked by hand
+const RECENT_ACTIVITY_COUNT = 10
+
+function personName(person) {
+  return person?.displayName || (person?.username ? `@${person.username}` : 'Community member')
 }
 
-function dateLabel(value) {
-  if (!value) return 'Date unavailable'
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(value))
+function formatDate(value) {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
+    new Date(`${String(value).slice(0, 10)}T12:00:00`),
+  )
 }
 
-function statusLabel(loan, now) {
-  if (loan.status === 'requested') return 'Pending'
-  if (loan.status === 'returned') return 'Returned'
-  if (loan.status === 'confirmed') return 'Completed'
-  if (loan.status === 'rejected') return 'Declined'
-  if (loan.status === 'cancelled') return 'Cancelled'
-  if (loan.status === 'approved' && new Date(loan.dueDate) < now) return 'Overdue'
-  return loan.status === 'approved' ? 'Active' : loan.status
+function otherPerson(loan) {
+  return loan.direction === 'borrowed' ? loan.owner : loan.borrower
+}
+
+// Declined and cancelled requests aren't listed on any page
+function loanPage(loan) {
+  if (['rejected', 'cancelled'].includes(loan.status)) return null
+  if (loan.status === 'requested') {
+    return loan.direction === 'borrowed' ? '/borrow-request?view=sent' : '/borrow-request'
+  }
+  return `/loan-details?view=${loan.direction}`
+}
+
+function personLine(loan) {
+  return (
+    <>
+      {loan.direction === 'borrowed' ? 'From' : 'To'}{' '}
+      <strong>{personName(otherPerson(loan))}</strong>
+    </>
+  )
+}
+
+const LOAN_EVENTS = [
+  { kind: 'requested', dateKey: 'createdAt' },
+  { kind: 'approved', dateKey: 'approvedAt' },
+  { kind: 'rejected', dateKey: 'updatedAt' },
+  { kind: 'cancelled', dateKey: 'updatedAt' },
+  { kind: 'returned', dateKey: 'returnedAt' },
+  { kind: 'confirmed', dateKey: 'confirmedAt' },
+]
+
+function activityEvents(loans) {
+  const events = []
+  for (const loan of loans) {
+    for (const { kind, dateKey } of LOAN_EVENTS) {
+      // Every loan has an updatedAt, so declined and cancelled are told apart by status
+      const happened = dateKey === 'updatedAt' ? loan.status === kind : Boolean(loan[dateKey])
+      if (happened) {
+        events.push({ loan, kind, date: loan[dateKey] })
+      }
+    }
+  }
+  return orderBy(events, (event) => event.date, 'desc').slice(0, RECENT_ACTIVITY_COUNT)
+}
+
+function activityText({ loan, kind }) {
+  const person = <strong>{personName(otherPerson(loan))}</strong>
+  if (loan.direction === 'lent') {
+    const lentTexts = {
+      requested: <>{person} asked to borrow it</>,
+      approved: <>You approved {person}'s request</>,
+      rejected: <>You declined {person}'s request</>,
+      cancelled: <>{person} cancelled their request</>,
+      returned: <>{person} returned it</>,
+      confirmed: <>You confirmed {person}'s return</>,
+    }
+    return lentTexts[kind]
+  }
+  const borrowedTexts = {
+    requested: <>You sent a request to {person}</>,
+    approved: <>{person} approved your request</>,
+    rejected: <>{person} declined your request</>,
+    cancelled: <>You cancelled your request to {person}</>,
+    returned: <>You returned it to {person}</>,
+    confirmed: <>{person} confirmed your return</>,
+  }
+  return borrowedTexts[kind]
+}
+
+function attentionAction(loan) {
+  if (loan.direction === 'lent' && loan.status === 'requested') {
+    return {
+      text: (
+        <>
+          <strong>{personName(loan.borrower)}</strong> wants to borrow it
+        </>
+      ),
+      label: 'Review',
+    }
+  }
+  if (loan.direction === 'lent' && loan.status === 'returned') {
+    return {
+      text: (
+        <>
+          <strong>{personName(loan.borrower)}</strong> returned it
+        </>
+      ),
+      label: 'Confirm',
+    }
+  }
+  if (loan.direction === 'borrowed' && isOverdue(loan)) {
+    return {
+      text: (
+        <>
+          You borrowed from <strong>{personName(loan.owner)}</strong>, was due{' '}
+          {formatDate(loan.dueDate)}
+        </>
+      ),
+      label: 'Return',
+    }
+  }
+  if (isOverdue(loan)) {
+    return {
+      text: (
+        <>
+          <strong>{personName(loan.borrower)}</strong> has it, was due {formatDate(loan.dueDate)}
+        </>
+      ),
+      label: 'View',
+    }
+  }
+  return null
+}
+
+function attentionRows(loans) {
+  const rows = []
+  for (const loan of loans) {
+    const action = attentionAction(loan)
+    if (action) {
+      rows.push({ loan, ...action })
+    }
+  }
+  const isOverdueRow = (row) => getStatus(row.loan).id === 'overdue'
+  return orderBy(rows, [
+    (row) => ATTENTION_ORDER.indexOf(getStatus(row.loan).id),
+    (row) => (isOverdueRow(row) && row.loan.direction === 'borrowed' ? 0 : 1),
+    (row) => (isOverdueRow(row) ? new Date(row.loan.dueDate) : 0),
+  ])
+}
+
+function DashboardRow({ loan, to, text, showStatus, children }) {
+  const Row = to ? Link : 'div'
+  const linkProps = to ? { to, state: { highlightId: loan._id } } : {}
+  const image = loan.item?.photos?.[0]
+  return (
+    <Row {...linkProps} className="dashboard-row">
+      <span className="photo-box dashboard-row-photo">
+        {image ? (
+          <img src={image} alt="" loading="lazy" />
+        ) : (
+          <PackageOpen size={20} aria-hidden="true" />
+        )}
+      </span>
+      <span className="dashboard-row-main">
+        <span className="dashboard-row-title">
+          <strong className="truncate">{loan.item?.name || 'Deleted item'}</strong>
+          {showStatus && <LoanStatus loan={loan} />}
+        </span>
+        <small className="truncate">{text}</small>
+      </span>
+      <span className="dashboard-row-end">{children}</span>
+    </Row>
+  )
+}
+
+function DashboardSection({ title, count, info, control, className = '', children }) {
+  return (
+    <section className={`dashboard-section ${className}`}>
+      <div className="dashboard-section-heading">
+        <h2 className="count-label">
+          {title}
+          {count > 0 && <small>{count}</small>}
+          {info && <InfoTip text={info} label={`About ${title}`} />}
+        </h2>
+        {control}
+      </div>
+      {children}
+    </section>
+  )
 }
 
 export default function DashboardPage() {
-  const [loans, setLoans] = useState({ lent: [], borrowed: [] })
+  const { profile } = useAuth()
+  const [loans, setLoans] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  const load = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const [lent, borrowed] = await Promise.all([
-        apiFetch('loans/lent'),
-        apiFetch('loans/borrowed'),
-      ])
-      setLoans({ lent, borrowed })
-    } catch (err) {
-      setError(err.message || 'Something went wrong while loading your dashboard.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [dueFilter, setDueFilter] = useState(
+    () => JSON.parse(localStorage.getItem(DUE_FILTER_KEY)) ?? DEFAULT_DUE_FILTER,
+  )
 
   useEffect(() => {
-    load()
+    Promise.all([apiFetch('loans/lent'), apiFetch('loans/borrowed')])
+      .then(([lent, borrowed]) => {
+        setLoans([
+          ...lent.map((loan) => ({ ...loan, direction: 'lent' })),
+          ...borrowed.map((loan) => ({ ...loan, direction: 'borrowed' })),
+        ])
+      })
+      .catch((err) => setError(err.message || 'Could not load your dashboard.'))
+      .finally(() => setLoading(false))
   }, [])
 
-  const now = new Date()
-  const summary = useMemo(() => {
-    const activeLent = loans.lent.filter((loan) => loan.status === 'approved')
-    const activeBorrowed = loans.borrowed.filter((loan) => loan.status === 'approved')
-    const pending =
-      loans.lent.filter((loan) => loan.status === 'requested').length +
-      loans.borrowed.filter((loan) => loan.status === 'requested').length
-    const overdue = [...loans.lent, ...loans.borrowed].filter(
-      (loan) => loan.status === 'approved' && new Date(loan.dueDate) < now,
-    ).length
-    return { lent: activeLent.length, borrowed: activeBorrowed.length, pending, overdue }
-  }, [loans, now])
+  const changeDueFilter = (next) => {
+    setDueFilter(next)
+    localStorage.setItem(DUE_FILTER_KEY, JSON.stringify(next))
+  }
 
-  const activity = [
-    ...loans.lent.map((loan) => ({ ...loan, direction: 'lent' })),
-    ...loans.borrowed.map((loan) => ({ ...loan, direction: 'borrowed' })),
-  ]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt || b.approvedAt || 0) - new Date(a.createdAt || a.approvedAt || 0),
-    )
-    .slice(0, 5)
-  const nameLoan = loans.lent[0] || loans.borrowed[0]
-  const greeting = nameLoan
-    ? personName(nameLoan.direction === 'lent' ? nameLoan.owner : nameLoan.borrower).split(' ')[0]
-    : 'there'
-
-  const cards = [
-    {
-      label: 'Lent out',
-      count: summary.lent,
-      noun: 'items',
-      icon: HandCoins,
-      tone: 'orange',
-      to: '/loan-details',
-    },
-    {
-      label: 'Borrowed',
-      count: summary.borrowed,
-      noun: 'items',
-      icon: BookOpen,
-      tone: 'blue',
-      to: '/loan-details',
-    },
-    {
-      label: 'Pending requests',
-      count: summary.pending,
-      noun: summary.pending === 1 ? 'request' : 'requests',
-      icon: Clock3,
-      tone: 'teal',
-      to: '/borrow-request',
-    },
-    {
-      label: 'Overdue',
-      count: summary.overdue,
-      noun: 'items',
-      icon: CircleAlert,
-      tone: 'red',
-      to: '/loan-details',
-    },
-  ]
+  const attention = attentionRows(loans)
+  const upcomingLoans = loans.filter(
+    (loan) => loan.status === 'approved' && !isOverdue(loan) && matchesDueDate(loan, dueFilter),
+  )
+  const upcoming = orderBy(upcomingLoans, (loan) => loan.dueDate)
+  const recentActivity = activityEvents(loans)
 
   return (
     <AppShell>
       <main className="dashboard-page">
-        <div className="page-heading">
+        <header className="page-heading">
           <div>
-            <h1>Hi {greeting}!</h1>
-            <p>Here’s what’s happening with your account.</p>
+            <h1>Hi {profile.displayName.split(' ')[0]}!</h1>
+            <p>Here’s what’s happening.</p>
           </div>
-        </div>
+        </header>
+        {error && (
+          <p className="dashboard-error" role="alert">
+            {error}
+          </p>
+        )}
+        {loading ? (
+          <AppLoader inline label="Loading your dashboard…" />
+        ) : (
+          <div className="dashboard-sections">
+            <DashboardSection title="Needs your attention" count={attention.length}>
+              {attention.length ? (
+                <div className="dashboard-list">
+                  {attention.map(({ loan, text, label }) => (
+                    <DashboardRow
+                      key={loan._id}
+                      loan={loan}
+                      to={loanPage(loan)}
+                      text={text}
+                      showStatus
+                    >
+                      <span className="dashboard-row-action">
+                        {label}
+                        <ChevronRight size={15} aria-hidden="true" />
+                      </span>
+                    </DashboardRow>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={CircleCheck} title="All caught up" className="empty-state-green">
+                  <span>Requests and returns waiting on you show up here.</span>
+                </EmptyState>
+              )}
+            </DashboardSection>
 
-        <section className="dashboard-stats" aria-label="Loan summary">
-          {cards.map(({ label, count, noun, icon: Icon, tone, to }) => (
-            <Link className={`dashboard-stat stat-${tone}`} to={to} key={label}>
-              <span className="stat-icon">
-                <Icon size={20} />
-              </span>
-              <span>
-                <strong>{label}</strong>
-                <small>{loading ? 'Loading…' : `${count} ${noun}`}</small>
-              </span>
-              <ArrowRight className="stat-arrow" size={16} />
-            </Link>
-          ))}
-        </section>
+            <DashboardSection
+              title="Upcoming returns"
+              count={upcoming.length}
+              control={
+                <DueDateMenu
+                  value={dueFilter}
+                  onChange={changeDueFilter}
+                  className="action-button action-button-neutral"
+                />
+              }
+            >
+              {upcoming.length ? (
+                <div className="dashboard-list">
+                  {upcoming.map((loan) => (
+                    <DashboardRow
+                      key={loan._id}
+                      loan={loan}
+                      to={loanPage(loan)}
+                      text={personLine(loan)}
+                    >
+                      Due <span className="dashboard-row-due">{formatDate(loan.dueDate)}</span>
+                    </DashboardRow>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={CalendarCheck} title="Nothing due" className="empty-state-green">
+                  <span>Loans due in this range show up here.</span>
+                </EmptyState>
+              )}
+            </DashboardSection>
 
-        <section className="dashboard-activity">
-          <div className="activity-heading">
-            <div>
-              <h2>Recent activity</h2>
-            </div>
-            <Link to="/loan-details">
-              View all <ArrowRight size={15} />
-            </Link>
+            <DashboardSection
+              title="Recent activity"
+              info={`Your last ${RECENT_ACTIVITY_COUNT} updates. See everything in My Loans and Borrow Requests.`}
+              className="dashboard-section-wide"
+            >
+              {recentActivity.length ? (
+                <div className="dashboard-list">
+                  {recentActivity.map((event) => (
+                    <DashboardRow
+                      key={`${event.loan._id}-${event.kind}`}
+                      loan={event.loan}
+                      to={loanPage(event.loan)}
+                      text={activityText(event)}
+                    >
+                      {formatDate(event.date)}
+                    </DashboardRow>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={History} title="No activity yet" className="empty-state-orange">
+                  <span>Requests and loans show up here.</span>
+                </EmptyState>
+              )}
+            </DashboardSection>
           </div>
-          {error ? (
-            <div className="dashboard-message" role="status">
-              <CircleAlert size={20} />
-              <span>{error}</span>
-            </div>
-          ) : loading ? (
-            <AppLoader inline label="Loading your recent loans…" />
-          ) : activity.length === 0 ? (
-            <EmptyState icon={ArrowLeftRight} title="No activity yet">
-              <span>Requests and loans show up here.</span>
-            </EmptyState>
-          ) : (
-            <div className="activity-list">
-              {activity.map((loan) => {
-                const status = statusLabel(loan, now)
-                const otherPerson = loan.direction === 'lent' ? loan.borrower : loan.owner
-                return (
-                  <Link to={`/loan-details`} className="activity-row" key={loan._id}>
-                    <span className="activity-item-icon">
-                      <Package size={19} />
-                    </span>
-                    <span className="activity-item-copy">
-                      <strong className="truncate">{loan.item?.name || 'Deleted item'}</strong>
-                      <small className="truncate">
-                        {loan.direction === 'lent' ? 'Borrowed by' : 'Borrowed from'}{' '}
-                        {personName(otherPerson)}
-                      </small>
-                    </span>
-                    <span className="activity-due">
-                      {status === 'Active' || status === 'Overdue'
-                        ? `Due ${dateLabel(loan.dueDate)}`
-                        : dateLabel(loan.createdAt)}
-                    </span>
-                    <span className={`activity-status status-${status.toLowerCase()}`}>
-                      {status === 'Completed' && <CheckCircle2 size={13} />}
-                      {status}
-                    </span>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </section>
+        )}
       </main>
     </AppShell>
   )

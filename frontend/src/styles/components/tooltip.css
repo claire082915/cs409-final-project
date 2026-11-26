@@ -12,6 +12,7 @@
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
+  text-wrap: balance;
 }
 .tooltip[data-entering] {
   animation: tooltip-fade 140ms ease-out;

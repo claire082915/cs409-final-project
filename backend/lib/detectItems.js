@@ -51,7 +51,6 @@ function geminiErrorCode(err) {
   try {
     return [JSON.parse(err.body)].flat()[0]?.error?.code
   } catch {
-    // Connection errors have no body and some errors send plain text
     return undefined
   }
 }
@@ -83,7 +82,7 @@ export function geminiFailure(err) {
   return null
 }
 
-// Hydrogen twice, then the Flash models in turn, the frontend moves on when one is overloaded or rate limited
+// Hydrogen gets a second try before the Flash models
 export const DETECTION_MODELS = [
   'gemini-4-hydrogen',
   'gemini-4-hydrogen',
@@ -91,7 +90,6 @@ export const DETECTION_MODELS = [
   'gemini-3.6-flash',
 ]
 
-// Takes a JPEG and returns [{ name, description, category, condition, box_2d }]
 export async function detectItems(image, model) {
   const interaction = await client.interactions.create(
     {

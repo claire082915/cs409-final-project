@@ -9,6 +9,7 @@ import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
 import Reputation from '../components/Reputation.jsx'
+import TrustBadge from '../components/TrustBadge.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { MOCK_ITEMS } from '../lib/mockItems.js'
@@ -82,6 +83,7 @@ function ProfileDetails({ profile, onOpenItem }) {
             className="profile-page-avatar"
           />
           <Reputation reputation={profile.reputation} />
+          <TrustBadge trust={profile.trust} />
         </div>
         <div>
           <h1>{profile.displayName}</h1>

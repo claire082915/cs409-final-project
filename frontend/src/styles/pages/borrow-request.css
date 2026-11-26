@@ -118,15 +118,6 @@
   font-weight: 700;
   line-height: 1.4;
 }
-.request-on-loan {
-  flex: none;
-  padding: 3px 8px;
-  border-radius: 20px;
-  color: var(--brand-orange-dark);
-  background: var(--orange-50);
-  font-size: 12px;
-  font-weight: 600;
-}
 /* Sent items open from the photo or name, drop the default button look */
 .request-item-open {
   align-self: start;

@@ -35,12 +35,12 @@ function Tick({ isShown }) {
 }
 
 // Presets close the menu, the custom row stays open so its number and unit can both be set
-export default function DueDateMenu({ value, onChange }) {
+export default function DueDateMenu({ value, onChange, className = '' }) {
   const pickCustom = (change) => onChange({ ...value, ...change, range: 'custom' })
 
   return (
     <DialogTrigger>
-      <Button className="filter-menu-button" aria-label="Filter by due date">
+      <Button className={`filter-menu-button ${className}`} aria-label="Filter by due date">
         <span className="filter-menu-label">{describeDueDate(value)}</span>
         <ChevronDown size={14} aria-hidden="true" />
       </Button>

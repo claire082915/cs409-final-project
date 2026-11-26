@@ -9,9 +9,11 @@ export default function ConfirmDialog({
   text,
   cancelLabel,
   confirmLabel,
+  destructive = true,
   onCancel,
   onConfirm,
 }) {
+  const confirmColor = destructive ? 'action-button-danger' : 'action-button-teal'
   return (
     <ModalOverlay
       isOpen={isOpen}
@@ -36,7 +38,7 @@ export default function ConfirmDialog({
               {cancelLabel}
             </Button>
             <Button
-              className="action-button action-button-danger"
+              className={`action-button ${confirmColor}`}
               isDisabled={isPending}
               onPress={onConfirm}
             >

@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { fadeInCards } from '../lib/fadeInCards.js'
-import { ArrowLeftRight, CalendarDays, CircleAlert, PackageOpen, SearchX } from 'lucide-react'
+import { ArrowLeftRight, CalendarDays, PackageOpen, SearchX } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { countBy, orderBy } from 'lodash-es'
-import {
-  endOfMonth,
-  endOfWeek,
-  getLocalTimeZone,
-  parseDate,
-  today as todayDate,
-} from '@internationalized/date'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
@@ -18,17 +12,21 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import DueDateMenu from '../components/DueDateMenu.jsx'
 import FilterMenu from '../components/FilterMenu.jsx'
+import LoanStatus from '../components/LoanStatus.jsx'
 import SearchField from '../components/SearchField.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
+import { refreshPendingActions } from '../lib/pendingActions.js'
+import { ANY_DUE_DATE, dueDateFromParam, dueDateParam, matchesDueDate } from '../lib/dueDate.js'
+import { getStatus, isFinished } from '../lib/loanStatus.js'
+import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
+import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
 import '../styles/pages/loan-details.css'
 
 // Badge labels for the filter menu, open loans first with the ones needing action on top
 const STATUS_LABELS = ['Overdue', 'Awaiting confirmation', 'Active', 'Completed']
 // Requests that were never approved live on Borrow Requests instead
 const LOAN_STATUSES = ['approved', 'returned', 'confirmed']
-// Custom row starts at two weeks, a common loan length
-const ANY_DUE_DATE = { range: 'any', amount: 2, unit: 'weeks' }
 
 function personName(person) {
   return person?.displayName || (person?.username ? `@${person.username}` : 'Community member')
@@ -45,18 +43,6 @@ function formatDate(value) {
   }).format(date)
 }
 
-function getStatus(loan) {
-  if (
-    loan.status === 'approved' &&
-    new Date(`${String(loan.dueDate).slice(0, 10)}T23:59:59`) < new Date()
-  ) {
-    return { id: 'overdue', label: 'Overdue' }
-  }
-  if (loan.status === 'approved') return { id: 'active', label: 'Active' }
-  if (loan.status === 'returned') return { id: 'returned', label: 'Awaiting confirmation' }
-  return { id: 'completed', label: 'Completed' }
-}
-
 function isLoan(loan) {
   return LOAN_STATUSES.includes(loan.status)
 }
@@ -65,44 +51,38 @@ function matchesStatuses(loan, selectedStatuses) {
   return selectedStatuses.size === 0 || selectedStatuses.has(getStatus(loan).label)
 }
 
-function isFinished(loan) {
-  return loan.status === 'confirmed'
-}
-
-// Last day a loan can be due and still match the due date filter
-function dueCutoff({ range, amount, unit }, today) {
-  if (range === 'week') return endOfWeek(today, navigator.language)
-  if (range === 'month') return endOfMonth(today)
-  return today.add({ [unit]: amount })
-}
-
-// Overdue loans fall out since their due date has passed
-function matchesDueDate(loan, dueFilter) {
-  if (dueFilter.range === 'any') return true
-  if (isFinished(loan)) return false
-  const today = todayDate(getLocalTimeZone())
-  const dueDate = parseDate(String(loan.dueDate).slice(0, 10))
-  return dueDate.compare(today) >= 0 && dueDate.compare(dueCutoff(dueFilter, today)) <= 0
-}
-
 function loanTime(loan) {
   return new Date(loan.dueDate || loan.createdAt || 0).getTime()
 }
 
-// Open loans first by soonest due date so overdue ones lead, then completed loans latest first
-function sortLoans(loans) {
+const STATUS_ORDER = {
+  lent: ['returned', 'overdue', 'active', 'completed'],
+  borrowed: ['overdue', 'active', 'returned', 'completed'],
+}
+
+function sortLoans(loans, direction) {
   return orderBy(loans, [
-    isFinished,
+    (loan) => STATUS_ORDER[direction].indexOf(getStatus(loan).id),
     (loan) => (isFinished(loan) ? -loanTime(loan) : loanTime(loan)),
   ])
+}
+
+function loanFilterParams({ direction, query, selectedStatuses, dueFilter }) {
+  const params = new URLSearchParams()
+  if (direction === 'lent') params.set('view', 'lent')
+  if (query) params.set('q', query)
+  for (const status of selectedStatuses) {
+    params.append('status', status)
+  }
+  if (dueFilter.range !== 'any') params.set('due', dueDateParam(dueFilter))
+  return params
 }
 
 function otherPerson(loan, direction) {
   return direction === 'borrowed' ? loan.owner : loan.borrower
 }
 
-function LoanCard({ loan, direction, onAction }) {
-  const status = getStatus(loan)
+function LoanCard({ loan, direction, isHighlighted, onAction }) {
   const person = otherPerson(loan, direction)
   const image = loan.item?.photos?.[0]
   const action =
@@ -111,7 +91,7 @@ function LoanCard({ loan, direction, onAction }) {
       : loan.status === 'returned' && { id: 'confirm', label: 'Confirm' }
 
   return (
-    <article className="loan-card">
+    <article id={`loan-${loan._id}`} className={`loan-card${isHighlighted ? ' highlighted' : ''}`}>
       <div className="loan-card-photo">
         {image ? (
           <img src={image} alt="" loading="lazy" />
@@ -122,10 +102,7 @@ function LoanCard({ loan, direction, onAction }) {
       <div className="loan-card-main">
         <div className="loan-card-title-wrap">
           <h2>{loan.item?.name || 'Deleted item'}</h2>
-          <span className={`loan-status status-${status.id}`}>
-            {status.id === 'overdue' && <CircleAlert size={13} />}
-            {status.label}
-          </span>
+          <LoanStatus loan={loan} />
         </div>
         <div className="loan-card-person">
           <Avatar
@@ -134,9 +111,7 @@ function LoanCard({ loan, direction, onAction }) {
             username={person?.username || 'community'}
             className="avatar-small"
           />
-          <span>
-            {direction === 'borrowed' ? 'From' : 'To'} <strong>{personName(person)}</strong>
-          </span>
+          <strong>{personName(person)}</strong>
         </div>
         <div className="loan-card-meta">
           <CalendarDays size={14} />
@@ -185,10 +160,13 @@ function LoansEmptyState({ direction, isFiltering, onClearFilters }) {
 }
 
 export default function LoanDetailsPage() {
-  const [direction, setDirection] = useState('borrowed')
-  const [selectedStatuses, setSelectedStatuses] = useState(new Set())
-  const [dueFilter, setDueFilter] = useState(ANY_DUE_DATE)
-  const [query, setQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [direction, setDirection] = useState(searchParams.get('view') ?? 'borrowed')
+  const [selectedStatuses, setSelectedStatuses] = useState(
+    () => new Set(searchParams.getAll('status')),
+  )
+  const [dueFilter, setDueFilter] = useState(() => dueDateFromParam(searchParams.get('due')))
+  const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [loans, setLoans] = useState({ borrowed: [], lent: [] })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -196,6 +174,7 @@ export default function LoanDetailsPage() {
   const [acting, setActing] = useState(false)
   const loadSequence = useRef(0)
   const [listRef] = useAutoAnimate(fadeInCards)
+  const highlightId = useHighlightedLoan(!loading)
 
   const loadLoans = async () => {
     const sequence = ++loadSequence.current
@@ -234,7 +213,7 @@ export default function LoanDetailsPage() {
           .toLowerCase()
           .includes(query.toLowerCase()),
       )
-    return sortLoans(matchingLoans)
+    return sortLoans(matchingLoans, direction)
   }, [allCurrent, selectedStatuses, dueFilter, query, direction])
   const statusCounts = useMemo(
     () => countBy(allCurrent, (loan) => getStatus(loan).label),
@@ -245,6 +224,7 @@ export default function LoanDetailsPage() {
     (label) => statusCounts[label] || selectedStatuses.has(label),
   )
   const isFiltering = query || selectedStatuses.size > 0 || dueFilter.range !== 'any'
+  useFiltersInUrl(loanFilterParams({ direction, query, selectedStatuses, dueFilter }))
 
   const updateLoan = async () => {
     if (!actionTarget) return
@@ -263,6 +243,7 @@ export default function LoanDetailsPage() {
         return: 'Return marked. The lender will confirm it.',
         confirm: 'Return confirmed.',
       }
+      refreshPendingActions()
       toast.success(messages[action])
       setActionTarget(null)
     } catch (err) {
@@ -349,6 +330,7 @@ export default function LoanDetailsPage() {
                 key={loan._id}
                 loan={loan}
                 direction={direction}
+                isHighlighted={loan._id === highlightId}
                 onAction={setActionTarget}
               />
             ))}
@@ -372,6 +354,7 @@ export default function LoanDetailsPage() {
           text={actionCopy[1]}
           cancelLabel="Keep loan"
           confirmLabel={actionCopy[2]}
+          destructive={false}
           onCancel={() => setActionTarget(null)}
           onConfirm={updateLoan}
         />
