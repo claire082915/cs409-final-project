@@ -13,7 +13,7 @@
   gap: 15px;
   padding: 19px 20px;
   border: 1px solid;
-  border-radius: 11px;
+  border-radius: var(--radius-container);
   transition:
     transform 0.16s,
     box-shadow 0.16s;
@@ -110,7 +110,7 @@
 .activity-list {
   overflow: hidden;
   border: 1px solid var(--grey-150);
-  border-radius: 11px;
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: 0 5px 22px #24414a08;
 }
@@ -134,7 +134,7 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: var(--radius-control);
   color: var(--brand-green);
   background: var(--green-50);
 }
@@ -194,7 +194,7 @@
   gap: 10px;
   padding: 25px;
   border: 1px solid var(--grey-150);
-  border-radius: 11px;
+  border-radius: var(--radius-container);
   color: var(--slate-500);
   background: var(--surface);
   font-size: 12px;

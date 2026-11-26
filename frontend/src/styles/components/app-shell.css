@@ -63,7 +63,7 @@ body:has(.app-shell) #root {
   align-items: center;
   gap: 12px;
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--slate-200);
   font-size: 12px;
   font-weight: 600;
@@ -86,7 +86,7 @@ body:has(.app-shell) #root {
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   color: var(--slate-200);
   background: none;
   cursor: pointer;
@@ -175,7 +175,7 @@ body:has(.app-shell) #root {
   gap: 10px;
   padding: 0 11px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   color: var(--slate-450);
   background: var(--grey-25);
 }
@@ -196,7 +196,7 @@ body:has(.app-shell) #root {
 .app-search kbd {
   padding: 3px 5px;
   border: 1px solid var(--grey-250);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: var(--slate-400);
   font:
     9px 'DM Sans',
@@ -271,8 +271,9 @@ body:has(.app-shell) #root {
   .profile-name {
     display: none;
   }
+  /* Leaves room for a two digit count badge, which runs 10px past its icon */
   .topbar-actions {
-    gap: 8px;
+    gap: 14px;
   }
   .profile-avatar {
     width: 30px;

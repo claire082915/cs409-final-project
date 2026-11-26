@@ -26,7 +26,7 @@ export default function Tooltip({
         placement={placement}
         offset={8}
         triggerRef={anchorRef}
-        // Measured widths can only be set inline, the stylesheet's 240px cap applies otherwise
+        // Measured widths can only be set inline, the stylesheet's 320px cap applies otherwise
         style={width ? { width, maxWidth: 'none' } : undefined}
       >
         <OverlayArrow className="tooltip-arrow">

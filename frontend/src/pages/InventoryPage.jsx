@@ -456,7 +456,6 @@ export default function InventoryPage() {
                     name="notes"
                     value={form.description}
                     onChange={(event) => setField('description', event.target.value)}
-                    rows="3"
                     placeholder="Pickup details..."
                     maxLength="500"
                   />
@@ -503,10 +502,10 @@ export default function InventoryPage() {
         <UnsavedChangesPrompt when={hasUnsavedChanges} />
         <ConfirmDialog
           isOpen={isDiscardOpen}
-          title="Leave without saving?"
+          title="Discard changes?"
           text="Your changes will be lost."
           cancelLabel="Keep editing"
-          confirmLabel="Leave"
+          confirmLabel="Discard"
           onCancel={() => setIsDiscardOpen(false)}
           onConfirm={discardChanges}
         />

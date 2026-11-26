@@ -9,7 +9,7 @@
   overflow-y: auto;
   padding: 4px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: 0 8px 20px #17455114;
 }
@@ -40,7 +40,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 9px;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--slate-750);
   font-size: 12px;
   cursor: pointer;
@@ -124,7 +124,7 @@
   height: 28px;
   box-sizing: border-box;
   border: 1px solid var(--grey-250);
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--slate-750);
   background: var(--surface);
   font: inherit;
@@ -166,7 +166,7 @@
   gap: 4px;
   padding: 0 10px 0 4px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   background: var(--surface);
 }
 
@@ -188,7 +188,7 @@
 
 .date-picker-segment {
   padding: 1px 2px;
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   outline: 0;
 }
 
@@ -209,7 +209,7 @@
   width: 30px;
   height: 30px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: #648087;
   background: transparent;
   cursor: pointer;
@@ -262,7 +262,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--slate-750);
   font-size: 12px;
   cursor: pointer;
@@ -322,12 +322,13 @@
   font-weight: 500;
 }
 .form-field input:not([type]),
-.form-field textarea {
+.form-field textarea,
+.form-field .field-value {
   width: 100%;
   box-sizing: border-box;
   padding: 0 12px;
   border: 1px solid var(--slate-300);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   outline: none;
   color: var(--slate-900);
   background: var(--surface);
@@ -335,12 +336,32 @@
   font-size: 14px;
   font-weight: 400;
 }
-.form-field input:not([type]) {
+.form-field input:not([type]),
+.form-field .field-value {
   height: 40px;
+}
+/* A value in a field's box that can't be edited, used where a focused input would drop its dots */
+.form-field .field-value {
+  display: block;
+  /* Lets the box shrink to its column instead of stretching to the whole value */
+  min-width: 0;
+  line-height: 38px;
+}
+/* Safari adds its own full text tooltip over cut off text under the mouse, so the text ignores the mouse */
+.field-value-text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }
 .form-field textarea {
   padding: 10px 12px;
-  resize: vertical;
+  /* Grows with the text from 3 lines up to 8, then scrolls, so it needs no drag handle */
+  field-sizing: content;
+  min-height: calc(3lh + 22px);
+  max-height: calc(8lh + 22px);
+  resize: none;
   line-height: 1.5;
 }
 .form-field input:not([type])::placeholder,
@@ -352,11 +373,14 @@
   border-color: var(--brand-green);
 }
 /* Shown but not editable, like Email and the demo username on Account */
-.form-field input:not([type]):read-only {
+.form-field input:not([type]):read-only,
+.form-field .field-value {
   color: var(--text-muted);
   background: var(--grey-100);
   border-color: var(--slate-200);
   cursor: not-allowed;
+  /* Long values like the demo email end in dots instead of cutting off mid letter */
+  text-overflow: ellipsis;
 }
 /* A select menu boxed like the text fields */
 .select-field .select-menu-button {
@@ -366,7 +390,7 @@
   box-sizing: border-box;
   padding: 0 12px;
   border: 1px solid var(--slate-300);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--slate-900);
   background: var(--surface);
   font-size: 14px;

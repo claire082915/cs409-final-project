@@ -7,7 +7,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
   transition:

@@ -5,7 +5,7 @@ import Loan, { ACTIVE_STATUSES } from '../models/loan.js'
 import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
-import { detectItems } from '../lib/detectItems.js'
+import { DETECTION_MODELS, detectItems, geminiFailure } from '../lib/detectItems.js'
 import { cropBox, hasArea, isSupportedPhoto, uprightJpeg } from '../lib/photoCrops.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
@@ -58,21 +58,27 @@ async function draftItem(image, detectedItem, userId) {
   }
 }
 
-// Drafts items from a room photo, the user sends the ones they keep to POST items
+// Overloaded and rate limited are both per model, so the frontend sends the photo to the next one
+const NEXT_MODEL_STATUSES = [429, 503]
+
+// Drafts items from a room photo with the model for this attempt, the user sends the ones they keep to POST items
 router.post('/detect', async (req, res) => {
   const photoUrl = req.body?.photoUrl
+  const attempt = req.body?.attempt
   if (!isUserPhotoUrl(photoUrl, req.userId)) {
     return res.status(400).json({ message: 'photoUrl must be a photo you uploaded', data: {} })
+  }
+  if (!Number.isInteger(attempt) || !DETECTION_MODELS[attempt]) {
+    return res.status(400).json({ message: 'Missing or invalid attempt', data: {} })
   }
   const response = await fetch(photoUrl)
   if (!response.ok) {
     return res.status(400).json({ message: "Couldn't download the photo", data: {} })
   }
   const photo = Buffer.from(await response.arrayBuffer())
-  // The room photo is only needed for this request
-  await deleteUnusedPhotos([photoUrl])
   // The frontend checks too, this catches files whose type was wrong or missing
   if (!(await isSupportedPhoto(photo))) {
+    await deleteUnusedPhotos([photoUrl])
     return res
       .status(400)
       .json({ message: "Can't read this photo. Use a JPEG or PNG instead.", data: {} })
@@ -80,17 +86,23 @@ router.post('/detect', async (req, res) => {
   const image = await uprightJpeg(photo)
   let detectedItems
   try {
-    detectedItems = await detectItems(image)
+    detectedItems = await detectItems(image, DETECTION_MODELS[attempt])
   } catch (err) {
-    // Gemini caps requests per day for the whole project
-    if (err.status === 429) {
-      return res
-        .status(429)
-        .json({ message: 'Item detection is used up for today, try again tomorrow', data: {} })
+    const failure = geminiFailure(err)
+    // Keep the room photo when the frontend will send it to the next model
+    const hasNextAttempt =
+      NEXT_MODEL_STATUSES.includes(failure?.status) && attempt < DETECTION_MODELS.length - 1
+    if (!hasNextAttempt) {
+      await deleteUnusedPhotos([photoUrl])
     }
-    // Drop Gemini's status so the error handler sends a 500 instead of passing it on
+    if (failure) {
+      return res.status(failure.status).json({ message: failure.message, data: {} })
+    }
+    // Anything else is our bug, like a bad key or request, so it stays a 500
     throw new Error('Gemini request failed', { cause: err })
   }
+  // The room photo is only needed until a model answers
+  await deleteUnusedPhotos([photoUrl])
   const boxedItems = detectedItems.filter((item) => hasArea(item.box_2d))
   const drafts = await Promise.all(boxedItems.map((item) => draftItem(image, item, req.userId)))
   res.json({ message: 'OK', data: drafts })
@@ -101,7 +113,7 @@ async function isPhotoInUse(photos, user) {
   return photos.includes(user.photo) || Boolean(await Item.exists({ photos: { $in: photos } }))
 }
 
-// Deletes the crops of drafts the user didn't keep
+// Deletes the crops of drafts the user didn't keep, or the room photo of a search they left
 router.post('/detect/discard', async (req, res) => {
   const photos = req.body?.photos
   if (!Array.isArray(photos) || !photos.every((url) => isUserPhotoUrl(url, req.userId))) {

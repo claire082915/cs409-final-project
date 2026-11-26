@@ -10,6 +10,7 @@ import { apiFetch } from '../lib/api.js'
 import { storedCondition } from '../lib/itemConditions.js'
 import {
   clearTask,
+  DETECTION_MODELS,
   discardPhotos,
   discardTask,
   findItems,
@@ -69,8 +70,14 @@ function PickState() {
 // Finding never shows done, the review replaces the steps
 const SEARCH_STEPS = [
   { id: 'uploading', label: 'Uploading photo', doneLabel: 'Photo uploaded' },
-  { id: 'finding', label: 'Finding items with Gemini', doneLabel: 'Items found with Gemini' },
+  { id: 'finding', doneLabel: 'Items found with Gemini' },
 ]
+
+// Names the model so the user sees each retry happen
+function findingLabel(attempt) {
+  const model = DETECTION_MODELS[attempt]
+  return attempt === 0 ? `Finding items with ${model}` : `Retrying with ${model}`
+}
 
 function stepState(index, currentIndex) {
   if (index < currentIndex) {
@@ -89,7 +96,7 @@ function StepIcon({ state }) {
   return <Circle size={15} aria-hidden="true" />
 }
 
-function SearchingState({ photoPreview, searchStep }) {
+function SearchingState({ photoPreview, searchStep, attempt }) {
   const currentIndex = SEARCH_STEPS.findIndex((step) => step.id === searchStep)
   return (
     <div className="detected-searching" role="status">
@@ -103,16 +110,12 @@ function SearchingState({ photoPreview, searchStep }) {
           return (
             <li key={step.id} className={`detected-step ${state}`}>
               <StepIcon state={state} />
-              {state === 'done' ? step.doneLabel : step.label}
+              {state === 'done' ? step.doneLabel : (step.label ?? findingLabel(attempt))}
             </li>
           )
         })}
       </ol>
-      <span>
-        This can take a minute.
-        <br />
-        You can close this and we'll notify you once it's done.
-      </span>
+      <span>This can take a minute. You can close this and we'll notify you.</span>
     </div>
   )
 }
@@ -213,7 +216,11 @@ export default function DetectedItemsPanel() {
             </header>
             {status === 'picking' && <PickState />}
             {status === 'searching' && (
-              <SearchingState photoPreview={photoPreview} searchStep={task.searchStep} />
+              <SearchingState
+                photoPreview={photoPreview}
+                searchStep={task.searchStep}
+                attempt={task.attempt}
+              />
             )}
             {(status === 'failed' || (status === 'review' && drafts.length === 0)) && (
               <NoItemsState error={error} />

@@ -63,7 +63,6 @@ export default function DetectedItemCard({ draft, index, onChange }) {
           <textarea
             value={draft.description}
             onChange={(event) => setField('description', event.target.value)}
-            rows="2"
             maxLength="500"
           />
         </label>

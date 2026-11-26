@@ -51,8 +51,10 @@
   --header-border: var(--grey-200);
   --text-muted: var(--slate-600);
   --error: #a5402a;
-  --radius-photo: 6px;
-  --radius-card: 9px;
+  /* Inputs, buttons, photos and other small pieces, the least rounding common design systems use */
+  --radius-control: 4px;
+  /* Cards, dialogs, menus and banners that hold controls */
+  --radius-container: 8px;
 }
 * {
   box-sizing: border-box;
@@ -188,6 +190,28 @@ a {
   align-items: center;
   gap: 23px;
 }
+/* Toasts are white cards like the rest of the app, only the icon carries color */
+[data-sonner-toaster] {
+  --normal-bg: var(--surface);
+  --normal-border: var(--grey-150);
+  --normal-text: var(--slate-900);
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
+  box-shadow: var(--card-shadow);
+  font-family: inherit;
+}
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-description] {
+  color: var(--text-muted);
+}
+[data-sonner-toaster] [data-sonner-toast] [data-icon] {
+  color: var(--slate-400);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--brand-green);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] [data-icon] {
+  color: var(--error);
+}
 /* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action] {
   color: var(--brand-orange-dark);
@@ -197,6 +221,14 @@ a {
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
   background: color-mix(in srgb, var(--brand-orange) 20%, white);
 }
+/* Green on success toasts so a good result doesn't read as a warning */
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-button][data-action] {
+  color: var(--green-700);
+  background: color-mix(in srgb, var(--brand-green) 12%, white);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-button][data-action]:hover {
+  background: color-mix(in srgb, var(--brand-green) 20%, white);
+}
 .action-button {
   display: inline-flex;
   align-items: center;
@@ -205,7 +237,7 @@ a {
   min-height: 40px;
   padding: 0 16px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--action-color);
   background: var(--action-bg);
   font: inherit;
@@ -253,10 +285,11 @@ a {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--grey-200);
-  border-radius: 8px;
+  /* No box until hover so closing doesn't read as a second button */
+  border: 0;
+  border-radius: var(--radius-control);
   color: var(--text-muted);
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
 }
 .close-button:hover:not(:disabled) {
@@ -279,7 +312,7 @@ a {
   overflow-y: auto;
   padding: 28px;
   border: 1px solid var(--grey-200);
-  border-radius: 16px;
+  border-radius: var(--radius-container);
   color: var(--slate-800);
   background: var(--surface);
   box-shadow: 0 24px 75px #05232c45;
@@ -289,7 +322,7 @@ a {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: var(--radius-photo);
+  border-radius: var(--radius-control);
   color: var(--slate-350);
   background: var(--grey-150);
 }
@@ -308,7 +341,7 @@ a {
   .modal {
     max-height: 94vh;
     padding: 21px 18px;
-    border-radius: 15px;
+    border-radius: var(--radius-container);
   }
 }
 /* A list's name with its count beside it, like Pending 5 requests */

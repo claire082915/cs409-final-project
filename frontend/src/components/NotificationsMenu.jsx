@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogTrigger, Heading, Popover } from 'react-aria-components'
-import { Bell, SearchX, Sparkles, TriangleAlert, X } from 'lucide-react'
+import { Bell, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { openPanel, useDetectionTask } from '../lib/detectionTask.js'
 import {
@@ -11,7 +11,6 @@ import {
 import '../styles/components/count-badge.css'
 import '../styles/components/notifications-menu.css'
 
-const ICON_BY_KIND = { found: Sparkles, empty: SearchX, error: TriangleAlert }
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 function timeAgo(createdAt) {
@@ -30,7 +29,6 @@ function timeAgo(createdAt) {
 }
 
 function NotificationRow({ notification, onOpen }) {
-  const Icon = ICON_BY_KIND[notification.kind]
   return (
     <li>
       <button
@@ -38,8 +36,9 @@ function NotificationRow({ notification, onOpen }) {
         className={`notification-row notification-${notification.kind}`}
         onClick={onOpen}
       >
+        {/* Every notification comes from auto-populate, so they share its icon and problems get a tint */}
         <span className="notification-icon">
-          <Icon size={16} aria-hidden="true" />
+          <Sparkles size={16} aria-hidden="true" />
         </span>
         <span className="notification-copy">
           <strong>{notification.title}</strong>

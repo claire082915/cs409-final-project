@@ -1,6 +1,7 @@
 import './styles/global.css'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { CircleAlert, CircleCheck } from 'lucide-react'
 import { Toaster } from 'sonner'
 import {
   Outlet,
@@ -78,7 +79,10 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
-      <Toaster position="bottom-right" richColors />
+      <Toaster
+        position="bottom-right"
+        icons={{ success: <CircleCheck size={18} />, error: <CircleAlert size={18} /> }}
+      />
     </AuthProvider>
   </React.StrictMode>,
 )

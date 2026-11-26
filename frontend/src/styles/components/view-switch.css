@@ -3,14 +3,14 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: var(--grey-150);
 }
 .view-switch button {
   min-height: 34px;
   padding: 0 16px;
   border: 0;
-  border-radius: 6px;
+  border-radius: calc(var(--radius-control) - 2px);
   color: var(--text-muted);
   background: transparent;
   font: inherit;

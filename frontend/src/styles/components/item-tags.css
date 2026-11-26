@@ -10,7 +10,7 @@
   height: 24px;
   box-sizing: border-box;
   padding: 0 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   font-size: 12px;
   font-weight: 700;
 }

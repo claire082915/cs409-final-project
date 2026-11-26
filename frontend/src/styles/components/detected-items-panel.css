@@ -80,7 +80,7 @@
   overflow: hidden;
   max-width: 100%;
   margin-bottom: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-container);
 }
 /* The whole photo shows uncropped, so you see what Gemini is looking at */
 .detected-room-photo img {
@@ -179,7 +179,7 @@
   width: 52px;
   height: 52px;
   flex: none;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   object-fit: cover;
 }
 .detected-review-heading p {
@@ -194,21 +194,21 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--grey-25);
   transition: background 180ms;
 }
 .detected-card-select {
   position: relative;
   align-self: start;
-  border-radius: var(--radius-photo);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }
 .detected-card-photo {
   display: block;
   width: 96px;
   height: 96px;
-  border-radius: var(--radius-photo);
+  border-radius: var(--radius-control);
   object-fit: cover;
   background: var(--grey-100);
 }
@@ -223,7 +223,7 @@
   place-items: center;
   box-sizing: border-box;
   border: 2px solid var(--grey-25);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--grey-25);
   background: #ffffffcc;
   box-shadow: 0 1px 4px #05232c40;

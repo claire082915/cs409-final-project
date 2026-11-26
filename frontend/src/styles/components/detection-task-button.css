@@ -6,8 +6,26 @@
   color: var(--brand-orange-dark);
 }
 .task-button:focus-visible {
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
+.task-ring {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+/* A ring with one teal arc spins around the icon while it stays still */
+.task-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--tint-teal);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: task-spin 1s linear infinite;
+}
+/* The loader icon in the panel's active step and on My Items */
 .task-spinner {
   animation: task-spin 1s linear infinite;
 }
@@ -17,6 +35,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .task-ring::before,
   .task-spinner {
     animation-duration: 3s;
   }

@@ -1,4 +1,4 @@
-import { LoaderCircle, Sparkles, TriangleAlert } from 'lucide-react'
+import { Sparkles, TriangleAlert } from 'lucide-react'
 import { useBeforeUnload } from 'react-router-dom'
 import Tooltip from './Tooltip.jsx'
 import { hasStartedTask, openPanel, useDetectionTask } from '../lib/detectionTask.js'
@@ -19,8 +19,13 @@ function taskLabel({ status, drafts }) {
 }
 
 function TaskIcon({ status }) {
+  // Keeps auto-populate's icon so it doesn't read as the page loading, the ring shows it's busy
   if (status === 'searching') {
-    return <LoaderCircle size={18} className="task-spinner" aria-hidden="true" />
+    return (
+      <span className="task-ring">
+        <Sparkles size={14} aria-hidden="true" />
+      </span>
+    )
   }
   if (status === 'failed') {
     return <TriangleAlert size={18} aria-hidden="true" />

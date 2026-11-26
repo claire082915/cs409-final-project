@@ -18,7 +18,7 @@
   width: 28px;
   height: 28px;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   background: var(--grey-150);
 }
 

@@ -2,9 +2,10 @@
 .tooltip {
   z-index: 70;
   box-sizing: border-box;
-  max-width: 240px;
+  /* Wide enough for the demo email's can't be changed message on one line, about 308px */
+  max-width: 320px;
   padding: 6px 9px;
-  border-radius: 6px;
+  border-radius: var(--radius-container);
   color: var(--grey-25);
   background: var(--brand-teal-dark);
   box-shadow: 0 6px 16px #05232c30;

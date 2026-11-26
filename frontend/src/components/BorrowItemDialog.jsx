@@ -55,7 +55,7 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
           <span>
             Message <span className="field-hint">(optional)</span>
           </span>
-          <textarea name="message" rows="4" maxLength={300} />
+          <textarea name="message" maxLength={300} />
         </label>
         {error && (
           <p className="form-error" role="alert">

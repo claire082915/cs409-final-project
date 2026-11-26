@@ -7,7 +7,7 @@
 .requests-error {
   margin: 0 0 17px;
   padding: 10px 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-container);
   color: var(--error);
   background: var(--orange-50);
   font-size: 13px;
@@ -24,7 +24,7 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -43,7 +43,7 @@
 .request-group {
   overflow: hidden;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -142,7 +142,7 @@
   text-decoration: underline;
 }
 .request-item-open:focus-visible {
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 .request-person {
   display: flex;
@@ -165,7 +165,7 @@
   text-decoration: underline;
 }
 .request-person-link:focus-visible {
-  border-radius: 3px;
+  border-radius: var(--radius-control);
 }
 .request-area {
   display: inline-flex;

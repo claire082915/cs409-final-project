@@ -154,13 +154,21 @@ export default function AccountPage() {
                       </Tooltip>
                     </span>
                   </label>
-                  <label className="form-field">
-                    Email
-                    {/* Read-only rather than disabled so hover and focus still open the tooltip */}
-                    <Tooltip text="Email can't be changed">
-                      <input name="email" value={profile.email} readOnly />
+                  <div className="form-field">
+                    <span id="email-label">Email</span>
+                    {/* Plain text since a focused input would drop the dots on a long address */}
+                    <Tooltip text={`${profile.email} can't be changed`}>
+                      <span
+                        className="field-value"
+                        role="textbox"
+                        aria-readonly="true"
+                        aria-labelledby="email-label"
+                        tabIndex={0}
+                      >
+                        <span className="field-value-text">{profile.email}</span>
+                      </span>
                     </Tooltip>
-                  </label>
+                  </div>
                   <div className="form-field">
                     <span id="campus-area-label">Campus area</span>
                     <SelectMenu
