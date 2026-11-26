@@ -8,10 +8,8 @@ import { isDuplicateKeyError } from '../lib/duplicateKey.js'
 import { isOnLoan, loanedItemIds } from '../lib/availability.js'
 import { reputationsByUser } from '../lib/reputation.js'
 import { trustByUser } from '../lib/trust.js'
-
-// Loans due within this many days count as due soon
-const dueSoonDays = 3
-const msPerDay = 24 * 60 * 60 * 1000
+import { approveTrustedRequests, autoApproves, requestsToAutoApprove } from '../lib/autoApprove.js'
+import { DUE_SOON_DAYS, MS_PER_DAY } from '../lib/notify.js'
 // Read routes show the item and both users instead of bare ids
 const loanDetails = [
   { path: 'item', select: 'name description category photos deletedAt' },
@@ -40,6 +38,8 @@ const borrowedRoute = router.route('/borrowed')
 const remindersRoute = router.route('/reminders')
 // Count requests and loans waiting on you (GET /api/loans/pending)
 const pendingRoute = router.route('/pending')
+// Count the waiting requests turning on auto-approve would approve (GET /api/loans/auto-approvable)
+const autoApprovableRoute = router.route('/auto-approvable')
 // View a loan (GET /api/loans/:id)
 const loansIdRoute = router.route('/:id')
 // Approve a loan (PATCH /api/loans/:id/approve)
@@ -70,7 +70,7 @@ function statusFilter(status) {
     return { status: 'approved', dueDate: { $lt: currDate } }
   }
   if (status === 'due-soon') {
-    const cutoff = new Date(currDate.getTime() + dueSoonDays * msPerDay)
+    const cutoff = new Date(currDate.getTime() + DUE_SOON_DAYS * MS_PER_DAY)
     return { status: 'approved', dueDate: { $gte: currDate, $lte: cutoff } }
   }
   if (status === 'returned') {
@@ -136,6 +136,10 @@ loansRoute.post(async function (req, res) {
       return res.status(409).json({ message: 'You already requested this item', data: {} })
     }
     throw err
+  }
+  if (await autoApproves(item.owner)) {
+    await approveTrustedRequests(item.owner, [item._id])
+    newLoan = await Loan.findById(newLoan._id)
   }
   return res.status(201).json({ message: 'OK', data: newLoan })
 })
@@ -206,6 +210,12 @@ pendingRoute.get(async function (req, res) {
     Loan.countDocuments({ ...statusFilter('overdue'), borrower: req.userId }),
   ])
   return res.status(200).json({ message: 'OK', data: { requests, loans: returns + overdue } })
+})
+
+autoApprovableRoute.get(async function (req, res) {
+  const itemIds = await Loan.distinct('item', { owner: req.userId, status: 'requested' })
+  const requests = await requestsToAutoApprove(req.userId, itemIds)
+  return res.status(200).json({ message: 'OK', data: { count: requests.length } })
 })
 
 loansIdRoute.get(async function (req, res) {
@@ -299,6 +309,10 @@ confirmRoute.patch(async function (req, res) {
   req.loan.status = 'confirmed'
   req.loan.confirmedAt = new Date()
   await req.loan.save()
+  // The item is free again, so the next trusted request can have it
+  if (req.user.preferences.autoApprove) {
+    await approveTrustedRequests(req.userId, [req.loan.item])
+  }
   return res.status(200).json({ message: 'OK', data: req.loan })
 })
 

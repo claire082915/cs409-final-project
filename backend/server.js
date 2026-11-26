@@ -9,6 +9,7 @@ import loansRouter from './routes/loans.js'
 import usersRouter from './routes/users.js'
 import searchRouter from './routes/search.js'
 import demoRouter from './routes/demo.js'
+import notificationsRouter from './routes/notifications.js'
 import { isDuplicateKeyError } from './lib/duplicateKey.js'
 
 const port = process.env.PORT || 3000
@@ -29,6 +30,7 @@ app.use('/api/uploads', uploadsRouter)
 app.use('/api/loans', loansRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/search', searchRouter)
+app.use('/api/notifications', notificationsRouter)
 // Demo only, off unless the demo domain is set
 if (process.env.DEMO_EMAIL_DOMAIN) {
   app.use('/api/demo', demoRouter)

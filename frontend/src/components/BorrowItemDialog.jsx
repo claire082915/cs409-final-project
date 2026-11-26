@@ -22,11 +22,12 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
     setRequesting(true)
     setError('')
     try {
-      await apiFetch('loans', {
+      const loan = await apiFetch('loans', {
         method: 'POST',
         body: { itemId: item._id, dueDate, message },
       })
-      onSent('Borrow request sent!')
+      // Auto-approve might approve the request at once
+      onSent(loan.status === 'approved' ? 'Request approved right away!' : 'Borrow request sent!')
     } catch (err) {
       setError(err.message)
     }

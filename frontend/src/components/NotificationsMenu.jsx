@@ -1,20 +1,34 @@
 import { Button, Dialog, DialogTrigger, Heading, Popover } from 'react-aria-components'
-import { Bell, Sparkles, X } from 'lucide-react'
+import { Bell, CalendarClock, ShieldCheck, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { openPanel, useDetectionTask } from '../lib/detectionTask.js'
 import {
   clearNotifications,
   dismissNotification,
   markAllRead,
+  refreshNotifications,
   useNotifications,
 } from '../lib/notifications.js'
 import '../styles/components/count-badge.css'
 import '../styles/components/notifications-menu.css'
 
+const ICON_BY_KIND = {
+  'auto-approved': ShieldCheck,
+  'due-soon': CalendarClock,
+  found: Sparkles,
+  empty: Sparkles,
+  error: Sparkles,
+}
+
+const LINK_BY_KIND = {
+  'auto-approved': '/loan-details?view=lent',
+  'due-soon': '/loan-details',
+}
+
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 function timeAgo(createdAt) {
-  const minutes = Math.round((Date.now() - createdAt) / 60000)
+  const minutes = Math.round((Date.now() - new Date(createdAt)) / 60000)
   if (minutes === 0) {
     return 'Just now'
   }
@@ -29,6 +43,7 @@ function timeAgo(createdAt) {
 }
 
 function NotificationRow({ notification, onOpen }) {
+  const Icon = ICON_BY_KIND[notification.kind]
   return (
     <li>
       <button
@@ -36,9 +51,8 @@ function NotificationRow({ notification, onOpen }) {
         className={`notification-row notification-${notification.kind}`}
         onClick={onOpen}
       >
-        {/* Every notification comes from auto-populate, so they share its icon and problems get a tint */}
         <span className="notification-icon">
-          <Sparkles size={16} aria-hidden="true" />
+          <Icon size={16} aria-hidden="true" />
         </span>
         <span className="notification-copy">
           <strong>{notification.title}</strong>
@@ -53,7 +67,7 @@ function NotificationRow({ notification, onOpen }) {
       <button
         type="button"
         className="notification-dismiss"
-        onClick={() => dismissNotification(notification.id)}
+        onClick={() => dismissNotification(notification._id)}
         aria-label={`Dismiss ${notification.title}`}
       >
         <X size={14} aria-hidden="true" />
@@ -69,9 +83,14 @@ export default function NotificationsMenu() {
   const navigate = useNavigate()
   const unreadCount = notifications.filter((notification) => !notification.read).length
 
-  // Reopen the review for the current search, older ones go to My Items
+  // An auto-populate result reopens its review while that search is still open, otherwise My Items
   const openNotification = (notification, close) => {
     close()
+    const link = LINK_BY_KIND[notification.kind]
+    if (link) {
+      navigate(link, { state: { highlightId: notification.loan } })
+      return
+    }
     if (notification.taskId === task.id && task.status !== 'idle') {
       openPanel()
       return
@@ -80,7 +99,7 @@ export default function NotificationsMenu() {
   }
 
   return (
-    <DialogTrigger onOpenChange={(isOpen) => !isOpen && markAllRead()}>
+    <DialogTrigger onOpenChange={(isOpen) => (isOpen ? refreshNotifications() : markAllRead())}>
       <Button
         className="icon-button notification-button"
         aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'}
@@ -110,7 +129,7 @@ export default function NotificationsMenu() {
                 <ul className="notifications-list">
                   {notifications.map((notification) => (
                     <NotificationRow
-                      key={notification.id}
+                      key={notification._id}
                       notification={notification}
                       onOpen={() => openNotification(notification, close)}
                     />

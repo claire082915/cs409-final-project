@@ -81,6 +81,7 @@ createRoot(document.getElementById('root')).render(
       <RouterProvider router={router} />
       <Toaster
         position="bottom-right"
+        expand
         icons={{ success: <CircleCheck size={18} />, error: <CircleAlert size={18} /> }}
       />
     </AuthProvider>

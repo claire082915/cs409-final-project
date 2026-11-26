@@ -2,7 +2,25 @@
   color: var(--slate-900);
 }
 .requests-views {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
+}
+.auto-approve {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.auto-approve-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--slate-700);
+  font-size: 13px;
+  font-weight: 600;
 }
 .requests-error {
   margin: 0 0 17px;

@@ -3,8 +3,7 @@ import InfoTip from './InfoTip.jsx'
 import '../styles/components/trust-badge.css'
 
 // Same rule as the backend's trust.js
-const TRUSTED_RULE =
-  'Returned 3+ items, 90% on time, rated 4+ by lenders. Set up auto-approval in Account.'
+const TRUSTED_RULE = 'Returned 3+ items, 90% on time, rated 4+ by lenders.'
 
 // Only trusted borrowers get a badge, standard and new ones show nothing
 export default function TrustBadge({ trust }) {

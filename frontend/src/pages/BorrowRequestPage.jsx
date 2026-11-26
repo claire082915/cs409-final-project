@@ -20,12 +20,16 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import ItemDialog from '../components/ItemDialog.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
+import InfoTip from '../components/InfoTip.jsx'
 import Reputation from '../components/Reputation.jsx'
+import Switch from '../components/Switch.jsx'
 import Tooltip from '../components/Tooltip.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
+import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
 import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
 import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
+import { refreshNotifications } from '../lib/notifications.js'
 import { refreshPendingActions } from '../lib/pendingActions.js'
 import '../styles/components/confirm-dialog.css'
 import '../styles/components/loan-status.css'
@@ -378,6 +382,89 @@ function EmptyRequests({ view }) {
   )
 }
 
+// Same words as LOAN_MESSAGES in backend/lib/notify.js
+function announceAutoApproved(approvedRequests) {
+  for (const request of approvedRequests) {
+    const text = `${request.item.name} lent to ${personName(request.borrower)}.`
+    toast.success('Request auto-approved', { description: text })
+  }
+  refreshNotifications()
+}
+
+function AutoApproveToggle({ onTurnedOn }) {
+  const { profile, setProfile } = useAuth()
+  const [saving, setSaving] = useState(false)
+  const [waitingCount, setWaitingCount] = useState(0)
+
+  const save = async (autoApprove) => {
+    setSaving(true)
+    try {
+      const updated = await apiFetch('users/me', {
+        method: 'PATCH',
+        body: { preferences: { autoApprove } },
+      })
+      setProfile(updated)
+      toast.success(autoApprove ? 'Auto-approve is on' : 'Auto-approve is off')
+      // Turning it on approves trusted requests that were already waiting
+      if (autoApprove) onTurnedOn()
+    } catch (err) {
+      toast.error(err.message)
+    }
+    setWaitingCount(0)
+    setSaving(false)
+  }
+
+  // Lending out waiting requests is a side effect people might not expect, so that asks first
+  const toggle = async () => {
+    if (profile.preferences.autoApprove) {
+      return save(false)
+    }
+    setSaving(true)
+    try {
+      const { count } = await apiFetch('loans/auto-approvable')
+      if (count === 0) {
+        return save(true)
+      }
+      setWaitingCount(count)
+    } catch (err) {
+      toast.error(err.message)
+    }
+    setSaving(false)
+  }
+
+  return (
+    <div className="auto-approve">
+      <ConfirmDialog
+        isOpen={waitingCount > 0}
+        isPending={saving}
+        title="Turn on auto-approve?"
+        text={
+          waitingCount === 1
+            ? 'This also approves 1 waiting request from a trusted borrower.'
+            : `This also approves ${waitingCount} waiting requests from trusted borrowers.`
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Turn on"
+        destructive={false}
+        onCancel={() => setWaitingCount(0)}
+        onConfirm={() => save(true)}
+      />
+      <Switch
+        className="auto-approve-switch"
+        checked={profile.preferences.autoApprove}
+        onChange={toggle}
+        isDisabled={saving}
+      >
+        Auto-approve trusted
+      </Switch>
+      <InfoTip
+        text="Approves requests from trusted borrowers right away."
+        label="About auto-approve"
+      />
+    </div>
+  )
+}
+
 export default function BorrowRequestPage() {
   const [searchParams] = useSearchParams()
   const [view, setView] = useState(searchParams.get('view') ?? 'received')
@@ -391,6 +478,7 @@ export default function BorrowRequestPage() {
   const [acting, setActing] = useState(false)
   const [error, setError] = useState('')
   const highlightId = useHighlightedLoan(!loading)
+  const viewParam = searchParams.get('view') ?? 'received'
 
   useEffect(() => {
     let cancelled = false
@@ -444,6 +532,20 @@ export default function BorrowRequestPage() {
     setLoading(true)
   }
 
+  // A notification can switch the view while the page is already open
+  useEffect(() => {
+    if (viewParam !== view) showView(viewParam)
+  }, [viewParam])
+
+  // Requests that left the received list were the ones auto-approve just approved
+  const showAutoApproved = async () => {
+    const remaining = await apiFetch(VIEWS.received.endpoint)
+    const remainingIds = new Set(remaining.map((request) => request._id))
+    announceAutoApproved(requests.filter((request) => !remainingIds.has(request._id)))
+    setRequests(remaining)
+    refreshPendingActions()
+  }
+
   const updateRequest = async (request, action, body, doneMessage) => {
     setActing(true)
     try {
@@ -469,21 +571,23 @@ export default function BorrowRequestPage() {
             <p>Requests for your items and ones you've sent.</p>
           </div>
         </header>
-        <ViewSwitch
-          className="requests-views"
-          label="Requests to show"
-          options={Object.entries(VIEWS).map(([id, { label }]) => ({
-            id,
-            label: (
-              <>
-                {label}
-                <small>{requestCounts[id]}</small>
-              </>
-            ),
-          }))}
-          selected={view}
-          onChange={showView}
-        />
+        <div className="requests-views">
+          <ViewSwitch
+            label="Requests to show"
+            options={Object.entries(VIEWS).map(([id, { label }]) => ({
+              id,
+              label: (
+                <>
+                  {label}
+                  <small>{requestCounts[id]}</small>
+                </>
+              ),
+            }))}
+            selected={view}
+            onChange={showView}
+          />
+          {view === 'received' && <AutoApproveToggle onTurnedOn={showAutoApproved} />}
+        </div>
         {error && (
           <p className="requests-error" role="alert">
             {error}

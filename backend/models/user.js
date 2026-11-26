@@ -55,8 +55,11 @@ const userSchema = new mongoose.Schema(
     // Notification and privacy choices from the Account page
     preferences: {
       borrowRequests: { type: Boolean, default: true },
+      requestUpdates: { type: Boolean, default: true },
+      returnUpdates: { type: Boolean, default: true },
       dueDateReminders: { type: Boolean, default: true },
       showProfile: { type: Boolean, default: true },
+      autoApprove: { type: Boolean, default: false },
     },
   },
   { timestamps: true },

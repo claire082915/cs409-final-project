@@ -19,7 +19,7 @@ export default function ErrorPage() {
           <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />
         </span>
         <strong>Something went wrong</strong>
-        <small>Reload the page to try again, or head back home.</small>
+        <small>Reload the page to try again.</small>
         <code className="error-page-detail">{errorText(error)}</code>
         <div className="error-page-actions">
           <button

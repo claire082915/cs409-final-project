@@ -8,10 +8,18 @@ import { reputation } from '../lib/reputation.js'
 import { trustByUser } from '../lib/trust.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 import { demoUsernameError } from '../lib/demoAccount.js'
+import { approveTrustedRequests } from '../lib/autoApprove.js'
 
 const router = Router()
 const editableFields = ['username', 'displayName', 'campusArea', 'photo']
-const preferenceNames = ['borrowRequests', 'dueDateReminders', 'showProfile']
+const preferenceNames = [
+  'borrowRequests',
+  'requestUpdates',
+  'returnUpdates',
+  'dueDateReminders',
+  'showProfile',
+  'autoApprove',
+]
 
 // Copies the preferences that were sent, returns an error message when one isn't a boolean
 function applyPreferences(user, preferences) {
@@ -65,6 +73,7 @@ router.get('/me', requireUser, async (req, res) => {
 router.patch('/me', requireUser, async (req, res) => {
   const body = req.body ?? {}
   const oldPhoto = req.user.photo
+  const hadAutoApprove = req.user.preferences.autoApprove
   // Save always sends the username, so only a new one is checked
   const changesUsername = typeof body.username === 'string' && body.username !== req.user.username
   const usernameError = changesUsername && demoUsernameError(req.user.email, body.username)
@@ -87,6 +96,13 @@ router.patch('/me', requireUser, async (req, res) => {
     }
   }
   await req.user.save()
+  if (!hadAutoApprove && req.user.preferences.autoApprove) {
+    const requestedItemIds = await Loan.distinct('item', {
+      owner: req.user._id,
+      status: 'requested',
+    })
+    await approveTrustedRequests(req.user._id, requestedItemIds)
+  }
   // Delete the replaced or removed photo so it doesn't sit unused in Cloudinary
   if (oldPhoto && oldPhoto !== req.user.photo) {
     await deleteUnusedPhotos([oldPhoto])

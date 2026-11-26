@@ -3,7 +3,7 @@ import { Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { apiFetch } from './api.js'
 import { uploadPhoto } from './uploadPhoto.js'
-import { addNotification } from './notifications.js'
+import { refreshNotifications } from './notifications.js'
 
 const NO_TASK = {
   // Ties notifications to the search they came from
@@ -24,7 +24,8 @@ let task = NO_TASK
 const listeners = new Set()
 const addedItemsListeners = new Set()
 // Bumped on each new photo and on clear so a slow search for an old photo is dropped
-let searchId = 0
+// Starts at the load time so a saved notification can't match a search from an earlier visit
+let searchId = Date.now()
 
 function updateTask(changes) {
   task = { ...task, ...changes }
@@ -79,7 +80,10 @@ async function detectItems(id, photo) {
     }
     updateTask({ searchStep: 'finding', attempt })
     try {
-      return await apiFetch('items/detect', { method: 'POST', body: { photoUrl, attempt } })
+      return await apiFetch('items/detect', {
+        method: 'POST',
+        body: { photoUrl, attempt, taskId: id },
+      })
     } catch (err) {
       // Other errors like a bad photo would fail the same way on every model
       const isLastAttempt = attempt === DETECTION_MODELS.length - 1
@@ -119,7 +123,7 @@ export function hasStartedTask(task) {
   return task.status !== 'idle' && task.status !== 'picking'
 }
 
-// The same words go in the notification and, while the panel is hidden, a toast
+// Same words as foundMessage and errorMessage in backend/routes/items.js
 function resultMessage() {
   if (task.status === 'failed') {
     return { kind: 'error', title: "Couldn't check your photo", text: task.error }
@@ -149,7 +153,7 @@ const ACTION_BY_KIND = {
 
 function announceResult() {
   const message = resultMessage()
-  addNotification({ ...message, taskId: task.id })
+  refreshNotifications()
   // An open panel already shows the result
   if (task.isPanelOpen) {
     return

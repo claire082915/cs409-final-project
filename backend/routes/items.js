@@ -10,6 +10,7 @@ import { cropBox, hasArea, isSupportedPhoto, uprightJpeg } from '../lib/photoCro
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
 import { reputationsByUser } from '../lib/reputation.js'
+import { notifyDetection } from '../lib/notify.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'category', 'condition', 'photos']
@@ -61,10 +62,30 @@ async function draftItem(image, detectedItem, userId) {
 // Overloaded and rate limited are both per model, so the frontend sends the photo to the next one
 const NEXT_MODEL_STATUSES = [429, 503]
 
+function foundMessage(count) {
+  if (count === 0) {
+    return {
+      kind: 'empty',
+      title: 'No items found',
+      text: 'Try a photo where each item is in full view.',
+    }
+  }
+  return {
+    kind: 'found',
+    title: `Found ${count} ${count === 1 ? 'item' : 'items'} to review`,
+    text: 'Pick the ones to add to your items.',
+  }
+}
+
+function errorMessage(text) {
+  return { kind: 'error', title: "Couldn't check your photo", text }
+}
+
 // Drafts items from a room photo with the model for this attempt, the user sends the ones they keep to POST items
 router.post('/detect', async (req, res) => {
   const photoUrl = req.body?.photoUrl
   const attempt = req.body?.attempt
+  const taskId = req.body?.taskId
   if (!isUserPhotoUrl(photoUrl, req.userId)) {
     return res.status(400).json({ message: 'photoUrl must be a photo you uploaded', data: {} })
   }
@@ -78,10 +99,10 @@ router.post('/detect', async (req, res) => {
   const photo = Buffer.from(await response.arrayBuffer())
   // The frontend checks too, this catches files whose type was wrong or missing
   if (!(await isSupportedPhoto(photo))) {
+    const message = "Can't read this photo. Use a JPEG or PNG instead."
     await deleteUnusedPhotos([photoUrl])
-    return res
-      .status(400)
-      .json({ message: "Can't read this photo. Use a JPEG or PNG instead.", data: {} })
+    await notifyDetection(req.userId, taskId, errorMessage(message))
+    return res.status(400).json({ message, data: {} })
   }
   const image = await uprightJpeg(photo)
   let detectedItems
@@ -94,6 +115,7 @@ router.post('/detect', async (req, res) => {
       NEXT_MODEL_STATUSES.includes(failure?.status) && attempt < DETECTION_MODELS.length - 1
     if (!hasNextAttempt) {
       await deleteUnusedPhotos([photoUrl])
+      await notifyDetection(req.userId, taskId, errorMessage(failure?.message ?? 'Server error'))
     }
     if (failure) {
       return res.status(failure.status).json({ message: failure.message, data: {} })
@@ -105,6 +127,7 @@ router.post('/detect', async (req, res) => {
   await deleteUnusedPhotos([photoUrl])
   const boxedItems = detectedItems.filter((item) => hasArea(item.box_2d))
   const drafts = await Promise.all(boxedItems.map((item) => draftItem(image, item, req.userId)))
+  await notifyDetection(req.userId, taskId, foundMessage(drafts.length))
   res.json({ message: 'OK', data: drafts })
 })
 

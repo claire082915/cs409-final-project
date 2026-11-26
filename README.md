@@ -62,20 +62,28 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 |                        | PATCH  | Update your profile                                     |
 | `users/:username`      | GET    | View a user's profile                                   |
 
-| Endpoint            | Method | Action                                |
-| ------------------- | ------ | ------------------------------------- |
-| `loans`             | POST   | Request a loan                        |
-| `loans/:id`         | GET    | View a loan                           |
-| `loans/:id/approve` | PATCH  | Approve a request (owner)             |
-| `loans/:id/return`  | PATCH  | Mark the item returned (borrower)     |
-| `loans/:id/confirm` | PATCH  | Confirm the return (owner)            |
-| `loans/:id/reject`  | PATCH  | Reject a request (owner)              |
-| `loans/:id/cancel`  | PATCH  | Withdraw a request (borrower)         |
-| `loans/lent`        | GET    | List loans you lent, newest first     |
-| `loans/borrowed`    | GET    | List loans you borrowed, newest first |
-| `loans/:id/ratings` | POST   | Rate the other user                   |
-|                     | GET    | See the rating you gave on a loan     |
-| `loans/reminders`   | GET    | List borrowed loans to return soon    |
+| Endpoint                | Method | Action                                        |
+| ----------------------- | ------ | --------------------------------------------- |
+| `loans`                 | POST   | Request a loan                                |
+| `loans/:id`             | GET    | View a loan                                   |
+| `loans/:id/approve`     | PATCH  | Approve a request (owner)                     |
+| `loans/:id/return`      | PATCH  | Mark the item returned (borrower)             |
+| `loans/:id/confirm`     | PATCH  | Confirm the return (owner)                    |
+| `loans/:id/reject`      | PATCH  | Reject a request (owner)                      |
+| `loans/:id/cancel`      | PATCH  | Withdraw a request (borrower)                 |
+| `loans/lent`            | GET    | List loans you lent, newest first             |
+| `loans/borrowed`        | GET    | List loans you borrowed, newest first         |
+| `loans/:id/ratings`     | POST   | Rate the other user                           |
+|                         | GET    | See the rating you gave on a loan             |
+| `loans/reminders`       | GET    | List borrowed loans to return soon            |
+| `loans/auto-approvable` | GET    | Count requests auto-approve would approve now |
+
+| Endpoint             | Method | Action                           |
+| -------------------- | ------ | -------------------------------- |
+| `notifications`      | GET    | List your notifications          |
+|                      | DELETE | Dismiss all your notifications   |
+| `notifications/read` | PATCH  | Mark all your notifications read |
+| `notifications/:id`  | DELETE | Dismiss a notification           |
 
 ### Items
 
@@ -154,13 +162,19 @@ An item counts as on loan while a loan is `approved` or `returned`.
 
 `GET loans/:id/ratings` returns only the rating you gave on that loan. You never see the rating the other person gave you. Overall ratings are shown on profiles as an average and a count.
 
+### Notifications
+
+The backend creates a notification when auto-approve lends one of your items, and with the result of an auto-populate search, tagged with the `taskId` the request sends.
+
+`GET notifications` returns your 20 newest, each as `{ _id, kind, title, text, loan, taskId, read, createdAt }`. It also adds a due soon reminder, once per loan, for loans you borrowed that are due within 3 days. `dueDateReminders` turns these off.
+
 ### Profiles
 
 `POST users` takes `{ username, displayName }`. A username is 3 to 20 characters, using only letters, digits, dots or underscores, and is stored lowercase.
 
 `PATCH users/me` takes `{ username, displayName, campusArea, photo, preferences }`, all optional. `campusArea` is one of the areas listed in `models/user.js`, or `""` for none, and anything else returns 400. `photo` is a Cloudinary URL from your own folder (see [Photos](#photos)), or `""` to remove it, and the old photo is deleted from Cloudinary. Email comes from Firebase and can't be changed here.
 
-`preferences` holds the Settings toggles as booleans: `borrowRequests`, `dueDateReminders` and `showProfile`, all defaulting to `true`. Send only the ones you want to change.
+`preferences` holds the Settings toggles as booleans: `showProfile`, `borrowRequests`, `requestUpdates`, `returnUpdates` and `dueDateReminders`, all defaulting to `true`. `autoApprove` defaults to `false` and is set from Borrow Requests. Send only the ones you want to change.
 
 With `showProfile` off, other users can't see your profile or find you in search, and your items show without your name, username or photo. Loans still show both people's names, since the owner approves each request.
 

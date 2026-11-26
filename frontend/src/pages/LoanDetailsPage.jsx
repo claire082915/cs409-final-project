@@ -175,6 +175,12 @@ export default function LoanDetailsPage() {
   const loadSequence = useRef(0)
   const [listRef] = useAutoAnimate(fadeInCards)
   const highlightId = useHighlightedLoan(!loading)
+  const viewParam = searchParams.get('view') ?? 'borrowed'
+
+  // A notification can switch the view while the page is already open
+  useEffect(() => {
+    setDirection(viewParam)
+  }, [viewParam])
 
   const loadLoans = async () => {
     const sequence = ++loadSequence.current

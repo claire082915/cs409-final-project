@@ -9,6 +9,13 @@ export function useHighlightedLoan(isLoaded) {
   // Kept in state since writing filters to the URL clears the router state
   const [highlightId, setHighlightId] = useState(location.state?.highlightId)
 
+  // A notification can link here while the page is already open, so it doesn't remount
+  useEffect(() => {
+    if (location.state?.highlightId) {
+      setHighlightId(location.state.highlightId)
+    }
+  }, [location.state?.highlightId])
+
   useEffect(() => {
     if (!isLoaded || !highlightId) {
       return

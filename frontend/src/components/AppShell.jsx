@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
+import { refreshNotifications } from '../lib/notifications.js'
 import { refreshPendingActions, usePendingActions } from '../lib/pendingActions.js'
 import Avatar from './Avatar.jsx'
 import DetectedItemsPanel from './DetectedItemsPanel.jsx'
@@ -129,6 +130,7 @@ export default function AppShell({ children, withSidebar = true, withSearch = tr
 
   useEffect(() => {
     refreshPendingActions()
+    refreshNotifications()
   }, [])
 
   const toggleCollapsed = () => {
