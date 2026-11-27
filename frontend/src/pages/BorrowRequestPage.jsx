@@ -454,7 +454,7 @@ function AutoApproveToggle({ onTurnedOn }) {
         Auto-approve trusted
       </Switch>
       <InfoTip
-        text="Approves requests from trusted borrowers right away."
+        text="Approve requests from trusted borrowers right away."
         label="About auto-approve"
       />
     </div>

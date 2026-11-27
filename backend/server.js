@@ -36,6 +36,10 @@ if (process.env.DEMO_EMAIL_DOMAIN) {
   app.use('/api/demo', demoRouter)
 }
 
+app.use((req, res) => {
+  res.status(404).json({ message: 'Not found', data: {} })
+})
+
 app.use((err, req, res, next) => {
   if (err.name === 'CastError') {
     return res.status(400).json({ message: err.message, data: {} })
