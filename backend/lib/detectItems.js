@@ -46,26 +46,73 @@ const detectedItemsSchema = {
 
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-// Takes a JPEG and returns [{ name, description, category, condition, box_2d }]
-export async function detectItems(image) {
-  const interaction = await client.interactions.create({
-    model: 'gemini-4-hydrogen',
-    input: [
-      {
-        type: 'user_input',
-        content: [
-          { type: 'text', text: prompt },
-          { type: 'image', data: image.toString('base64'), mime_type: 'image/jpeg' },
-        ],
+// Codes from aistudio.google.com/docs/api-errors, older Gemini errors send a list with a number instead
+function geminiErrorCode(err) {
+  try {
+    return [JSON.parse(err.body)].flat()[0]?.error?.code
+  } catch {
+    return undefined
+  }
+}
+
+const MESSAGES_BY_CODE = {
+  quota_exceeded: "Gemini's daily limit is used up, try again tomorrow",
+  rate_limit_exceeded: 'Gemini is getting too many requests, try again in a minute',
+  too_many_requests: 'Gemini is getting too many requests, try again in a minute',
+  deadline_exceeded: 'Gemini took too long to answer, try again',
+  service_unavailable: 'Gemini is overloaded right now, try again in a while',
+}
+
+// Gemini's own error says whose fault it is, so only our own mistakes stay a server error
+export function geminiFailure(err) {
+  const message = MESSAGES_BY_CODE[geminiErrorCode(err)]
+  if (err.status === 429) {
+    return { status: 429, message: message ?? "Gemini's rate limit was hit, try again later" }
+  }
+  if (err.status >= 500) {
+    return {
+      status: 503,
+      message: message ?? 'Gemini is having problems right now, try again later',
+    }
+  }
+  // The SDK leaves status unset when it never got a response
+  if (err.name === 'APIConnectionError') {
+    return { status: 503, message: "Couldn't reach Gemini, try again in a minute" }
+  }
+  return null
+}
+
+// Hydrogen gets a second try before the Flash models
+export const DETECTION_MODELS = [
+  'gemini-4-hydrogen',
+  'gemini-4-hydrogen',
+  'gemini-3.8-flash',
+  'gemini-3.6-flash',
+]
+
+export async function detectItems(image, model) {
+  const interaction = await client.interactions.create(
+    {
+      model,
+      input: [
+        {
+          type: 'user_input',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image', data: image.toString('base64'), mime_type: 'image/jpeg' },
+          ],
+        },
+      ],
+      // Low thinks about a third as much as high with no drop in detection
+      generation_config: { thinking_level: 'low' },
+      response_format: {
+        type: 'text',
+        mime_type: 'application/json',
+        schema: detectedItemsSchema,
       },
-    ],
-    // Low thinks about a third as much as high with no drop in detection
-    generation_config: { thinking_level: 'low' },
-    response_format: {
-      type: 'text',
-      mime_type: 'application/json',
-      schema: detectedItemsSchema,
     },
-  })
+    // The SDK's own retries wait the 30 seconds Gemini asks for, the frontend retries sooner
+    { maxRetries: 0 },
+  )
   return JSON.parse(interaction.output_text).items
 }

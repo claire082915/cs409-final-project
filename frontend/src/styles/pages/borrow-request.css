@@ -2,12 +2,30 @@
   color: var(--slate-900);
 }
 .requests-views {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
+}
+.auto-approve {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.auto-approve-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--slate-700);
+  font-size: 13px;
+  font-weight: 600;
 }
 .requests-error {
   margin: 0 0 17px;
   padding: 10px 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-container);
   color: var(--error);
   background: var(--orange-50);
   font-size: 13px;
@@ -24,7 +42,7 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -43,7 +61,7 @@
 .request-group {
   overflow: hidden;
   border: 1px solid var(--grey-200);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -118,15 +136,6 @@
   font-weight: 700;
   line-height: 1.4;
 }
-.request-on-loan {
-  flex: none;
-  padding: 3px 8px;
-  border-radius: 20px;
-  color: var(--brand-orange-dark);
-  background: var(--orange-50);
-  font-size: 12px;
-  font-weight: 600;
-}
 /* Sent items open from the photo or name, drop the default button look */
 .request-item-open {
   align-self: start;
@@ -142,30 +151,13 @@
   text-decoration: underline;
 }
 .request-item-open:focus-visible {
-  border-radius: 4px;
+  border-radius: var(--radius-control);
 }
 .request-person {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
-}
-.request-person-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-.request-person-name {
-  color: var(--slate-750);
-  font-size: 13px;
-  font-weight: 600;
-}
-.request-person-link:hover .request-person-name {
-  text-decoration: underline;
-}
-.request-person-link:focus-visible {
-  border-radius: 3px;
 }
 .request-area {
   display: inline-flex;

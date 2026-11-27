@@ -11,7 +11,7 @@
   margin-top: 6px;
   padding: 8px 12px;
   border: 1px solid var(--grey-200);
-  border-radius: 7px;
+  border-radius: var(--radius-container);
   color: var(--slate-700);
   background: var(--surface);
   font-size: 12px;
@@ -23,7 +23,4 @@
   justify-content: center;
   gap: 10px;
   margin-top: 14px;
-}
-.error-page-actions .button-light {
-  border: 1px solid var(--grey-200);
 }

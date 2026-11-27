@@ -1,0 +1,17 @@
+.person-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.person-link-name {
+  color: var(--slate-750);
+  font-size: 13px;
+  font-weight: 600;
+}
+a.person-link:hover .person-link-name {
+  text-decoration: underline;
+}
+.person-link:focus-visible {
+  border-radius: var(--radius-control);
+}

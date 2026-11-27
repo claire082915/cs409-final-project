@@ -85,7 +85,7 @@
   padding: 1.75rem;
   background: var(--surface);
   border: 1px solid var(--grey-150);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-container);
   box-shadow: 0 22px 40px #244c3d21;
 }
 
@@ -168,7 +168,7 @@
   color: var(--slate-900);
   background: var(--grey-25);
   border: 1px solid var(--sul-border);
-  border-radius: 0.65rem;
+  border-radius: var(--radius-control);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -182,7 +182,6 @@
   outline: none;
   background: var(--surface);
   border-color: var(--brand-green);
-  box-shadow: 0 0 0 4px #357d7022;
 }
 
 .auth-panel .action-button {
@@ -234,7 +233,7 @@
 .auth-message {
   margin: 0;
   padding: 0.65rem 0.8rem;
-  border-radius: 0.65rem;
+  border-radius: var(--radius-container);
   font-size: 13px;
 }
 
@@ -280,23 +279,13 @@
 /* Fixed school domain as a gray segment joined to the NetID input */
 .netid-wrap {
   display: flex;
-  border-radius: 0.65rem;
-  transition: box-shadow 0.15s ease;
-}
-
-.netid-wrap:focus-within {
-  box-shadow: 0 0 0 4px #357d7022;
+  border-radius: var(--radius-control);
 }
 
 .netid-wrap input {
   min-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-}
-
-/* The ring sits on the wrap so it goes around the segment too */
-.netid-wrap input:focus {
-  box-shadow: none;
 }
 
 .netid-suffix {
@@ -308,7 +297,7 @@
   background: var(--grey-150);
   border: 1px solid var(--sul-border);
   border-left: 0;
-  border-radius: 0 0.65rem 0.65rem 0;
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
   transition: border-color 0.15s ease;
 }
 
@@ -336,7 +325,7 @@
   padding: 0 0.5rem;
   background: none;
   border: 0;
-  border-radius: 0.4rem;
+  border-radius: var(--radius-control);
   color: var(--grey-500);
   font: inherit;
   font-size: 0.85rem;
@@ -393,7 +382,7 @@
   padding: 0.9rem 1rem;
   background: var(--surface);
   border: 1px solid var(--sul-border);
-  border-radius: 1rem;
+  border-radius: var(--radius-container);
   box-shadow: 0 14px 28px #244c3d1a;
 }
 
@@ -421,7 +410,7 @@
   width: 2.75rem;
   height: 2.75rem;
   flex-shrink: 0;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   color: var(--brand-green);
   background: var(--grey-150);
 }

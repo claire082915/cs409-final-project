@@ -5,7 +5,7 @@ import ItemDialog from './ItemDialog.jsx'
 import PendingLabel from './PendingLabel.jsx'
 import { apiFetch } from '../lib/api.js'
 
-export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
+export default function BorrowItemDialog({ item, onClose, onSent }) {
   const [requesting, setRequesting] = useState(false)
   const [error, setError] = useState('')
 
@@ -14,19 +14,15 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
     const form = new FormData(event.currentTarget)
     const dueDate = String(form.get('dueDate') || '')
     const message = String(form.get('message'))
-    // Mock items only pretend to send
-    if (isMock) {
-      onSent(`Request sent to ${item.owner?.displayName || 'the owner'}!`)
-      return
-    }
     setRequesting(true)
     setError('')
     try {
-      await apiFetch('loans', {
+      const loan = await apiFetch('loans', {
         method: 'POST',
         body: { itemId: item._id, dueDate, message },
       })
-      onSent('Borrow request sent!')
+      // Auto-approve might approve the request at once
+      onSent(loan.status === 'approved' ? 'Request approved right away!' : 'Borrow request sent!')
     } catch (err) {
       setError(err.message)
     }
@@ -55,7 +51,7 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
           <span>
             Message <span className="field-hint">(optional)</span>
           </span>
-          <textarea name="message" rows="4" maxLength={300} />
+          <textarea name="message" maxLength={300} />
         </label>
         {error && (
           <p className="form-error" role="alert">

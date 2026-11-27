@@ -9,9 +9,14 @@
   overflow-y: auto;
   padding: 4px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: 0 8px 20px #17455114;
+}
+
+/* Filter menus fit their options so they don't grow with the label on their button */
+.filter-menu-popover {
+  min-width: 0;
 }
 
 .field-list {
@@ -35,7 +40,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 9px;
-  border-radius: 5px;
+  border-radius: var(--radius-control);
   color: var(--slate-750);
   font-size: 12px;
   cursor: pointer;
@@ -56,15 +61,18 @@
   font-weight: 700;
 }
 
-.filter-menu-popover {
-  min-width: 190px;
-}
-
 .filter-menu-separator {
   height: 1px;
   margin: 4px 0;
   border: 0;
   background: var(--grey-200);
+}
+
+/* Right after the label and muted, like the counts in the view switch */
+.filter-menu-count {
+  margin-left: -2px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 /* Holds the check's space even when unticked so names line up */
@@ -75,8 +83,67 @@
 }
 
 /* Orange tick, more specific than the grey menu icon rule */
-.field-option .filter-menu-check svg {
+.field-option .filter-menu-check svg,
+.due-date-custom .filter-menu-check svg {
   color: var(--brand-orange);
+}
+
+.due-date-dialog {
+  outline: 0;
+}
+
+/* Lines its tick and text up with the preset options above it */
+.due-date-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 9px;
+  color: var(--slate-750);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.due-date-custom-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.due-date-custom-pick[aria-pressed='true'] {
+  font-weight: 700;
+}
+
+.due-date-amount input,
+.due-date-custom .select-menu-button {
+  height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--grey-250);
+  border-radius: var(--radius-control);
+  color: var(--slate-750);
+  background: var(--surface);
+  font: inherit;
+}
+
+.due-date-amount input {
+  width: 38px;
+  text-align: center;
+  outline: 0;
+}
+
+.due-date-custom .select-menu-button {
+  padding: 0 6px 0 8px;
+}
+
+.due-date-amount input:focus,
+.due-date-custom .select-menu-button[data-focus-visible] {
+  border-color: var(--brand-green);
+  text-decoration: none;
 }
 
 .field-option[data-disabled],
@@ -99,12 +166,12 @@
   gap: 4px;
   padding: 0 10px 0 4px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   background: var(--surface);
 }
 
 .date-picker-group[data-focus-within] {
-  border-color: var(--green-400);
+  border-color: var(--brand-green);
 }
 
 .date-picker-group[data-invalid] {
@@ -121,7 +188,7 @@
 
 .date-picker-segment {
   padding: 1px 2px;
-  border-radius: 3px;
+  border-radius: var(--radius-control);
   outline: 0;
 }
 
@@ -142,7 +209,7 @@
   width: 30px;
   height: 30px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: #648087;
   background: transparent;
   cursor: pointer;
@@ -156,7 +223,7 @@
 
 .date-picker-button[data-focus-visible],
 .calendar-nav[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--green-400);
+  box-shadow: 0 0 0 2px var(--brand-green);
 }
 
 .date-picker-dialog {
@@ -195,7 +262,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--slate-750);
   font-size: 12px;
   cursor: pointer;
@@ -212,7 +279,7 @@
 }
 
 .calendar-cell[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--green-400);
+  box-shadow: inset 0 0 0 2px var(--brand-green);
 }
 
 .calendar-cell[data-selected] {
@@ -255,12 +322,13 @@
   font-weight: 500;
 }
 .form-field input:not([type]),
-.form-field textarea {
+.form-field textarea,
+.form-field .field-value {
   width: 100%;
   box-sizing: border-box;
   padding: 0 12px;
   border: 1px solid var(--slate-300);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   outline: none;
   color: var(--slate-900);
   background: var(--surface);
@@ -268,12 +336,32 @@
   font-size: 14px;
   font-weight: 400;
 }
-.form-field input:not([type]) {
+.form-field input:not([type]),
+.form-field .field-value {
   height: 40px;
+}
+/* A value in a field's box that can't be edited, used where a focused input would drop its dots */
+.form-field .field-value {
+  display: block;
+  /* Lets the box shrink to its column instead of stretching to the whole value */
+  min-width: 0;
+  line-height: 38px;
+}
+/* Safari adds its own full text tooltip over cut off text under the mouse, so the text ignores the mouse */
+.field-value-text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }
 .form-field textarea {
   padding: 10px 12px;
-  resize: vertical;
+  /* Grows with the text from 3 lines up to 8, then scrolls, so it needs no drag handle */
+  field-sizing: content;
+  min-height: calc(3lh + 22px);
+  max-height: calc(8lh + 22px);
+  resize: none;
   line-height: 1.5;
 }
 .form-field input:not([type])::placeholder,
@@ -283,14 +371,16 @@
 .form-field input:not([type]):focus,
 .form-field textarea:focus {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
 }
 /* Shown but not editable, like Email and the demo username on Account */
-.form-field input:not([type]):read-only {
+.form-field input:not([type]):read-only,
+.form-field .field-value {
   color: var(--text-muted);
   background: var(--grey-100);
   border-color: var(--slate-200);
   cursor: not-allowed;
+  /* Long values like the demo email end in dots instead of cutting off mid letter */
+  text-overflow: ellipsis;
 }
 /* A select menu boxed like the text fields */
 .select-field .select-menu-button {
@@ -300,7 +390,7 @@
   box-sizing: border-box;
   padding: 0 12px;
   border: 1px solid var(--slate-300);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--slate-900);
   background: var(--surface);
   font-size: 14px;
@@ -309,7 +399,6 @@
 .select-field .select-menu-button[data-focus-visible],
 .select-field .select-menu-button[data-pressed] {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
   text-decoration: none;
 }
 .select-field .select-menu-button[data-disabled] {

@@ -44,7 +44,7 @@ export default function ItemDialog({ item, onClose, children }) {
             {item.photos?.[0] ? (
               <img src={item.photos[0]} alt={item.name} />
             ) : (
-              <PackageOpen size={35} aria-hidden="true" />
+              <PackageOpen size={48} aria-hidden="true" />
             )}
           </div>
           <div className="borrow-item-details">

@@ -5,12 +5,21 @@ import Loan from '../models/loan.js'
 import requireUser, { requireIdToken } from '../middleware/requireUser.js'
 import { loanedItemIds, withAvailability } from '../lib/availability.js'
 import { reputation } from '../lib/reputation.js'
+import { trustByUser } from '../lib/trust.js'
 import { deleteUnusedPhotos } from '../lib/cloudinary.js'
 import { demoUsernameError } from '../lib/demoAccount.js'
+import { approveTrustedRequests } from '../lib/autoApprove.js'
 
 const router = Router()
 const editableFields = ['username', 'displayName', 'campusArea', 'photo']
-const preferenceNames = ['borrowRequests', 'dueDateReminders', 'showProfile']
+const preferenceNames = [
+  'borrowRequests',
+  'requestUpdates',
+  'returnUpdates',
+  'dueDateReminders',
+  'showProfile',
+  'autoApprove',
+]
 
 // Copies the preferences that were sent, returns an error message when one isn't a boolean
 function applyPreferences(user, preferences) {
@@ -64,6 +73,7 @@ router.get('/me', requireUser, async (req, res) => {
 router.patch('/me', requireUser, async (req, res) => {
   const body = req.body ?? {}
   const oldPhoto = req.user.photo
+  const hadAutoApprove = req.user.preferences.autoApprove
   // Save always sends the username, so only a new one is checked
   const changesUsername = typeof body.username === 'string' && body.username !== req.user.username
   const usernameError = changesUsername && demoUsernameError(req.user.email, body.username)
@@ -86,6 +96,13 @@ router.patch('/me', requireUser, async (req, res) => {
     }
   }
   await req.user.save()
+  if (!hadAutoApprove && req.user.preferences.autoApprove) {
+    const requestedItemIds = await Loan.distinct('item', {
+      owner: req.user._id,
+      status: 'requested',
+    })
+    await approveTrustedRequests(req.user._id, requestedItemIds)
+  }
   // Delete the replaced or removed photo so it doesn't sit unused in Cloudinary
   if (oldPhoto && oldPhoto !== req.user.photo) {
     await deleteUnusedPhotos([oldPhoto])
@@ -105,9 +122,10 @@ router.get('/:username', requireUser, async (req, res) => {
   const itemsWithAvailability = items.map((item) => withAvailability(item, !loanedIds.has(item.id)))
   // Only loans that came back count toward someone's lending record
   const finished = { $in: ['returned', 'confirmed'] }
-  const [lentCount, borrowedCount] = await Promise.all([
+  const [lentCount, borrowedCount, trusts] = await Promise.all([
     Loan.countDocuments({ owner: user._id, status: finished }),
     Loan.countDocuments({ borrower: user._id, status: finished }),
+    trustByUser([user._id]),
   ])
   const profile = {
     username: user.username,
@@ -119,6 +137,7 @@ router.get('/:username', requireUser, async (req, res) => {
     borrowedCount,
     items: itemsWithAvailability,
     reputation: await reputation(user._id),
+    trust: trusts.get(String(user._id)) ?? 'new',
   }
   res.json({ message: 'OK', data: profile })
 })

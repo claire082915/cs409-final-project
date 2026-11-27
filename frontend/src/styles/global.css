@@ -43,7 +43,6 @@
   /* Teal is dark, so it needs a stronger tint than the orange's 12% to not look grey, picked by eye */
   --tint-teal: color-mix(in srgb, var(--brand-teal) 15%, white);
   --tint-teal-hover: color-mix(in srgb, var(--brand-teal) 22%, white);
-  --focus-glow: 0 0 0 3px #3186752a;
   --card-shadow: 0 4px 15px #17455108;
   --ink: var(--slate-900);
   --page-bg: var(--grey-100);
@@ -52,8 +51,10 @@
   --header-border: var(--grey-200);
   --text-muted: var(--slate-600);
   --error: #a5402a;
-  --radius-photo: 6px;
-  --radius-card: 9px;
+  /* Inputs, buttons, photos and other small pieces, the least rounding common design systems use */
+  --radius-control: 4px;
+  /* Cards, dialogs, menus and banners that hold controls */
+  --radius-container: 8px;
 }
 * {
   box-sizing: border-box;
@@ -189,30 +190,27 @@ a {
   align-items: center;
   gap: 23px;
 }
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 20px;
-  min-height: 45px;
-  border-radius: 7px;
-  font-size: 11px;
-  font-weight: 700;
-  transition:
-    transform 0.15s,
-    background 0.15s;
+/* Toasts are white cards like the rest of the app, only the icon carries color */
+[data-sonner-toaster] {
+  --normal-bg: var(--surface);
+  --normal-border: var(--grey-150);
+  --normal-text: var(--slate-900);
 }
-.button:hover {
-  transform: translateY(-2px);
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
+  box-shadow: var(--card-shadow);
+  font-family: inherit;
 }
-.button-primary {
-  color: white;
-  background: var(--brand-orange);
-  box-shadow: 0 5px 13px #cc58222a;
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-description] {
+  color: var(--text-muted);
 }
-.button-primary:hover {
-  background: var(--brand-orange-dark);
+[data-sonner-toaster] [data-sonner-toast] [data-icon] {
+  color: var(--slate-400);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--brand-green);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] [data-icon] {
+  color: var(--error);
 }
 /* Orange accent from the condition tag, the toaster prefix beats Sonner's black default */
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action] {
@@ -223,9 +221,13 @@ a {
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-button][data-action]:hover {
   background: color-mix(in srgb, var(--brand-orange) 20%, white);
 }
-.button-light {
-  color: var(--slate-850);
-  background: var(--surface);
+/* Green on success toasts so a good result doesn't read as a warning */
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-button][data-action] {
+  color: var(--green-700);
+  background: color-mix(in srgb, var(--brand-green) 12%, white);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-button][data-action]:hover {
+  background: color-mix(in srgb, var(--brand-green) 20%, white);
 }
 .action-button {
   display: inline-flex;
@@ -235,7 +237,7 @@ a {
   min-height: 40px;
   padding: 0 16px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--action-color);
   background: var(--action-bg);
   font: inherit;
@@ -252,6 +254,11 @@ a {
 .action-button:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.action-button[aria-disabled='true'] {
+  --action-bg-hover: var(--action-bg);
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .action-button-neutral {
   --action-color: var(--slate-700);
@@ -283,10 +290,11 @@ a {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--grey-200);
-  border-radius: 8px;
+  /* No box until hover so closing doesn't read as a second button */
+  border: 0;
+  border-radius: var(--radius-control);
   color: var(--text-muted);
-  background: var(--surface);
+  background: transparent;
   cursor: pointer;
 }
 .close-button:hover:not(:disabled) {
@@ -309,7 +317,7 @@ a {
   overflow-y: auto;
   padding: 28px;
   border: 1px solid var(--grey-200);
-  border-radius: 16px;
+  border-radius: var(--radius-container);
   color: var(--slate-800);
   background: var(--surface);
   box-shadow: 0 24px 75px #05232c45;
@@ -319,9 +327,15 @@ a {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: var(--radius-photo);
-  color: var(--slate-350);
-  background: var(--grey-150);
+  border-radius: var(--radius-control);
+  color: var(--slate-300);
+  background: var(--grey-100);
+}
+/* Placeholder icons are drawn large, so a thinner line keeps them light */
+.photo-box > svg,
+.loan-card-photo > svg,
+.item-card-photo > svg {
+  stroke-width: 1.5;
 }
 .photo-box img {
   display: block;
@@ -338,7 +352,7 @@ a {
   .modal {
     max-height: 94vh;
     padding: 21px 18px;
-    border-radius: 15px;
+    border-radius: var(--radius-container);
   }
 }
 /* A list's name with its count beside it, like Pending 5 requests */
@@ -364,4 +378,15 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* 3s matches HIGHLIGHT_MS in useHighlightedLoan.js */
+.highlighted {
+  animation: highlight-fade 3s ease-out;
+}
+/* No end frame, so it fades back to the card's own background */
+@keyframes highlight-fade {
+  0%,
+  50% {
+    background-color: color-mix(in srgb, var(--brand-orange) 7.5%, white);
+  }
 }

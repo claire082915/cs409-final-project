@@ -9,10 +9,9 @@ import AppLoader from '../components/AppLoader.jsx'
 import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
 import Reputation from '../components/Reputation.jsx'
+import TrustBadge from '../components/TrustBadge.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_ITEMS } from '../lib/mockItems.js'
-import { findMockProfile } from '../lib/mockProfiles.js'
 import '../styles/pages/browse-borrow.css'
 import '../styles/pages/profile.css'
 
@@ -82,6 +81,7 @@ function ProfileDetails({ profile, onOpenItem }) {
             className="profile-page-avatar"
           />
           <Reputation reputation={profile.reputation} />
+          <TrustBadge trust={profile.trust} />
         </div>
         <div>
           <h1>{profile.displayName}</h1>
@@ -115,7 +115,6 @@ function ProfileDetails({ profile, onOpenItem }) {
   )
 }
 
-// People from the mock data open a mock profile, anyone else comes from the backend
 export default function ProfilePage() {
   const { username } = useParams()
   const { profile: viewer } = useAuth()
@@ -126,11 +125,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setError('')
-    const mockProfile = findMockProfile(username)
-    if (mockProfile) {
-      setProfile(mockProfile)
-      return
-    }
     let cancelled = false
     setProfile(null)
     apiFetch(`users/${encodeURIComponent(username)}`)
@@ -160,7 +154,6 @@ export default function ProfilePage() {
         {selectedItem && (
           <BorrowItemDialog
             item={{ ...selectedItem, owner: profile }}
-            isMock={MOCK_ITEMS.includes(selectedItem)}
             onClose={() => setSelectedItem(null)}
             onSent={(message) => {
               toast.success(message)

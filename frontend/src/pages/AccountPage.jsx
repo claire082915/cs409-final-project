@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { Bell, Save, UserRound } from 'lucide-react'
+import { Save, Settings, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
 import Reputation from '../components/Reputation.jsx'
 import SelectMenu from '../components/SelectMenu.jsx'
+import Switch from '../components/Switch.jsx'
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx'
 import Tooltip from '../components/Tooltip.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { isDemoEmail } from '../auth/schoolEmail.js'
 import { apiFetch } from '../lib/api.js'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
+import { compressPhoto } from '../lib/compressPhoto.js'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
@@ -70,7 +72,7 @@ export default function AccountPage() {
     setSaving(true)
     setError('')
     try {
-      const photo = pendingPhoto ? await uploadPhoto(pendingPhoto) : form.photo
+      const photo = pendingPhoto ? await uploadPhoto(await compressPhoto(pendingPhoto)) : form.photo
       const updated = await apiFetch('users/me', {
         method: 'PATCH',
         body: {
@@ -154,13 +156,21 @@ export default function AccountPage() {
                       </Tooltip>
                     </span>
                   </label>
-                  <label className="form-field">
-                    Email
-                    {/* Read-only rather than disabled so hover and focus still open the tooltip */}
-                    <Tooltip text="Email can't be changed">
-                      <input name="email" value={profile.email} readOnly />
+                  <div className="form-field">
+                    <span id="email-label">Email</span>
+                    {/* Plain text since a focused input would drop the dots on a long address */}
+                    <Tooltip text={`${profile.email} can't be changed`}>
+                      <span
+                        className="field-value"
+                        role="textbox"
+                        aria-readonly="true"
+                        aria-labelledby="email-label"
+                        tabIndex={0}
+                      >
+                        <span className="field-value-text">{profile.email}</span>
+                      </span>
                     </Tooltip>
-                  </label>
+                  </div>
                   <div className="form-field">
                     <span id="campus-area-label">Campus area</span>
                     <SelectMenu
@@ -174,31 +184,43 @@ export default function AccountPage() {
                 </div>
               </div>
             </section>
-            <section className="account-card" aria-labelledby="notifications-heading">
+            <section className="account-card" aria-labelledby="settings-heading">
               <div className="account-card-heading">
                 <span className="account-icon">
-                  <Bell size={18} />
+                  <Settings size={18} />
                 </span>
-                <h2 id="notifications-heading">Notifications and privacy</h2>
+                <h2 id="settings-heading">Settings</h2>
               </div>
               <div className="account-options">
                 <SettingToggle
-                  label="Borrow requests"
+                  label="Show my profile in the community"
+                  description="Let others find you and see your name on listings"
+                  checked={preferences.showProfile}
+                  onChange={() => togglePreference('showProfile')}
+                />
+                <SettingToggle
+                  label="Borrow request notifications"
                   description="When someone asks to borrow your item"
                   checked={preferences.borrowRequests}
                   onChange={() => togglePreference('borrowRequests')}
                 />
                 <SettingToggle
-                  label="Return reminders"
+                  label="Request update notifications"
+                  description="When your request is approved or declined"
+                  checked={preferences.requestUpdates}
+                  onChange={() => togglePreference('requestUpdates')}
+                />
+                <SettingToggle
+                  label="Return update notifications"
+                  description="When an item is returned or the return is confirmed"
+                  checked={preferences.returnUpdates}
+                  onChange={() => togglePreference('returnUpdates')}
+                />
+                <SettingToggle
+                  label="Due date reminders"
                   description="Before something you borrowed is due"
                   checked={preferences.dueDateReminders}
                   onChange={() => togglePreference('dueDateReminders')}
-                />
-                <SettingToggle
-                  label="Show my profile in the community"
-                  description="Let others find your profile and see your name on listings"
-                  checked={preferences.showProfile}
-                  onChange={() => togglePreference('showProfile')}
                 />
               </div>
             </section>
@@ -234,13 +256,11 @@ export default function AccountPage() {
 // Read only, since ratings come from the people the user lent to or borrowed from
 function SettingToggle({ label, description, checked, onChange }) {
   return (
-    <label className="account-toggle-row">
+    <Switch className="account-toggle-row" checked={checked} onChange={onChange}>
       <span>
         <strong>{label}</strong>
         <small>{description}</small>
       </span>
-      <input type="checkbox" checked={checked} onChange={onChange} />
-      <i aria-hidden="true" />
-    </label>
+    </Switch>
   )
 }

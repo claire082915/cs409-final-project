@@ -14,8 +14,6 @@ import Avatar from '../components/Avatar.jsx'
 import BorrowItemDialog from '../components/BorrowItemDialog.jsx'
 import Reputation from '../components/Reputation.jsx'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_ITEMS } from '../lib/mockItems.js'
-import { mockResults } from '../lib/mockSearch.js'
 import '../styles/pages/browse-borrow.css'
 import '../styles/pages/search.css'
 
@@ -78,15 +76,7 @@ function ResultSection({ title, count, children }) {
 const TOTAL_FIELDS = { items: 'itemTotal', people: 'peopleTotal' }
 
 // Shows the first few, then Show all loads the rest a page at a time as the end scrolls into view
-function PagedSection({
-  title,
-  type,
-  query,
-  mockResults,
-  firstResults,
-  firstTotal,
-  renderResults,
-}) {
+function PagedSection({ title, type, query, firstResults, firstTotal, renderResults }) {
   const [isShowingAll, setIsShowingAll] = useState(false)
   const [results, setResults] = useState(firstResults)
   const [total, setTotal] = useState(firstTotal)
@@ -94,7 +84,6 @@ function PagedSection({
   const [nextSkip, setNextSkip] = useState(firstResults.length)
   const [loadingMore, setLoadingMore] = useState(false)
   const { ref: endRef, inView: isEndInView } = useInView({ rootMargin: '400px' })
-  const count = mockResults.length + total
 
   // Runs again after each page while the end of the list stays in view
   useEffect(() => {
@@ -120,17 +109,16 @@ function PagedSection({
       .finally(() => setLoadingMore(false))
   }, [isShowingAll, isEndInView, loadingMore, nextSkip, total])
 
-  const allResults = [...mockResults, ...results]
   return (
-    <ResultSection title={title} count={count}>
-      {renderResults(isShowingAll ? allResults : allResults.slice(0, FIRST_RESULTS))}
-      {!isShowingAll && count > FIRST_RESULTS && (
+    <ResultSection title={title} count={total}>
+      {renderResults(isShowingAll ? results : results.slice(0, FIRST_RESULTS))}
+      {!isShowingAll && total > FIRST_RESULTS && (
         <button
           type="button"
           className="action-button action-button-neutral search-show-all"
           onClick={() => setIsShowingAll(true)}
         >
-          Show all {count}
+          Show all {total}
         </button>
       )}
       {isShowingAll && <div ref={endRef} />}
@@ -168,12 +156,8 @@ export default function SearchPage() {
     }
   }, [query])
 
-  // Mock results show alongside real ones, like the top bar dropdown
-  const mock = mockResults(query)
   const isEmpty =
-    backendResults &&
-    mock.items.length + backendResults.itemTotal === 0 &&
-    mock.people.length + backendResults.peopleTotal === 0
+    backendResults && backendResults.itemTotal === 0 && backendResults.peopleTotal === 0
 
   return (
     <AppShell>
@@ -197,12 +181,11 @@ export default function SearchPage() {
           </EmptyState>
         ) : (
           <>
-            {mock.items.length + backendResults.itemTotal > 0 && (
+            {backendResults.itemTotal > 0 && (
               <PagedSection
                 title="Items"
                 type="items"
                 query={query}
-                mockResults={mock.items}
                 firstResults={backendResults.items}
                 firstTotal={backendResults.itemTotal}
                 renderResults={(items) => (
@@ -214,12 +197,11 @@ export default function SearchPage() {
                 )}
               />
             )}
-            {mock.people.length + backendResults.peopleTotal > 0 && (
+            {backendResults.peopleTotal > 0 && (
               <PagedSection
                 title="People"
                 type="people"
                 query={query}
-                mockResults={mock.people}
                 firstResults={backendResults.people}
                 firstTotal={backendResults.peopleTotal}
                 renderResults={(people) => (
@@ -236,7 +218,6 @@ export default function SearchPage() {
         {selectedItem && (
           <BorrowItemDialog
             item={selectedItem}
-            isMock={MOCK_ITEMS.includes(selectedItem)}
             onClose={() => setSelectedItem(null)}
             onSent={(message) => {
               toast.success(message)

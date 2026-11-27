@@ -1,7 +1,7 @@
 import { NO_CONDITION } from '../lib/itemConditions.js'
 import '../styles/components/item-tags.css'
 
-// Mock items have no condition, so they show Not specified like old backend items
+// Items listed before conditions existed show Not specified
 export default function ItemTags({ category, condition }) {
   return (
     <span className="item-tags">

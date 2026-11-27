@@ -7,10 +7,6 @@
   gap: 10px;
 }
 .inventory-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 14px;
 }
 /* Its own row under the toolbar so the placeholder has room at any width, same cap as Browse */
@@ -45,9 +41,11 @@
   margin-top: -4px;
 }
 .item-photo-upload {
+  /* Drops the photo to the top of the Item name letters, the label's line height leaves 2px above them */
+  margin-top: 2px;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: var(--radius-photo);
+  border-radius: var(--radius-control);
 }
 /* The dashed outline only invites a first photo */
 .item-photo-upload:has(img) {
@@ -108,18 +106,12 @@
     grid-template-columns: 1fr;
   }
   .item-photo-upload {
+    /* Stacked above the name, so there is no label to line up with */
+    margin-top: 0;
     aspect-ratio: 16 / 9;
   }
   .inventory-add-button {
     align-self: stretch;
-  }
-  .inventory-toolbar {
-    align-items: flex-start;
-    flex-direction: column-reverse;
-    gap: 9px;
-  }
-  .inventory-toolbar .source-switch {
-    align-self: flex-end;
   }
 }
 /* Condition is locked while the item is lent */

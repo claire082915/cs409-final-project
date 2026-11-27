@@ -5,11 +5,12 @@ import Loan, { ACTIVE_STATUSES } from '../models/loan.js'
 import User from '../models/user.js'
 import requireUser from '../middleware/requireUser.js'
 import { deletePhotos, deleteUnusedPhotos, isUserPhotoUrl, uploadPhoto } from '../lib/cloudinary.js'
-import { detectItems } from '../lib/detectItems.js'
+import { DETECTION_MODELS, detectItems, geminiFailure } from '../lib/detectItems.js'
 import { cropBox, hasArea, isSupportedPhoto, uprightJpeg } from '../lib/photoCrops.js'
 import { isOnLoan, loanedItemIds, withAvailability } from '../lib/availability.js'
 import { publicOwner } from '../lib/publicProfile.js'
 import { reputationsByUser } from '../lib/reputation.js'
+import { notifyDetection } from '../lib/notify.js'
 
 // Owner can't be changed
 const editableFields = ['name', 'description', 'category', 'condition', 'photos']
@@ -41,6 +42,10 @@ router.post('/', async (req, res) => {
   for (const field of editableFields) {
     fields[field] = body[field]
   }
+  // No photo -> 400, the owner needs it to check the item when it comes back
+  if (!Array.isArray(fields.photos) || fields.photos.length === 0) {
+    return res.status(400).json({ message: 'Add a photo of the item', data: {} })
+  }
   const item = await Item.create({ ...fields, owner: req.userId })
   // A new item has no loans yet
   res.status(201).json({ message: 'OK', data: withAvailability(item, true) })
@@ -58,41 +63,75 @@ async function draftItem(image, detectedItem, userId) {
   }
 }
 
-// Drafts items from a room photo, the user sends the ones they keep to POST items
+// Overloaded and rate limited are both per model, so the frontend sends the photo to the next one
+const NEXT_MODEL_STATUSES = [429, 503]
+
+function foundMessage(count) {
+  if (count === 0) {
+    return {
+      kind: 'empty',
+      title: 'No items found',
+      text: 'Try a photo where each item is in full view.',
+    }
+  }
+  return {
+    kind: 'found',
+    title: `Found ${count} ${count === 1 ? 'item' : 'items'} to review`,
+    text: 'Pick the ones to add to your items.',
+  }
+}
+
+function errorMessage(text) {
+  return { kind: 'error', title: "Couldn't check your photo", text }
+}
+
+// Drafts items from a room photo with the model for this attempt, the user sends the ones they keep to POST items
 router.post('/detect', async (req, res) => {
   const photoUrl = req.body?.photoUrl
+  const attempt = req.body?.attempt
+  const taskId = req.body?.taskId
   if (!isUserPhotoUrl(photoUrl, req.userId)) {
     return res.status(400).json({ message: 'photoUrl must be a photo you uploaded', data: {} })
+  }
+  if (!Number.isInteger(attempt) || !DETECTION_MODELS[attempt]) {
+    return res.status(400).json({ message: 'Missing or invalid attempt', data: {} })
   }
   const response = await fetch(photoUrl)
   if (!response.ok) {
     return res.status(400).json({ message: "Couldn't download the photo", data: {} })
   }
   const photo = Buffer.from(await response.arrayBuffer())
-  // The room photo is only needed for this request
-  await deleteUnusedPhotos([photoUrl])
   // The frontend checks too, this catches files whose type was wrong or missing
   if (!(await isSupportedPhoto(photo))) {
-    return res
-      .status(400)
-      .json({ message: "Can't read this photo. Use a JPEG or PNG instead.", data: {} })
+    const message = "Can't read this photo. Use a JPEG or PNG instead."
+    await deleteUnusedPhotos([photoUrl])
+    await notifyDetection(req.userId, taskId, errorMessage(message))
+    return res.status(400).json({ message, data: {} })
   }
   const image = await uprightJpeg(photo)
   let detectedItems
   try {
-    detectedItems = await detectItems(image)
+    detectedItems = await detectItems(image, DETECTION_MODELS[attempt])
   } catch (err) {
-    // Gemini caps requests per day for the whole project
-    if (err.status === 429) {
-      return res
-        .status(429)
-        .json({ message: 'Item detection is used up for today, try again tomorrow', data: {} })
+    const failure = geminiFailure(err)
+    // Keep the room photo when the frontend will send it to the next model
+    const hasNextAttempt =
+      NEXT_MODEL_STATUSES.includes(failure?.status) && attempt < DETECTION_MODELS.length - 1
+    if (!hasNextAttempt) {
+      await deleteUnusedPhotos([photoUrl])
+      await notifyDetection(req.userId, taskId, errorMessage(failure?.message ?? 'Server error'))
     }
-    // Drop Gemini's status so the error handler sends a 500 instead of passing it on
+    if (failure) {
+      return res.status(failure.status).json({ message: failure.message, data: {} })
+    }
+    // Anything else is our bug, like a bad key or request, so it stays a 500
     throw new Error('Gemini request failed', { cause: err })
   }
+  // The room photo is only needed until a model answers
+  await deleteUnusedPhotos([photoUrl])
   const boxedItems = detectedItems.filter((item) => hasArea(item.box_2d))
   const drafts = await Promise.all(boxedItems.map((item) => draftItem(image, item, req.userId)))
+  await notifyDetection(req.userId, taskId, foundMessage(drafts.length))
   res.json({ message: 'OK', data: drafts })
 })
 
@@ -101,7 +140,7 @@ async function isPhotoInUse(photos, user) {
   return photos.includes(user.photo) || Boolean(await Item.exists({ photos: { $in: photos } }))
 }
 
-// Deletes the crops of drafts the user didn't keep
+// Deletes the crops of drafts the user didn't keep, or the room photo of a search they left
 router.post('/detect/discard', async (req, res) => {
   const photos = req.body?.photos
   if (!Array.isArray(photos) || !photos.every((url) => isUserPhotoUrl(url, req.userId))) {
@@ -204,6 +243,10 @@ router.patch('/:id', requireOwner, async (req, res) => {
     return res
       .status(409)
       .json({ message: "Can't change the condition while it's on loan", data: {} })
+  }
+  // Old items might have no photo, but a photo can't be removed -> 400
+  if (Array.isArray(body.photos) && body.photos.length === 0) {
+    return res.status(400).json({ message: 'Add a photo of the item', data: {} })
   }
   const oldPhotos = [...req.item.photos]
   for (const field of editableFields) {

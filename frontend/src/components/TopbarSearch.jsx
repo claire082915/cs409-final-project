@@ -13,8 +13,6 @@ import { Package, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_ITEMS } from '../lib/mockItems.js'
-import { mockResults } from '../lib/mockSearch.js'
 import Avatar from './Avatar.jsx'
 import BorrowItemDialog from './BorrowItemDialog.jsx'
 import '../styles/components/form-controls.css'
@@ -119,10 +117,8 @@ export default function TopbarSearch() {
   // Results for older text stay hidden until the latest search comes back
   const trimmedQuery = query.trim()
   const currentResults = results?.query === trimmedQuery ? results : null
-  // Mock results show alongside real ones, like on the search page
-  const mock = trimmedQuery ? mockResults(trimmedQuery) : { items: [], people: [] }
-  const items = [...mock.items, ...(currentResults?.items ?? [])]
-  const people = [...mock.people, ...(currentResults?.people ?? [])]
+  const items = currentResults?.items ?? []
+  const people = currentResults?.people ?? []
 
   // Picking an item opens the borrow popup, people are links so they open on their own
   const openItem = (key) => {
@@ -186,7 +182,6 @@ export default function TopbarSearch() {
       {selectedItem && (
         <BorrowItemDialog
           item={selectedItem}
-          isMock={MOCK_ITEMS.includes(selectedItem)}
           onClose={() => setSelectedItem(null)}
           onSent={(message) => {
             toast.success(message)

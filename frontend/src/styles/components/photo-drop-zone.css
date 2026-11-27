@@ -2,7 +2,7 @@
   position: relative;
   display: grid;
   border: 1.5px dashed var(--slate-200);
-  border-radius: 12px;
+  border-radius: var(--radius-container);
   color: var(--brand-teal);
   background: color-mix(in srgb, var(--brand-teal) 4%, white);
 }
@@ -39,7 +39,7 @@
   align-items: center;
   min-height: 38px;
   padding: 0 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--brand-teal);
   background: var(--tint-teal);
   font-size: 14px;

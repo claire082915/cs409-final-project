@@ -1,12 +1,12 @@
 .notification-button[data-focus-visible] {
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 /* Same panel look as the confirm dialogs, above the item modals */
 .notifications-popover {
   z-index: 40;
   width: min(360px, calc(100vw - 32px));
   border: 1px solid var(--grey-200);
-  border-radius: 11px;
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: 0 20px 40px #1745512e;
 }
@@ -28,7 +28,7 @@
 }
 .notifications-clear {
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 4px 8px;
   color: var(--text-muted);
   background: transparent;
@@ -67,7 +67,7 @@
   width: 100%;
   padding: 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: inherit;
   background: transparent;
   font: inherit;
@@ -82,7 +82,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--brand-teal);
   background: color-mix(in srgb, var(--brand-teal) 10%, white);
 }
@@ -128,7 +128,7 @@
   height: 24px;
   padding: 0;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   color: var(--text-muted);
   background: transparent;
   opacity: 0;

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowDown, ArrowRight, CalendarClock, MapPin, ScanSearch, Star } from 'lucide-react'
+import { ArrowDown, ArrowRight, CalendarClock, MapPin, ScanSearch, ShieldCheck } from 'lucide-react'
 import FeatureCard from '../components/FeatureCard.jsx'
 import Logo from '../components/Logo.jsx'
 import ShelfScanVisual from '../components/ShelfScanVisual.jsx'
@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     title: 'Bring it back',
-    text: 'Mark it returned, the owner confirms, and you both rate how it went.',
+    text: 'Take a photo when you return it, the owner confirms, and you both rate how it went.',
   },
 ]
 
@@ -82,11 +82,11 @@ export default function LandingPage() {
             <FeatureCard icon={<ScanSearch size={19} />} title="List a whole room at once">
               Take a photo and Lendr drafts a listing for everything it spots.
             </FeatureCard>
+            <FeatureCard icon={<ShieldCheck size={19} />} title="Trusted borrowers skip the wait">
+              Owners can auto-approve borrowers who return on time and earn good ratings.
+            </FeatureCard>
             <FeatureCard icon={<CalendarClock size={19} />} title="Due dates on every loan">
               Borrowers get a reminder before it's due.
-            </FeatureCard>
-            <FeatureCard icon={<Star size={19} />} title="Ratings after each return">
-              Check a borrower's ratings before lending.
             </FeatureCard>
           </div>
         </section>
@@ -96,13 +96,10 @@ export default function LandingPage() {
             <h2>How it works</h2>
           </div>
           <ol className="steps">
-            {STEPS.map(({ title, text }, index) => (
+            {STEPS.map(({ title, text }) => (
               <li className="step" key={title}>
-                <span className="step-number">0{index + 1}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
+                <h3>{title}</h3>
+                <p>{text}</p>
               </li>
             ))}
           </ol>

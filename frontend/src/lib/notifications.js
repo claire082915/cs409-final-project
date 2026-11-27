@@ -1,16 +1,12 @@
 import { useSyncExternalStore } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from './api.js'
 
-const STORAGE_KEY = 'lendrNotifications'
-// Older ones drop off so the saved list stays short, picked by hand
-const MAX_NOTIFICATIONS = 20
-
-// Saved in the browser so they outlast a reload, cleared on log out
-let notifications = JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? []
+let notifications = []
 const listeners = new Set()
 
-function saveNotifications(next) {
+function setNotifications(next) {
   notifications = next
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   for (const listener of listeners) {
     listener()
   }
@@ -25,31 +21,43 @@ export function useNotifications() {
   return useSyncExternalStore(subscribe, () => notifications)
 }
 
-// Kind picks the icon, taskId ties an auto-populate result back to its review
-export function addNotification({ kind, title, text, taskId }) {
-  const notification = {
-    id: crypto.randomUUID(),
-    kind,
-    title,
-    text,
-    taskId,
-    createdAt: Date.now(),
-    read: false,
+// A failed check keeps the last list
+export async function refreshNotifications() {
+  try {
+    setNotifications(await apiFetch('notifications'))
+  } catch {
+    return
   }
-  saveNotifications([notification, ...notifications].slice(0, MAX_NOTIFICATIONS))
+}
+
+// The list changes right away, a failed save puts the saved list back
+async function saveChange(path, method, next) {
+  setNotifications(next)
+  try {
+    await apiFetch(path, { method })
+  } catch (err) {
+    toast.error(err.message)
+    refreshNotifications()
+  }
 }
 
 export function markAllRead() {
   if (notifications.every((notification) => notification.read)) {
     return
   }
-  saveNotifications(notifications.map((notification) => ({ ...notification, read: true })))
+  const next = notifications.map((notification) => ({ ...notification, read: true }))
+  saveChange('notifications/read', 'PATCH', next)
 }
 
 export function dismissNotification(id) {
-  saveNotifications(notifications.filter((notification) => notification.id !== id))
+  const next = notifications.filter((notification) => notification._id !== id)
+  saveChange(`notifications/${id}`, 'DELETE', next)
 }
 
 export function clearNotifications() {
-  saveNotifications([])
+  saveChange('notifications', 'DELETE', [])
+}
+
+export function forgetNotifications() {
+  setNotifications([])
 }

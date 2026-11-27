@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
   Button,
   Dialog,
@@ -9,37 +9,38 @@ import {
   Modal,
   ModalOverlay,
 } from 'react-aria-components'
-import { CalendarDays, Check, ChevronRight, MapPin, PackageOpen, Send } from 'lucide-react'
+import { CalendarDays, ChevronRight, Inbox, MapPin, PackageOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
-import SourceSwitch from '../components/SourceSwitch.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
-import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import ItemDialog from '../components/ItemDialog.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
+import PersonLink from '../components/PersonLink.jsx'
+import InfoTip from '../components/InfoTip.jsx'
 import Reputation from '../components/Reputation.jsx'
+import Switch from '../components/Switch.jsx'
 import Tooltip from '../components/Tooltip.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
+import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
-import { MOCK_RECEIVED, MOCK_SENT } from '../lib/mockRequests.js'
-import { setPendingRequestCount } from '../lib/pendingRequestCount.js'
+import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
+import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
+import { refreshNotifications } from '../lib/notifications.js'
+import { refreshPendingActions } from '../lib/pendingActions.js'
 import '../styles/components/confirm-dialog.css'
+import '../styles/components/loan-status.css'
 import '../styles/pages/borrow-request.css'
 import TrustBadge from '../components/TrustBadge.jsx'
 
 // Received lists requests for your items, sent lists the ones you made
 const VIEWS = {
-  received: { label: 'Received', endpoint: 'loans/lent?status=requested', mock: MOCK_RECEIVED },
-  sent: { label: 'Sent', endpoint: 'loans/borrowed?status=requested', mock: MOCK_SENT },
+  received: { label: 'Received', endpoint: 'loans/lent?status=requested' },
+  sent: { label: 'Sent', endpoint: 'loans/borrowed?status=requested' },
 }
-const VIEW_OPTIONS = [
-  { id: 'received', label: VIEWS.received.label },
-  { id: 'sent', label: VIEWS.sent.label },
-]
 
 // Received requests are a queue, so whoever asked first gets an answer first
 // The backend sends newest first, which suits sent requests
@@ -76,7 +77,11 @@ function personName(person) {
 function ItemPhoto({ item }) {
   return (
     <div className="photo-box request-photo">
-      {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={24} />}
+      {item.photos?.[0] ? (
+        <img src={item.photos[0]} alt="" />
+      ) : (
+        <PackageOpen size={32} aria-hidden="true" />
+      )}
     </div>
   )
 }
@@ -86,7 +91,7 @@ function ItemTitle({ item }) {
   return (
     <>
       <span className="request-item-name truncate">{item.name}</span>
-      {item.available === false && <span className="request-on-loan">Lent</span>}
+      {item.available === false && <span className="loan-status status-pending">Lent</span>}
     </>
   )
 }
@@ -96,15 +101,7 @@ function RequestDetails({ request, person, personDetail }) {
   return (
     <div className="request-details">
       <div className="request-person">
-        <Link to={`/profile/${person.username}`} className="request-person-link">
-          <Avatar
-            photo={person.photo}
-            name={person.displayName}
-            username={person.username}
-            className="avatar-small"
-          />
-          <span className="request-person-name">{personName(person)}</span>
-        </Link>
+        <PersonLink person={person} />
         {personDetail}
       </div>
       {request.message && <p className="request-message">{request.message}</p>}
@@ -130,7 +127,6 @@ function trustRank(request) {
   return request.borrower.trust === 'trusted' ? 1 : 0
 }
 
-// Items come in the order of their oldest request, then each item's trusted, best rated borrower comes first
 function groupByItem(requests) {
   const groups = new Map()
   for (const request of oldestFirst(requests)) {
@@ -140,6 +136,9 @@ function groupByItem(requests) {
     groups.get(request.item._id).requests.push(request)
   }
   const sortedGroups = [...groups.values()]
+  // The sort is stable, so lent and available items each stay oldest first
+  const isLent = (group) => Number(group.item.available === false)
+  sortedGroups.sort((a, b) => isLent(a) - isLent(b))
   // The sort is stable, so equal ratings stay oldest first
   for (const group of sortedGroups) {
     group.requests.sort(
@@ -149,17 +148,20 @@ function groupByItem(requests) {
   return sortedGroups
 }
 
-function ReceivedEntry({ request, onApprove, onDecline }) {
+function ReceivedEntry({ request, isHighlighted, onApprove, onDecline }) {
   const isOnLoan = request.item.available === false
   return (
-    <div className="request-entry">
+    <div
+      id={`loan-${request._id}`}
+      className={`request-entry${isHighlighted ? ' highlighted' : ''}`}
+    >
       <RequestDetails
         request={request}
         person={request.borrower}
         personDetail={
           <>
-            <TrustBadge trust={request.borrower.trust} />
             <Reputation reputation={request.borrower.reputation} />
+            <TrustBadge trust={request.borrower.trust} />
           </>
         }
       />
@@ -196,7 +198,7 @@ function requestCountLabel(group) {
 }
 
 // Every item starts open and can fold down to its count
-function ItemRequests({ group, onApprove, onDecline }) {
+function ItemRequests({ group, highlightId, onApprove, onDecline }) {
   return (
     <Disclosure className="request-group" defaultExpanded>
       <Heading level={2} className="request-group-heading">
@@ -214,6 +216,7 @@ function ItemRequests({ group, onApprove, onDecline }) {
           <ReceivedEntry
             key={request._id}
             request={request}
+            isHighlighted={request._id === highlightId}
             onApprove={onApprove}
             onDecline={onDecline}
           />
@@ -223,13 +226,14 @@ function ItemRequests({ group, onApprove, onDecline }) {
   )
 }
 
-function ReceivedRequests({ requests, onApprove, onDecline }) {
+function ReceivedRequests({ requests, highlightId, onApprove, onDecline }) {
   return (
     <div className="request-list">
       {groupByItem(requests).map((group) => (
         <ItemRequests
           key={group.item._id}
           group={group}
+          highlightId={highlightId}
           onApprove={onApprove}
           onDecline={onDecline}
         />
@@ -239,11 +243,15 @@ function ReceivedRequests({ requests, onApprove, onDecline }) {
 }
 
 // The photo opens the item too but is skipped by keyboard
-function SentRequests({ requests, onOpenItem, onCancel }) {
+function SentRequests({ requests, highlightId, onOpenItem, onCancel }) {
   return (
     <div className="request-list">
       {requests.map((request) => (
-        <article className="request-row" key={request._id}>
+        <article
+          key={request._id}
+          id={`loan-${request._id}`}
+          className={`request-row${request._id === highlightId ? ' highlighted' : ''}`}
+        >
           <button
             type="button"
             className="request-item-open"
@@ -358,22 +366,106 @@ function OwnerArea({ campusArea }) {
 function EmptyRequests({ view }) {
   if (view === 'sent') {
     return (
-      <EmptyState icon={Send} title="No requests sent">
+      <EmptyState icon={Inbox} title="No requests sent">
         <span>Requests you send from Browse show up here.</span>
       </EmptyState>
     )
   }
   return (
-    <EmptyState icon={Check} title="You're all caught up">
-      <span>New requests will show up here.</span>
+    <EmptyState icon={Inbox} title="You’re all caught up">
+      <span>New requests show up here.</span>
     </EmptyState>
   )
 }
 
+// Same words as LOAN_MESSAGES in backend/lib/notify.js
+function announceAutoApproved(approvedRequests) {
+  for (const request of approvedRequests) {
+    const text = `${request.item.name} lent to ${personName(request.borrower)}.`
+    toast.success('Request auto-approved', { description: text })
+  }
+  refreshNotifications()
+}
+
+function AutoApproveToggle({ onTurnedOn }) {
+  const { profile, setProfile } = useAuth()
+  const [saving, setSaving] = useState(false)
+  const [waitingCount, setWaitingCount] = useState(0)
+
+  const save = async (autoApprove) => {
+    setSaving(true)
+    try {
+      const updated = await apiFetch('users/me', {
+        method: 'PATCH',
+        body: { preferences: { autoApprove } },
+      })
+      setProfile(updated)
+      toast.success(autoApprove ? 'Auto-approve is on' : 'Auto-approve is off')
+      // Turning it on approves trusted requests that were already waiting
+      if (autoApprove) onTurnedOn()
+    } catch (err) {
+      toast.error(err.message)
+    }
+    setWaitingCount(0)
+    setSaving(false)
+  }
+
+  // Lending out waiting requests is a side effect people might not expect, so that asks first
+  const toggle = async () => {
+    if (profile.preferences.autoApprove) {
+      return save(false)
+    }
+    setSaving(true)
+    try {
+      const { count } = await apiFetch('loans/auto-approvable')
+      if (count === 0) {
+        return save(true)
+      }
+      setWaitingCount(count)
+    } catch (err) {
+      toast.error(err.message)
+    }
+    setSaving(false)
+  }
+
+  return (
+    <div className="auto-approve">
+      <ConfirmDialog
+        isOpen={waitingCount > 0}
+        isPending={saving}
+        title="Turn on auto-approve?"
+        text={
+          waitingCount === 1
+            ? 'This also approves 1 waiting request from a trusted borrower.'
+            : `This also approves ${waitingCount} waiting requests from trusted borrowers.`
+        }
+        cancelLabel="Cancel"
+        confirmLabel="Turn on"
+        destructive={false}
+        onCancel={() => setWaitingCount(0)}
+        onConfirm={() => save(true)}
+      />
+      <Switch
+        className="auto-approve-switch"
+        checked={profile.preferences.autoApprove}
+        onChange={toggle}
+        isDisabled={saving}
+      >
+        Auto-approve trusted
+      </Switch>
+      <InfoTip
+        text="Approve requests from trusted borrowers right away."
+        label="About auto-approve"
+      />
+    </div>
+  )
+}
+
 export default function BorrowRequestPage() {
-  const [source, setSource] = useState(() => localStorage.getItem('lendrRequestSource') || 'mock')
-  const [view, setView] = useState('received')
+  const [searchParams] = useSearchParams()
+  const [view, setView] = useState(searchParams.get('view') ?? 'received')
   const [requests, setRequests] = useState([])
+  const [requestCounts, setRequestCounts] = useState(null)
   const [approvingRequest, setApprovingRequest] = useState(null)
   const [decliningRequest, setDecliningRequest] = useState(null)
   const [cancelingRequest, setCancelingRequest] = useState(null)
@@ -381,15 +473,10 @@ export default function BorrowRequestPage() {
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [error, setError] = useState('')
+  const highlightId = useHighlightedLoan(!loading)
+  const viewParam = searchParams.get('view') ?? 'received'
 
   useEffect(() => {
-    localStorage.setItem('lendrRequestSource', source)
-    if (source === 'mock') {
-      setRequests(VIEWS[view].mock)
-      setError('')
-      setLoading(false)
-      return
-    }
     let cancelled = false
     setLoading(true)
     setError('')
@@ -409,12 +496,30 @@ export default function BorrowRequestPage() {
     return () => {
       cancelled = true
     }
-  }, [source, view])
+  }, [view])
 
-  // Keeps the sidebar badge in step with the received list
+  useFiltersInUrl(new URLSearchParams(view === 'sent' ? { view } : {}))
+
+  // Both counts load up front so the switch can show them before either view is opened
   useEffect(() => {
-    if (view === 'received' && !loading && !error) {
-      setPendingRequestCount(requests.length)
+    let cancelled = false
+    Promise.all([apiFetch(VIEWS.received.endpoint), apiFetch(VIEWS.sent.endpoint)])
+      .then(([received, sent]) => {
+        if (!cancelled) setRequestCounts({ received: received.length, sent: sent.length })
+      })
+      // The counts show 0 if they can't load, the list shows its own error
+      .catch(() => {
+        if (!cancelled) setRequestCounts({ received: 0, sent: 0 })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // The shown view's count follows its list as requests are answered
+  useEffect(() => {
+    if (!loading && !error) {
+      setRequestCounts((counts) => counts && { ...counts, [view]: requests.length })
     }
   }, [view, loading, error, requests])
 
@@ -425,14 +530,26 @@ export default function BorrowRequestPage() {
     setLoading(true)
   }
 
-  // Mock requests only leave the list, backend ones change status for real
+  // A notification can switch the view while the page is already open
+  useEffect(() => {
+    if (viewParam !== view) showView(viewParam)
+  }, [viewParam])
+
+  // Requests that left the received list were the ones auto-approve just approved
+  const showAutoApproved = async () => {
+    const remaining = await apiFetch(VIEWS.received.endpoint)
+    const remainingIds = new Set(remaining.map((request) => request._id))
+    announceAutoApproved(requests.filter((request) => !remainingIds.has(request._id)))
+    setRequests(remaining)
+    refreshPendingActions()
+  }
+
   const updateRequest = async (request, action, body, doneMessage) => {
     setActing(true)
     try {
-      if (source === 'backend') {
-        await apiFetch(`loans/${request._id}/${action}`, { method: 'PATCH', body })
-      }
+      await apiFetch(`loans/${request._id}/${action}`, { method: 'PATCH', body })
       setRequests((current) => remainingRequests(current, request, action))
+      refreshPendingActions()
       toast.success(doneMessage)
       setApprovingRequest(null)
       setDecliningRequest(null)
@@ -451,44 +568,62 @@ export default function BorrowRequestPage() {
             <h1>Borrow Requests</h1>
             <p>Requests for your items and ones you've sent.</p>
           </div>
-          <SourceSwitch source={source} onChange={setSource} label="Request data source" />
         </header>
-        <ViewSwitch
-          className="requests-views"
-          label="Requests to show"
-          options={VIEW_OPTIONS}
-          selected={view}
-          onChange={showView}
-        />
-        {error && (
-          <p className="requests-error" role="alert">
-            {error}
-          </p>
-        )}
-        {loading ? (
+        {/* The tab counts wait for both lists so they never show a wrong 0 */}
+        {requestCounts === null ? (
           <AppLoader inline label="Loading requests..." />
-        ) : requests.length === 0 ? (
-          <EmptyRequests view={view} />
         ) : (
           <>
-            <p className="count-label">
-              Pending
-              <small>
-                {requests.length} {requests.length === 1 ? 'request' : 'requests'}
-              </small>
-            </p>
-            {view === 'received' ? (
-              <ReceivedRequests
-                requests={requests}
-                onApprove={setApprovingRequest}
-                onDecline={setDecliningRequest}
+            <div className="requests-views">
+              <ViewSwitch
+                label="Requests to show"
+                options={Object.entries(VIEWS).map(([id, { label }]) => ({
+                  id,
+                  label: (
+                    <>
+                      {label}
+                      <small>{requestCounts[id]}</small>
+                    </>
+                  ),
+                }))}
+                selected={view}
+                onChange={showView}
               />
+              {view === 'received' && <AutoApproveToggle onTurnedOn={showAutoApproved} />}
+            </div>
+            {error && (
+              <p className="requests-error" role="alert">
+                {error}
+              </p>
+            )}
+            {loading ? (
+              <AppLoader inline label="Loading requests..." />
+            ) : requests.length === 0 ? (
+              <EmptyRequests view={view} />
             ) : (
-              <SentRequests
-                requests={requests}
-                onOpenItem={setViewingRequest}
-                onCancel={setCancelingRequest}
-              />
+              <>
+                <p className="count-label">
+                  Pending
+                  <small>
+                    {requests.length} {requests.length === 1 ? 'request' : 'requests'}
+                  </small>
+                </p>
+                {view === 'received' ? (
+                  <ReceivedRequests
+                    requests={requests}
+                    highlightId={highlightId}
+                    onApprove={setApprovingRequest}
+                    onDecline={setDecliningRequest}
+                  />
+                ) : (
+                  <SentRequests
+                    requests={requests}
+                    highlightId={highlightId}
+                    onOpenItem={setViewingRequest}
+                    onCancel={setCancelingRequest}
+                  />
+                )}
+              </>
             )}
           </>
         )}

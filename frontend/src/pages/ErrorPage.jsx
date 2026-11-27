@@ -19,17 +19,17 @@ export default function ErrorPage() {
           <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />
         </span>
         <strong>Something went wrong</strong>
-        <small>Reload the page to try again, or head back home.</small>
+        <small>Reload the page to try again.</small>
         <code className="error-page-detail">{errorText(error)}</code>
         <div className="error-page-actions">
           <button
             type="button"
-            className="button button-primary"
+            className="action-button action-button-orange-tint"
             onClick={() => window.location.reload()}
           >
             Reload page
           </button>
-          <Link className="button button-light" to="/">
+          <Link className="action-button action-button-neutral" to="/">
             Go home
           </Link>
         </div>

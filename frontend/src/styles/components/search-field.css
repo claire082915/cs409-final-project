@@ -7,13 +7,16 @@
   margin-bottom: 22px;
   padding: 0 6px 0 13px;
   border: 1px solid var(--slate-300);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--text-muted);
   background: var(--surface);
 }
+/* Keep the magnifier full size when the filter menus crowd the field */
+.search-field > svg {
+  flex: none;
+}
 .search-field:focus-within {
   border-color: var(--brand-green);
-  box-shadow: var(--focus-glow);
 }
 .search-field input {
   width: 100%;
@@ -59,7 +62,7 @@
   text-overflow: ellipsis;
 }
 .search-field .filter-menu-button[data-focus-visible] {
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   box-shadow: 0 0 0 2px var(--brand-green);
 }
 

@@ -18,7 +18,7 @@ body:has(.app-shell) #root {
   height: 100vh;
   height: 100dvh;
   display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-columns: 200px minmax(0, 1fr);
   overflow: hidden;
   transition: grid-template-columns 0.2s ease;
   background: var(--grey-25);
@@ -63,7 +63,7 @@ body:has(.app-shell) #root {
   align-items: center;
   gap: 12px;
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--slate-200);
   font-size: 12px;
   font-weight: 600;
@@ -76,19 +76,29 @@ body:has(.app-shell) #root {
   color: var(--grey-25);
   background: #ffffff1c;
 }
-.sidebar-link.is-active {
-  box-shadow: inset 3px 0 #ff8a4d;
+/* Lighter orange so it reads on the teal sidebar */
+.sidebar-link.is-active svg {
+  color: var(--orange-400);
 }
-.sidebar-badge {
-  margin-left: auto;
-  min-width: 19px;
-  height: 19px;
+.nav-icon {
+  position: relative;
   display: grid;
-  place-items: center;
+}
+.pending-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  color: var(--grey-25);
   background: var(--brand-orange);
-  font-size: 10px;
+}
+.nav-icon .pending-dot {
+  position: absolute;
+  top: -3px;
+  right: -6px;
+}
+.app-sidebar .pending-dot {
+  margin-left: auto;
+  background: var(--orange-400);
 }
 .sidebar-toggle {
   width: 32px;
@@ -96,7 +106,7 @@ body:has(.app-shell) #root {
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   color: var(--slate-200);
   background: none;
   cursor: pointer;
@@ -129,14 +139,11 @@ body:has(.app-shell) #root {
   justify-content: center;
   padding: 0;
 }
-/* Shrink the badge into a corner of the icon since the label is gone */
-.is-sidebar-collapsed .sidebar-badge {
+/* Puts the dot on the 17px icon's top right corner */
+.is-sidebar-collapsed .pending-dot {
   position: absolute;
-  top: 5px;
-  right: 7px;
-  min-width: 15px;
-  height: 15px;
-  font-size: 8px;
+  top: 10px;
+  left: calc(50% + 6.5px);
 }
 /* Page title on the left, its actions on the right */
 .page-heading {
@@ -195,7 +202,7 @@ body:has(.app-shell) #root {
   gap: 10px;
   padding: 0 11px;
   border: 1px solid var(--grey-250);
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   color: var(--slate-450);
   background: var(--grey-25);
 }
@@ -216,7 +223,7 @@ body:has(.app-shell) #root {
 .app-search kbd {
   padding: 3px 5px;
   border: 1px solid var(--grey-250);
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   color: var(--slate-400);
   font:
     9px 'DM Sans',
@@ -291,8 +298,9 @@ body:has(.app-shell) #root {
   .profile-name {
     display: none;
   }
+  /* Leaves room for a two digit count badge, which runs 10px past its icon */
   .topbar-actions {
-    gap: 8px;
+    gap: 14px;
   }
   .profile-avatar {
     width: 30px;

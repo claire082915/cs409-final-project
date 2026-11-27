@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 9px;
   border: 1px dashed var(--slate-200);
-  border-radius: 12px;
+  border-radius: var(--radius-container);
   color: var(--text-muted);
   background: #ffffff88;
   font-size: 14px;
@@ -17,4 +17,21 @@
 .empty-state strong {
   color: var(--slate-700);
   font-size: 15px;
+}
+.empty-state-green {
+  /* Picked by eye */
+  background: color-mix(in srgb, var(--green-50) 80%, white);
+}
+.empty-state-green svg {
+  color: var(--brand-green);
+}
+.empty-state-orange {
+  /* Picked by eye */
+  background: color-mix(in srgb, var(--brand-orange) 7.5%, white);
+}
+.empty-state-orange svg {
+  color: var(--brand-orange);
+}
+.empty-state .action-button {
+  margin-top: 4px;
 }

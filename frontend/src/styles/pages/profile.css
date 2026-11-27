@@ -9,7 +9,7 @@
   margin-bottom: 36px;
   padding: 32px;
   border: 1px solid var(--grey-200);
-  border-radius: 12px;
+  border-radius: var(--radius-container);
   background: var(--surface);
   box-shadow: var(--card-shadow);
 }
@@ -19,7 +19,6 @@
   font-size: clamp(27px, 3vw, 35px);
   letter-spacing: -0.04em;
 }
-/* Rating sits under the photo, like on Account */
 .profile-photo-column {
   display: grid;
   flex: none;

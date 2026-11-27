@@ -19,8 +19,7 @@
   width: 100%;
 }
 
-/* Outlined so it does not outweigh the fields beside it */
-.photo-picker-upload,
+/* Outlined so removing stays quieter than the teal upload button above it */
 .photo-picker-remove {
   --action-color: var(--slate-700);
   --action-bg: var(--surface);
