@@ -1,10 +1,5 @@
-import {
-  endOfMonth,
-  endOfWeek,
-  getLocalTimeZone,
-  parseDate,
-  today as todayDate,
-} from '@internationalized/date'
+import { endOfMonth, endOfWeek } from '@internationalized/date'
+import { campusToday, dueDay } from './campusDate.js'
 import { isFinished } from './loanStatus.js'
 
 // Custom row starts at two weeks, a common loan length
@@ -19,8 +14,8 @@ function dueCutoff({ range, amount, unit }, today) {
 export function matchesDueDate(loan, dueFilter) {
   if (dueFilter.range === 'any') return true
   if (isFinished(loan)) return false
-  const today = todayDate(getLocalTimeZone())
-  const dueDate = parseDate(String(loan.dueDate).slice(0, 10))
+  const today = campusToday()
+  const dueDate = dueDay(loan)
   return dueDate.compare(today) >= 0 && dueDate.compare(dueCutoff(dueFilter, today)) <= 0
 }
 

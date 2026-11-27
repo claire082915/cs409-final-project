@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getLocalTimeZone, today } from '@internationalized/date'
+import { campusToday } from '../lib/campusDate.js'
 import DatePickerField from './DatePickerField.jsx'
 import ItemDialog from './ItemDialog.jsx'
 import PendingLabel from './PendingLabel.jsx'
@@ -44,7 +44,7 @@ export default function BorrowItemDialog({ item, onClose, onSent }) {
           }
           className="form-field"
           name="dueDate"
-          minValue={today(getLocalTimeZone()).add({ days: 1 })}
+          minValue={campusToday().add({ days: 1 })}
           isRequired
         />
         <label className="form-field">

@@ -1,5 +1,6 @@
 import Loan from '../models/loan.js'
 import Rating from '../models/rating.js'
+import { CAMPUS_TIME_ZONE } from './dueDate.js'
 
 // Picked by hand
 const MIN_RETURNS = 3
@@ -22,6 +23,12 @@ async function borrowerRatings(userIds) {
   return averages
 }
 
+// On time means returned by the end of the due day on campus, compared as YYYY-MM-DD
+const returnDay = {
+  $dateToString: { format: '%Y-%m-%d', date: '$returnedAt', timezone: CAMPUS_TIME_ZONE },
+}
+const dueDay = { $dateToString: { format: '%Y-%m-%d', date: '$dueDate' } }
+
 export async function trustByUser(userIds) {
   const [results, ratings] = await Promise.all([
     Loan.aggregate([
@@ -35,7 +42,7 @@ export async function trustByUser(userIds) {
         $group: {
           _id: '$borrower',
           completed: { $sum: 1 },
-          onTime: { $sum: { $cond: [{ $lte: ['$returnedAt', '$dueDate'] }, 1, 0] } },
+          onTime: { $sum: { $cond: [{ $lte: [returnDay, dueDay] }, 1, 0] } },
         },
       },
     ]),

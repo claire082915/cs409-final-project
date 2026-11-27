@@ -12,6 +12,7 @@ import LoanStatus from '../components/LoanStatus.jsx'
 import { apiFetch } from '../lib/api.js'
 import { matchesDueDate } from '../lib/dueDate.js'
 import { getStatus, isOverdue } from '../lib/loanStatus.js'
+import { formatDueDate, formatTimestamp } from '../lib/campusDate.js'
 import '../styles/pages/dashboard.css'
 
 const ATTENTION_ORDER = ['overdue', 'returned', 'pending']
@@ -24,11 +25,7 @@ function personName(person) {
   return person?.displayName || (person?.username ? `@${person.username}` : 'Community member')
 }
 
-function formatDate(value) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
-    new Date(`${String(value).slice(0, 10)}T12:00:00`),
-  )
-}
+const DATE_OPTIONS = { month: 'short', day: 'numeric' }
 
 function otherPerson(loan) {
   return loan.direction === 'borrowed' ? loan.owner : loan.borrower
@@ -125,7 +122,7 @@ function attentionAction(loan) {
       text: (
         <>
           You borrowed from <strong>{personName(loan.owner)}</strong>, was due{' '}
-          {formatDate(loan.dueDate)}
+          {formatDueDate(loan.dueDate, DATE_OPTIONS)}
         </>
       ),
       label: 'Return',
@@ -135,7 +132,8 @@ function attentionAction(loan) {
     return {
       text: (
         <>
-          <strong>{personName(loan.borrower)}</strong> has it, was due {formatDate(loan.dueDate)}
+          <strong>{personName(loan.borrower)}</strong> has it, was due{' '}
+          {formatDueDate(loan.dueDate, DATE_OPTIONS)}
         </>
       ),
       label: 'View',
@@ -297,7 +295,10 @@ export default function DashboardPage() {
                       to={loanPage(loan)}
                       text={personLine(loan)}
                     >
-                      Due <span className="dashboard-row-due">{formatDate(loan.dueDate)}</span>
+                      Due{' '}
+                      <span className="dashboard-row-due">
+                        {formatDueDate(loan.dueDate, DATE_OPTIONS)}
+                      </span>
                     </DashboardRow>
                   ))}
                 </div>
@@ -322,7 +323,7 @@ export default function DashboardPage() {
                       to={loanPage(event.loan)}
                       text={activityText(event)}
                     >
-                      {formatDate(event.date)}
+                      {formatTimestamp(event.date, DATE_OPTIONS)}
                     </DashboardRow>
                   ))}
                 </div>

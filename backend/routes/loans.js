@@ -10,6 +10,7 @@ import { reputationsByUser } from '../lib/reputation.js'
 import { trustByUser } from '../lib/trust.js'
 import { approveTrustedRequests, autoApproves, requestsToAutoApprove } from '../lib/autoApprove.js'
 import { DUE_SOON_DAYS, MS_PER_DAY } from '../lib/notify.js'
+import { campusToday } from '../lib/dueDate.js'
 // Read routes show the item and both users instead of bare ids
 const loanDetails = [
   { path: 'item', select: 'name description category condition photos deletedAt' },
@@ -52,11 +53,13 @@ const confirmRoute = router.route('/:id/confirm')
 const rejectRoute = router.route('/:id/reject')
 // Withdraw a request (PATCH /api/loans/:id/cancel)
 const cancelRoute = router.route('/:id/cancel')
-// Rate the other person on a loan (POST) or see your own rating (GET) (/api/loans/:id/ratings)
-const ratingsRoute = router.route('/:id/ratings')
+
+function isScore(score) {
+  return Number.isInteger(score) && score >= 1 && score <= 5
+}
 
 function statusFilter(status) {
-  const currDate = new Date()
+  const today = campusToday()
   if (status === undefined) {
     return {}
   }
@@ -64,14 +67,14 @@ function statusFilter(status) {
     return { status: 'requested' }
   }
   if (status === 'active') {
-    return { status: 'approved', dueDate: { $gte: currDate } }
+    return { status: 'approved', dueDate: { $gte: today } }
   }
   if (status === 'overdue') {
-    return { status: 'approved', dueDate: { $lt: currDate } }
+    return { status: 'approved', dueDate: { $lt: today } }
   }
   if (status === 'due-soon') {
-    const cutoff = new Date(currDate.getTime() + DUE_SOON_DAYS * MS_PER_DAY)
-    return { status: 'approved', dueDate: { $gte: currDate, $lte: cutoff } }
+    const cutoff = new Date(today.getTime() + DUE_SOON_DAYS * MS_PER_DAY)
+    return { status: 'approved', dueDate: { $gte: today, $lte: cutoff } }
   }
   if (status === 'returned') {
     return { status: { $in: ['returned', 'confirmed'] } }
@@ -96,7 +99,7 @@ loansRoute.post(async function (req, res) {
   if (
     !body.dueDate ||
     isNaN(new Date(body.dueDate).getTime()) ||
-    new Date(body.dueDate) <= new Date()
+    new Date(body.dueDate) <= campusToday()
   ) {
     return res.status(400).json({ message: 'dueDate must be a valid future date', data: {} })
   }
@@ -246,7 +249,7 @@ approveRoute.patch(async function (req, res) {
     if (
       !body.dueDate ||
       isNaN(new Date(body.dueDate).getTime()) ||
-      new Date(body.dueDate) <= new Date()
+      new Date(body.dueDate) <= campusToday()
     ) {
       return res.status(400).json({ message: 'dueDate must be a valid future date', data: {} })
     }
@@ -254,7 +257,7 @@ approveRoute.patch(async function (req, res) {
   }
 
   // Due date passed while the request was waiting -> 409
-  if (req.loan.dueDate <= new Date()) {
+  if (req.loan.dueDate < campusToday()) {
     return res.status(409).json({ message: 'Due date has already passed', data: {} })
   }
   // Item went out on another loan in the meantime -> 409
@@ -293,11 +296,21 @@ returnRoute.patch(async function (req, res) {
   if (!req.body?.photo) {
     return res.status(400).json({ message: 'Add a photo of the item to return it', data: {} })
   }
+  // Score for the owner must be from 1 to 5 -> 400
+  if (!isScore(req.body.score)) {
+    return res.status(400).json({ message: 'score must be from 1 to 5', data: {} })
+  }
 
   req.loan.status = 'returned'
   req.loan.returnedAt = new Date()
   req.loan.returnPhoto = req.body.photo
   await req.loan.save()
+  await Rating.create({
+    loan: req.loan._id,
+    rater: req.userId,
+    ratee: req.loan.owner,
+    score: req.body.score,
+  })
   return res.status(200).json({ message: 'OK', data: req.loan })
 })
 
@@ -310,10 +323,20 @@ confirmRoute.patch(async function (req, res) {
   if (req.loan.status !== 'returned') {
     return res.status(409).json({ message: 'Borrower has not returned this item yet', data: {} })
   }
+  // Score for the borrower must be from 1 to 5 -> 400
+  if (!isScore(req.body?.score)) {
+    return res.status(400).json({ message: 'score must be from 1 to 5', data: {} })
+  }
 
   req.loan.status = 'confirmed'
   req.loan.confirmedAt = new Date()
   await req.loan.save()
+  await Rating.create({
+    loan: req.loan._id,
+    rater: req.userId,
+    ratee: req.loan.borrower,
+    score: req.body.score,
+  })
   // The item is free again, so the next trusted request can have it
   if (req.user.preferences.autoApprove) {
     await approveTrustedRequests(req.userId, [req.loan.item])
@@ -349,65 +372,6 @@ cancelRoute.patch(async function (req, res) {
   req.loan.status = 'cancelled'
   await req.loan.save()
   return res.status(200).json({ message: 'OK', data: req.loan })
-})
-
-ratingsRoute.post(async function (req, res) {
-  const body = req.body ?? {}
-
-  const isOwner = req.loan.owner.equals(req.userId)
-  const isBorrower = req.loan.borrower.equals(req.userId)
-  if (!isOwner && !isBorrower) {
-    return res.status(403).json({ message: 'Only the owner or borrower can rate', data: {} })
-  }
-
-  if (req.loan.status !== 'confirmed') {
-    return res.status(409).json({ message: 'Loan is not confirmed yet', data: {} })
-  }
-
-  // score must be from 1 to 5 -> 400
-  if (!Number.isInteger(body.score) || body.score < 1 || body.score > 5) {
-    return res.status(400).json({ message: 'score must be from 1 to 5', data: {} })
-  }
-
-  // Already rated this loan -> 409
-  if (await Rating.exists({ loan: req.loan._id, rater: req.userId })) {
-    return res.status(409).json({ message: 'You already rated this loan', data: {} })
-  }
-
-  let ratee = null
-  if (isOwner) {
-    ratee = req.loan.borrower
-  } else {
-    ratee = req.loan.owner
-  }
-  let newRating
-  try {
-    newRating = await Rating.create({
-      loan: req.loan._id,
-      rater: req.userId,
-      ratee: ratee,
-      score: body.score,
-    })
-  } catch (err) {
-    // A second rating from this user landed after the check above
-    if (isDuplicateKeyError(err)) {
-      return res.status(409).json({ message: 'You already rated this loan', data: {} })
-    }
-    throw err
-  }
-
-  return res.status(201).json({ message: 'OK', data: newRating })
-})
-
-ratingsRoute.get(async function (req, res) {
-  if (!req.loan.owner.equals(req.userId) && !req.loan.borrower.equals(req.userId)) {
-    return res
-      .status(403)
-      .json({ message: 'Only the owner or borrower can view ratings', data: {} })
-  }
-  // Null until the caller rates this loan
-  const rating = await Rating.findOne({ loan: req.loan._id, rater: req.userId })
-  return res.status(200).json({ message: 'OK', data: rating })
 })
 
 export default router

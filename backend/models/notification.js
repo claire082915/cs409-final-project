@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const KINDS = ['auto-approved', 'due-soon', 'found', 'empty', 'error']
+const KINDS = ['auto-approved', 'due-soon', 'overdue', 'found', 'empty', 'error']
 
 const notificationSchema = new mongoose.Schema(
   {
@@ -19,10 +19,10 @@ const notificationSchema = new mongoose.Schema(
 )
 
 notificationSchema.index({ user: 1, dismissed: 1, createdAt: -1 })
-// One due soon reminder per loan
+// One reminder of each kind per loan
 notificationSchema.index(
-  { user: 1, loan: 1 },
-  { unique: true, partialFilterExpression: { kind: 'due-soon' } },
+  { user: 1, loan: 1, kind: 1 },
+  { unique: true, partialFilterExpression: { loan: { $exists: true } } },
 )
 
 export default mongoose.model('Notification', notificationSchema)

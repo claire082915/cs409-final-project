@@ -1,9 +1,8 @@
-// A loan is overdue once its whole due date has passed
+import { campusToday, dueDay } from './campusDate.js'
+
+// A loan is overdue once its whole due day has passed on campus
 export function isOverdue(loan) {
-  return (
-    loan.status === 'approved' &&
-    new Date(`${String(loan.dueDate).slice(0, 10)}T23:59:59`) < new Date()
-  )
+  return loan.status === 'approved' && dueDay(loan).compare(campusToday()) < 0
 }
 
 export function getStatus(loan) {

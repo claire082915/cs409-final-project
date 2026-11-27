@@ -118,6 +118,9 @@ export default function LandingPage() {
 
       <footer className="site-footer">
         <Logo light />
+        <p className="site-footer-credit">
+          Photos from <a href="https://unsplash.com">Unsplash</a>
+        </p>
       </footer>
     </div>
   )

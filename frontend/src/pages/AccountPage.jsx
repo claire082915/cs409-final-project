@@ -218,7 +218,7 @@ export default function AccountPage() {
                 />
                 <SettingToggle
                   label="Due date reminders"
-                  description="Before something you borrowed is due"
+                  description="When something you borrowed is due soon or late"
                   checked={preferences.dueDateReminders}
                   onChange={() => togglePreference('dueDateReminders')}
                 />

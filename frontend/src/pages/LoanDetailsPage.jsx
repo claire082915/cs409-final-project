@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { fadeInCards } from '../lib/fadeInCards.js'
-import { ArrowLeftRight, CalendarDays, PackageOpen, SearchX } from 'lucide-react'
+import { ArrowLeftRight, PackageOpen, SearchX } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { countBy, orderBy } from 'lodash-es'
 import { toast } from 'sonner'
@@ -16,11 +16,13 @@ import PendingLabel from '../components/PendingLabel.jsx'
 import PersonLink from '../components/PersonLink.jsx'
 import PhotoDropZone from '../components/PhotoDropZone.jsx'
 import SearchField from '../components/SearchField.jsx'
+import StarRating from '../components/StarRating.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
 import { refreshPendingActions } from '../lib/pendingActions.js'
 import { ANY_DUE_DATE, dueDateFromParam, dueDateParam, matchesDueDate } from '../lib/dueDate.js'
 import { getStatus, isFinished } from '../lib/loanStatus.js'
+import { formatDueDate, formatTimestamp } from '../lib/campusDate.js'
 import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
 import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
 import { compressPhoto } from '../lib/compressPhoto.js'
@@ -37,16 +39,7 @@ function personName(person) {
   return person?.displayName || (person?.username ? `@${person.username}` : 'Community member')
 }
 
-function formatDate(value) {
-  if (!value) return 'Date unavailable'
-  const date = new Date(`${String(value).slice(0, 10)}T12:00:00`)
-  if (Number.isNaN(date.getTime())) return 'Date unavailable'
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
-}
+const DATE_OPTIONS = { month: 'short', day: 'numeric' }
 
 function isLoan(loan) {
   return LOAN_STATUSES.includes(loan.status)
@@ -113,8 +106,9 @@ function LoanCard({ loan, direction, isHighlighted, onAction }) {
           <PersonLink person={person} />
         </div>
         <div className="loan-card-meta">
-          <CalendarDays size={14} />
-          Due {formatDate(loan.dueDate)}
+          {loan.returnedAt
+            ? `Returned ${formatTimestamp(loan.returnedAt, DATE_OPTIONS)}`
+            : `Due ${formatDueDate(loan.dueDate, DATE_OPTIONS)}`}
         </div>
       </div>
       {action && (
@@ -201,6 +195,8 @@ export default function LoanDetailsPage() {
   // The photo stays in the browser until the return is sent
   const [returnPhotoFile, setReturnPhotoFile] = useState(null)
   const [returnPhotoPreview, setReturnPhotoPreview] = useState('')
+  // The rating of the other person sent with the return or confirm
+  const [score, setScore] = useState(null)
   const loadSequence = useRef(0)
   const [listRef] = useAutoAnimate(fadeInCards)
   const highlightId = useHighlightedLoan(!loading)
@@ -264,6 +260,7 @@ export default function LoanDetailsPage() {
   const openAction = (target) => {
     setReturnPhotoFile(null)
     setReturnPhotoPreview('')
+    setScore(null)
     setActionTarget(target)
   }
 
@@ -281,8 +278,8 @@ export default function LoanDetailsPage() {
     try {
       const body =
         action === 'return'
-          ? { photo: await uploadPhoto(await compressPhoto(returnPhotoFile)) }
-          : undefined
+          ? { photo: await uploadPhoto(await compressPhoto(returnPhotoFile)), score }
+          : { score }
       const updated = await apiFetch(`loans/${loan._id}/${action}`, { method: 'PATCH', body })
       setLoans((current) => ({
         ...current,
@@ -322,6 +319,12 @@ export default function LoanDetailsPage() {
         'Confirming...',
       ],
     }[selectedAction] || []
+  let blockedReason = ''
+  if (selectedAction === 'return' && !returnPhotoFile) {
+    blockedReason = 'Add a photo first'
+  } else if (!score) {
+    blockedReason = 'Add a rating first'
+  }
 
   return (
     <AppShell>
@@ -418,9 +421,7 @@ export default function LoanDetailsPage() {
             </PendingLabel>
           }
           destructive={false}
-          confirmBlockedReason={
-            selectedAction === 'return' && !returnPhotoFile ? 'Add a photo first' : ''
-          }
+          confirmBlockedReason={blockedReason}
           onCancel={() => setActionTarget(null)}
           onConfirm={updateLoan}
         >
@@ -430,6 +431,13 @@ export default function LoanDetailsPage() {
             </PhotoDropZone>
           )}
           {selectedAction === 'confirm' && <ReturnPhotos loan={actionTarget.loan} />}
+          {actionTarget && (
+            <StarRating
+              label={`Rate ${personName(otherPerson(actionTarget.loan, actionTarget.direction))}`}
+              score={score}
+              onChange={setScore}
+            />
+          )}
         </ConfirmDialog>
       </main>
     </AppShell>

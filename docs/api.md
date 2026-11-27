@@ -40,8 +40,6 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. Routes wit
 | `loans/:id/cancel`      | PATCH  | Withdraw a request (borrower)                                 |
 | `loans/lent`            | GET    | List loans you lent, newest first                             |
 | `loans/borrowed`        | GET    | List loans you borrowed, newest first                         |
-| `loans/:id/ratings`     | POST   | Rate the other user                                           |
-|                         | GET    | See the rating you gave on a loan                             |
 | `loans/reminders`       | GET    | List your borrowed loans that are overdue or due soon         |
 | `loans/auto-approvable` | GET    | Count pending requests auto-approve would approve immediately |
 | `loans/pending`         | GET    | Count requests and loans waiting on you                       |
@@ -73,7 +71,7 @@ Responses add `available`, which is `false` while the item is on loan. While it'
 
 ## Loans
 
-`POST loans` takes `{ itemId, dueDate, message }`, and comes back `approved` if auto-approve applies. `PATCH loans/:id/return` takes `{ photo }`, the borrower's return photo.
+`POST loans` takes `{ itemId, dueDate, message }`, and comes back `approved` if auto-approve applies. `PATCH loans/:id/return` takes `{ photo, score }`, the borrower's return photo and their 1 to 5 rating of the owner. `PATCH loans/:id/confirm` takes `{ score }`, the owner's rating of the borrower.
 
 `requested` → `approved` → `returned` → `confirmed`, or `requested` → `rejected` or `cancelled`. The item is on loan while `approved` or `returned`.
 
@@ -106,7 +104,7 @@ Responses add `available`, which is `false` while the item is on loan. While it'
 
 `GET loans/lent` also gives each borrower a `reputation` and `trust`. `GET loans/pending` returns the counts `{ requests, loans }`, and `GET loans/reminders` returns `{ overdue, dueSoon }`.
 
-`POST loans/:id/ratings` takes `{ score }` from 1 to 5, once per person after the loan is `confirmed`. `GET` returns only the rating you gave.
+Ratings are given with return and confirm.
 
 ### Auto-approve
 
@@ -114,7 +112,7 @@ A borrower is `trusted` with 3+ confirmed returns, 90% on time, and a 4+ average
 
 ## Notifications
 
-`GET notifications` returns your 20 newest notifications. It also adds a due soon reminder for loans you borrowed that are due within 3 days (unless `dueDateReminders` is off).
+`GET notifications` returns your 20 newest notifications. For loans you borrowed, it also adds one due soon reminder within 3 days of the due date, and one overdue reminder after the due day ends (unless `dueDateReminders` is off).
 
 ## Profiles
 

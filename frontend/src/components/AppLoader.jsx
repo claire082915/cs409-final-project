@@ -15,7 +15,7 @@ export default function AppLoader({ inline = false, label = 'Loading…' }) {
         <span className="app-loader-mark" aria-hidden="true">
           <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />
         </span>
-        <strong>{waking ? 'The server is waking up…' : label}</strong>
+        <strong>{waking ? 'Waking up the server...' : label}</strong>
         <small>{waking ? 'This can take up to a minute.' : 'Getting Lendr ready.'}</small>
       </div>
     </Container>

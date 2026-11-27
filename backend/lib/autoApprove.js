@@ -5,6 +5,7 @@ import { loanedItemIds } from './availability.js'
 import { isDuplicateKeyError } from './duplicateKey.js'
 import { trustByUser } from './trust.js'
 import { notifyLoan } from './notify.js'
+import { campusToday } from './dueDate.js'
 
 export async function autoApproves(ownerId) {
   return Boolean(await User.exists({ _id: ownerId, 'preferences.autoApprove': true }))
@@ -16,7 +17,7 @@ export async function requestsToAutoApprove(ownerId, itemIds) {
     owner: ownerId,
     item: { $in: itemIds },
     status: 'requested',
-    dueDate: { $gt: new Date() },
+    dueDate: { $gte: campusToday() },
   }).sort({ createdAt: 1 })
   const [trusts, loanedIds, liveItemIds] = await Promise.all([
     trustByUser(requests.map((request) => request.borrower)),

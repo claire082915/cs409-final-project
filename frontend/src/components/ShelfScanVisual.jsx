@@ -1,7 +1,5 @@
 import { Camera, ScanSearch } from 'lucide-react'
-
-const SHELF_PHOTO =
-  'https://images.unsplash.com/photo-1631891425050-d2a73f1855e7?auto=format&fit=crop&w=600&h=640&q=80'
+import shelfPhoto from '../assets/shelf-photo.jpg'
 
 // Boxes in percent of the 600 by 640 crop, measured from the photo
 const DETECTED_ITEMS = [
@@ -31,7 +29,7 @@ export default function ShelfScanVisual() {
     <div className="hero-visual" aria-hidden="true">
       <div className="visual-sun" />
       <div className="hero-photo">
-        <img src={SHELF_PHOTO} alt="" />
+        <img src={shelfPhoto} alt="" />
         <div className="scan-line" />
         {DETECTED_ITEMS.map((item) => (
           <div className="scan-box" key={item.name} style={boxStyle(item)}>

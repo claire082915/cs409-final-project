@@ -91,6 +91,14 @@
   color: var(--brand-orange-dark);
   background: color-mix(in srgb, var(--brand-orange) 12%, white);
 }
+.notification-due-soon .notification-icon {
+  color: var(--orange-400);
+  background: var(--orange-50);
+}
+.notification-overdue .notification-icon {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 12%, white);
+}
 .notification-copy {
   display: grid;
   gap: 2px;

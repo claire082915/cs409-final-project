@@ -1,6 +1,7 @@
 import Loan from '../models/loan.js'
 import Notification from '../models/notification.js'
 import { isDuplicateKeyError } from './duplicateKey.js'
+import { campusDayStart, campusToday } from './dueDate.js'
 
 export const DUE_SOON_DAYS = 3
 export const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -27,10 +28,16 @@ const LOAN_MESSAGES = {
     title: 'Due soon',
     text: ({ item, owner, dueDate }) => `${item} is due back to ${owner} on ${dueDate}.`,
   },
+  overdue: {
+    to: 'borrower',
+    preference: 'dueDateReminders',
+    title: 'Overdue',
+    text: ({ item, owner, dueDate }) => `${item} was due back to ${owner} on ${dueDate}.`,
+  },
 }
 
 // Loads its own copy so the caller's loan isn't populated with the other user's preferences
-export async function notifyLoan(loanId, kind) {
+export async function notifyLoan(loanId, kind, createdAt) {
   const message = LOAN_MESSAGES[kind]
   const loan = await Loan.findById(loanId).populate([
     { path: 'item', select: 'name' },
@@ -53,13 +60,14 @@ export async function notifyLoan(loanId, kind) {
     title: message.title,
     text: message.text(names),
     loan: loan._id,
+    createdAt,
   })
 }
 
 // Another tab loading at the same moment might have made it, the unique index catches that
-async function remindOnce(loanId) {
+async function remindOnce(loanId, kind, createdAt) {
   try {
-    await notifyLoan(loanId, 'due-soon')
+    await notifyLoan(loanId, kind, createdAt)
   } catch (err) {
     if (!isDuplicateKeyError(err)) {
       throw err
@@ -67,24 +75,30 @@ async function remindOnce(loanId) {
   }
 }
 
+// Dated the day the reminder started to apply, so a late visit still shows the right day
+function reminderDate(loan, kind) {
+  if (kind === 'overdue') {
+    return campusDayStart(new Date(loan.dueDate.getTime() + MS_PER_DAY))
+  }
+  const windowStart = campusDayStart(new Date(loan.dueDate.getTime() - DUE_SOON_DAYS * MS_PER_DAY))
+  return windowStart > loan.approvedAt ? windowStart : loan.approvedAt
+}
+
 // Run when the user loads notifications, so reminders appear without a scheduled job
 export async function createDueReminders(userId) {
-  const now = new Date()
-  const dueSoonCutoff = new Date(now.getTime() + DUE_SOON_DAYS * MS_PER_DAY)
-  const [dueSoon, made] = await Promise.all([
-    Loan.find({
-      borrower: userId,
-      status: 'approved',
-      dueDate: { $gte: now, $lte: dueSoonCutoff },
-    }),
-    Notification.distinct('loan', { user: userId, kind: 'due-soon' }),
+  const today = campusToday()
+  const dueSoonCutoff = new Date(today.getTime() + DUE_SOON_DAYS * MS_PER_DAY)
+  const [loans, made] = await Promise.all([
+    Loan.find({ borrower: userId, status: 'approved', dueDate: { $lte: dueSoonCutoff } }),
+    Notification.find({ user: userId, kind: { $in: ['due-soon', 'overdue'] } }).select('loan kind'),
   ])
-  const remindedLoanIds = new Set(made.map(String))
+  const madeReminders = new Set(made.map((reminder) => `${reminder.loan} ${reminder.kind}`))
 
   const newReminders = []
-  for (const loan of dueSoon) {
-    if (!remindedLoanIds.has(String(loan._id))) {
-      newReminders.push(remindOnce(loan._id))
+  for (const loan of loans) {
+    const kind = loan.dueDate < today ? 'overdue' : 'due-soon'
+    if (!madeReminders.has(`${loan._id} ${kind}`)) {
+      newReminders.push(remindOnce(loan._id, kind, reminderDate(loan, kind)))
     }
   }
   await Promise.all(newReminders)

@@ -12,13 +12,12 @@ import Reputation from '../components/Reputation.jsx'
 import TrustBadge from '../components/TrustBadge.jsx'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { apiFetch } from '../lib/api.js'
+import { formatTimestamp } from '../lib/campusDate.js'
 import '../styles/pages/browse-borrow.css'
 import '../styles/pages/profile.css'
 
 function joinedLabel(joinedAt) {
-  const month = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric' }).format(
-    new Date(joinedAt),
-  )
+  const month = formatTimestamp(joinedAt, { month: 'short', year: 'numeric' })
   return `Joined ${month}`
 }
 

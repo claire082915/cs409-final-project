@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogTrigger, Heading, Popover } from 'react-aria-components'
-import { Bell, CalendarClock, ShieldCheck, Sparkles, X } from 'lucide-react'
+import { Bell, CalendarClock, CircleAlert, ShieldCheck, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { openPanel, useDetectionTask } from '../lib/detectionTask.js'
 import {
@@ -9,12 +9,14 @@ import {
   refreshNotifications,
   useNotifications,
 } from '../lib/notifications.js'
+import { campusDay, campusToday } from '../lib/campusDate.js'
 import '../styles/components/count-badge.css'
 import '../styles/components/notifications-menu.css'
 
 const ICON_BY_KIND = {
   'auto-approved': ShieldCheck,
   'due-soon': CalendarClock,
+  overdue: CircleAlert,
   found: Sparkles,
   empty: Sparkles,
   error: Sparkles,
@@ -23,6 +25,7 @@ const ICON_BY_KIND = {
 const LINK_BY_KIND = {
   'auto-approved': '/loan-details?view=lent',
   'due-soon': '/loan-details',
+  overdue: '/loan-details',
 }
 
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
@@ -39,7 +42,8 @@ function timeAgo(createdAt) {
   if (hours < 24) {
     return relativeTime.format(-hours, 'hour')
   }
-  return relativeTime.format(-Math.round(hours / 24), 'day')
+  // Count calendar days so something from early yesterday still reads as yesterday
+  return relativeTime.format(-campusToday().compare(campusDay(createdAt)), 'day')
 }
 
 function NotificationRow({ notification, onOpen }) {

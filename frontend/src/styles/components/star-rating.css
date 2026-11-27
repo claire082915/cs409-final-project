@@ -1,0 +1,34 @@
+.star-rating {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+}
+.star-rating-label {
+  color: var(--slate-900);
+  font-size: 14px;
+  font-weight: 600;
+}
+.star-rating-stars {
+  display: flex;
+  gap: 2px;
+}
+.star-rating-star {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border-radius: var(--radius-control);
+  color: var(--slate-200);
+  cursor: pointer;
+}
+/* Same orange as the star in ratings shown on profiles */
+.star-rating-star.filled {
+  color: var(--orange-400);
+}
+.star-rating-star.filled svg {
+  fill: currentColor;
+}
+/* Radios render as labels, which the global focus ring skips, so match it here */
+.star-rating-star[data-focus-visible] {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}

@@ -22,7 +22,7 @@ Available at https://claire082915.github.io/cs409-final-project/. Click **Try th
 
 ## Running locally
 
-Create `backend/.env` and `frontend/.env` from their `.env.example` files, then run `npm i` and `npm run dev` in each. The app opens at http://localhost:5173/cs409-final-project/.
+Create `backend/.env` and `frontend/.env` from their `.env.example` files, then run `npm i` and `npm run dev` in each.
 
 ## API
 

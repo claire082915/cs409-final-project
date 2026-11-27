@@ -387,7 +387,17 @@
   background: var(--slate-900);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 max(30px, calc((100vw - 1040px) / 2));
+}
+.site-footer-credit {
+  margin: 0;
+  color: var(--slate-300);
+  font-size: 13px;
+}
+.site-footer-credit a {
+  color: inherit;
+  text-decoration: underline;
 }
 .site-footer .logo {
   color: var(--grey-25);

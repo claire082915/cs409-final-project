@@ -11,7 +11,7 @@ import {
 } from 'react-aria-components'
 import { CalendarDays, ChevronRight, Inbox, MapPin, PackageOpen } from 'lucide-react'
 import { toast } from 'sonner'
-import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
+import { campusToday, dueDay, formatDueDate, formatTimestamp } from '../lib/campusDate.js'
 import AppShell from '../components/AppShell.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
@@ -64,11 +64,7 @@ function remainingRequests(requests, handledRequest, action) {
   return remaining
 }
 
-function dateLabel(value) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
-    new Date(`${String(value).slice(0, 10)}T12:00:00`),
-  )
-}
+const DATE_OPTIONS = { month: 'short', day: 'numeric' }
 
 function personName(person) {
   return person.displayName || `@${person.username}`
@@ -108,10 +104,10 @@ function RequestDetails({ request, person, personDetail }) {
       <p className="request-meta">
         <span>
           <CalendarDays size={14} aria-hidden="true" />
-          Return by {dateLabel(request.dueDate)}
+          Return by {formatDueDate(request.dueDate, DATE_OPTIONS)}
         </span>
         <span aria-hidden="true">·</span>
-        <span>Requested {dateLabel(request.createdAt)}</span>
+        <span>Requested {formatTimestamp(request.createdAt, DATE_OPTIONS)}</span>
       </p>
     </div>
   )
@@ -321,8 +317,8 @@ function ApproveDialog({ request, isPending, onCancel, onConfirm }) {
                 label="Return by"
                 className="form-field approve-date"
                 name="dueDate"
-                defaultValue={parseDate(String(request.dueDate).slice(0, 10))}
-                minValue={today(getLocalTimeZone()).add({ days: 1 })}
+                defaultValue={dueDay(request)}
+                minValue={campusToday().add({ days: 1 })}
                 isRequired
               />
               <div className="confirm-actions">

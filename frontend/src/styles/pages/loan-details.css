@@ -63,10 +63,7 @@
   font-size: 13px;
 }
 .loan-card-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 10px;
+  margin-top: 14px;
   color: var(--slate-500);
   font-size: 13px;
 }
