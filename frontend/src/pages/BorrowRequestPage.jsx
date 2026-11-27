@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
   Button,
   Dialog,
@@ -15,11 +15,11 @@ import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import AppShell from '../components/AppShell.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import AppLoader from '../components/AppLoader.jsx'
-import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import ItemDialog from '../components/ItemDialog.jsx'
 import DatePickerField from '../components/DatePickerField.jsx'
 import PendingLabel from '../components/PendingLabel.jsx'
+import PersonLink from '../components/PersonLink.jsx'
 import InfoTip from '../components/InfoTip.jsx'
 import Reputation from '../components/Reputation.jsx'
 import Switch from '../components/Switch.jsx'
@@ -77,7 +77,11 @@ function personName(person) {
 function ItemPhoto({ item }) {
   return (
     <div className="photo-box request-photo">
-      {item.photos?.[0] ? <img src={item.photos[0]} alt="" /> : <PackageOpen size={24} />}
+      {item.photos?.[0] ? (
+        <img src={item.photos[0]} alt="" />
+      ) : (
+        <PackageOpen size={32} aria-hidden="true" />
+      )}
     </div>
   )
 }
@@ -97,15 +101,7 @@ function RequestDetails({ request, person, personDetail }) {
   return (
     <div className="request-details">
       <div className="request-person">
-        <Link to={`/profile/${person.username}`} className="request-person-link">
-          <Avatar
-            photo={person.photo}
-            name={person.displayName}
-            username={person.username}
-            className="avatar-small"
-          />
-          <span className="request-person-name">{personName(person)}</span>
-        </Link>
+        <PersonLink person={person} />
         {personDetail}
       </div>
       {request.message && <p className="request-message">{request.message}</p>}
@@ -469,7 +465,7 @@ export default function BorrowRequestPage() {
   const [searchParams] = useSearchParams()
   const [view, setView] = useState(searchParams.get('view') ?? 'received')
   const [requests, setRequests] = useState([])
-  const [requestCounts, setRequestCounts] = useState({ received: 0, sent: 0 })
+  const [requestCounts, setRequestCounts] = useState(null)
   const [approvingRequest, setApprovingRequest] = useState(null)
   const [decliningRequest, setDecliningRequest] = useState(null)
   const [cancelingRequest, setCancelingRequest] = useState(null)
@@ -511,8 +507,10 @@ export default function BorrowRequestPage() {
       .then(([received, sent]) => {
         if (!cancelled) setRequestCounts({ received: received.length, sent: sent.length })
       })
-      // The counts stay at 0 if they can't load, the list shows its own error
-      .catch(() => {})
+      // The counts show 0 if they can't load, the list shows its own error
+      .catch(() => {
+        if (!cancelled) setRequestCounts({ received: 0, sent: 0 })
+      })
     return () => {
       cancelled = true
     }
@@ -521,7 +519,7 @@ export default function BorrowRequestPage() {
   // The shown view's count follows its list as requests are answered
   useEffect(() => {
     if (!loading && !error) {
-      setRequestCounts((counts) => ({ ...counts, [view]: requests.length }))
+      setRequestCounts((counts) => counts && { ...counts, [view]: requests.length })
     }
   }, [view, loading, error, requests])
 
@@ -571,54 +569,61 @@ export default function BorrowRequestPage() {
             <p>Requests for your items and ones you've sent.</p>
           </div>
         </header>
-        <div className="requests-views">
-          <ViewSwitch
-            label="Requests to show"
-            options={Object.entries(VIEWS).map(([id, { label }]) => ({
-              id,
-              label: (
-                <>
-                  {label}
-                  <small>{requestCounts[id]}</small>
-                </>
-              ),
-            }))}
-            selected={view}
-            onChange={showView}
-          />
-          {view === 'received' && <AutoApproveToggle onTurnedOn={showAutoApproved} />}
-        </div>
-        {error && (
-          <p className="requests-error" role="alert">
-            {error}
-          </p>
-        )}
-        {loading ? (
+        {/* The tab counts wait for both lists so they never show a wrong 0 */}
+        {requestCounts === null ? (
           <AppLoader inline label="Loading requests..." />
-        ) : requests.length === 0 ? (
-          <EmptyRequests view={view} />
         ) : (
           <>
-            <p className="count-label">
-              Pending
-              <small>
-                {requests.length} {requests.length === 1 ? 'request' : 'requests'}
-              </small>
-            </p>
-            {view === 'received' ? (
-              <ReceivedRequests
-                requests={requests}
-                highlightId={highlightId}
-                onApprove={setApprovingRequest}
-                onDecline={setDecliningRequest}
+            <div className="requests-views">
+              <ViewSwitch
+                label="Requests to show"
+                options={Object.entries(VIEWS).map(([id, { label }]) => ({
+                  id,
+                  label: (
+                    <>
+                      {label}
+                      <small>{requestCounts[id]}</small>
+                    </>
+                  ),
+                }))}
+                selected={view}
+                onChange={showView}
               />
+              {view === 'received' && <AutoApproveToggle onTurnedOn={showAutoApproved} />}
+            </div>
+            {error && (
+              <p className="requests-error" role="alert">
+                {error}
+              </p>
+            )}
+            {loading ? (
+              <AppLoader inline label="Loading requests..." />
+            ) : requests.length === 0 ? (
+              <EmptyRequests view={view} />
             ) : (
-              <SentRequests
-                requests={requests}
-                highlightId={highlightId}
-                onOpenItem={setViewingRequest}
-                onCancel={setCancelingRequest}
-              />
+              <>
+                <p className="count-label">
+                  Pending
+                  <small>
+                    {requests.length} {requests.length === 1 ? 'request' : 'requests'}
+                  </small>
+                </p>
+                {view === 'received' ? (
+                  <ReceivedRequests
+                    requests={requests}
+                    highlightId={highlightId}
+                    onApprove={setApprovingRequest}
+                    onDecline={setDecliningRequest}
+                  />
+                ) : (
+                  <SentRequests
+                    requests={requests}
+                    highlightId={highlightId}
+                    onOpenItem={setViewingRequest}
+                    onCancel={setCancelingRequest}
+                  />
+                )}
+              </>
             )}
           </>
         )}

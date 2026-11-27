@@ -93,7 +93,7 @@ Every response is `{ message, data }`, with `data` as `{}` on errors. `DELETE it
 | `description` | string   | Optional                                                       |
 | `category`    | string   | One of the categories in `models/item.js`, defaults to `Other` |
 | `condition`   | string   | `New`, `Like new`, `Good` or `Fair`, or `null` when not set    |
-| `photos`      | string[] | Cloudinary URLs                                                |
+| `photos`      | string[] | Cloudinary URLs, at least one, and PATCH can't empty them      |
 
 Item responses also include `available`, which is `false` while the item is on loan. Changing `condition` fails with 409 while the item is on loan, since the borrower took it as it was.
 
@@ -152,9 +152,13 @@ Each loan's `item` is `{ name, description, category, photos, deletedAt }`. In `
 An item counts as on loan while a loan is `approved` or `returned`.
 
 - `requested` → `approved` (owner approves, only before `dueDate`)
-- `approved` → `returned` (borrower returns the item)
+- `approved` → `returned` (borrower returns the item with a photo)
 - `returned` → `confirmed` (owner confirms the return)
 - `requested` → `rejected` (owner rejects) or `cancelled` (borrower withdraws)
+
+#### Return photos
+
+`PATCH loans/:id/return` takes `{ photo }`, a Cloudinary URL from the borrower's own folder, and returns 400 without one. It's saved as `returnPhoto` so the owner can compare it to the listing photo before confirming.
 
 #### Ratings
 

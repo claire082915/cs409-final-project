@@ -12,6 +12,7 @@ import { useAuth } from '../auth/AuthContext.jsx'
 import { isDemoEmail } from '../auth/schoolEmail.js'
 import { apiFetch } from '../lib/api.js'
 import { CAMPUS_AREAS } from '../lib/campusAreas.js'
+import { compressPhoto } from '../lib/compressPhoto.js'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
 import UnsavedChangesPrompt from '../components/UnsavedChangesPrompt.jsx'
@@ -71,7 +72,7 @@ export default function AccountPage() {
     setSaving(true)
     setError('')
     try {
-      const photo = pendingPhoto ? await uploadPhoto(pendingPhoto) : form.photo
+      const photo = pendingPhoto ? await uploadPhoto(await compressPhoto(pendingPhoto)) : form.photo
       const updated = await apiFetch('users/me', {
         method: 'PATCH',
         body: {

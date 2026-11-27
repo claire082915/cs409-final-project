@@ -159,23 +159,6 @@
   align-items: center;
   gap: 4px 8px;
 }
-.request-person-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-.request-person-name {
-  color: var(--slate-750);
-  font-size: 13px;
-  font-weight: 600;
-}
-.request-person-link:hover .request-person-name {
-  text-decoration: underline;
-}
-.request-person-link:focus-visible {
-  border-radius: var(--radius-control);
-}
 .request-area {
   display: inline-flex;
   align-items: center;

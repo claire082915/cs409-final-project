@@ -255,6 +255,11 @@ a {
   opacity: 0.6;
   cursor: default;
 }
+.action-button[aria-disabled='true'] {
+  --action-bg-hover: var(--action-bg);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .action-button-neutral {
   --action-color: var(--slate-700);
   --action-bg: var(--grey-100);
@@ -323,8 +328,14 @@ a {
   place-items: center;
   overflow: hidden;
   border-radius: var(--radius-control);
-  color: var(--slate-350);
-  background: var(--grey-150);
+  color: var(--slate-300);
+  background: var(--grey-100);
+}
+/* Placeholder icons are drawn large, so a thinner line keeps them light */
+.photo-box > svg,
+.loan-card-photo > svg,
+.item-card-photo > svg {
+  stroke-width: 1.5;
 }
 .photo-box img {
   display: block;

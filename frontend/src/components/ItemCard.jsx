@@ -11,7 +11,7 @@ export default function ItemCard({ item, onOpen, children }) {
         {item.photos?.[0] ? (
           <img src={item.photos[0]} alt="" loading="lazy" />
         ) : (
-          <PackageOpen size={32} aria-hidden="true" />
+          <PackageOpen size={56} aria-hidden="true" />
         )}
       </div>
       <div className="item-card-body">

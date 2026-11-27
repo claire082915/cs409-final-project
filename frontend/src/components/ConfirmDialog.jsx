@@ -1,4 +1,5 @@
 import { Button, Dialog, Heading, Modal, ModalOverlay } from 'react-aria-components'
+import Tooltip from './Tooltip.jsx'
 import '../styles/components/confirm-dialog.css'
 
 // Escape and clicking outside count as cancelling
@@ -10,7 +11,9 @@ export default function ConfirmDialog({
   cancelLabel,
   confirmLabel,
   destructive = true,
+  confirmBlockedReason,
   onCancel,
+  children,
   onConfirm,
 }) {
   const confirmColor = destructive ? 'action-button-danger' : 'action-button-teal'
@@ -27,6 +30,7 @@ export default function ConfirmDialog({
             {title}
           </Heading>
           <p className="confirm-text">{text}</p>
+          {children}
           <div className="confirm-actions">
             {/* Focus the safe choice so pressing Enter cancels */}
             <Button
@@ -37,13 +41,17 @@ export default function ConfirmDialog({
             >
               {cancelLabel}
             </Button>
-            <Button
-              className={`action-button ${confirmColor}`}
-              isDisabled={isPending}
-              onPress={onConfirm}
-            >
-              {confirmLabel}
-            </Button>
+            {/* Blocked stays hoverable so the tooltip can say why, a disabled button gets no hover */}
+            <Tooltip text={confirmBlockedReason} placement="top">
+              <Button
+                className={`action-button ${confirmColor}`}
+                isDisabled={isPending}
+                aria-disabled={Boolean(confirmBlockedReason)}
+                onPress={confirmBlockedReason ? undefined : onConfirm}
+              >
+                {confirmLabel}
+              </Button>
+            </Tooltip>
           </div>
         </Dialog>
       </Modal>

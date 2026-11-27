@@ -5,7 +5,7 @@ import ItemDialog from './ItemDialog.jsx'
 import PendingLabel from './PendingLabel.jsx'
 import { apiFetch } from '../lib/api.js'
 
-export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
+export default function BorrowItemDialog({ item, onClose, onSent }) {
   const [requesting, setRequesting] = useState(false)
   const [error, setError] = useState('')
 
@@ -14,11 +14,6 @@ export default function BorrowItemDialog({ item, isMock, onClose, onSent }) {
     const form = new FormData(event.currentTarget)
     const dueDate = String(form.get('dueDate') || '')
     const message = String(form.get('message'))
-    // Mock items only pretend to send
-    if (isMock) {
-      onSent(`Request sent to ${item.owner?.displayName || 'the owner'}!`)
-      return
-    }
     setRequesting(true)
     setError('')
     try {

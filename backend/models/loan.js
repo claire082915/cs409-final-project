@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { isUserPhotoUrl } from '../lib/cloudinary.js'
 
 const STATUSES = ['requested', 'approved', 'returned', 'confirmed', 'rejected', 'cancelled']
 // The item stays on loan until the owner confirms the return
@@ -25,6 +26,15 @@ const loanSchema = new mongoose.Schema(
     },
     approvedAt: Date,
     returnedAt: Date,
+    returnPhoto: {
+      type: String,
+      validate: {
+        validator(url) {
+          return isUserPhotoUrl(url, this.borrower)
+        },
+        message: 'Return photo must be uploaded by the borrower',
+      },
+    },
     confirmedAt: Date,
   },
   { timestamps: true },

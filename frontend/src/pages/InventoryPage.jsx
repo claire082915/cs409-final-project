@@ -18,6 +18,7 @@ import { ITEM_CATEGORIES } from '../lib/itemCategories.js'
 import { ITEM_CONDITIONS, NO_CONDITION, storedCondition } from '../lib/itemConditions.js'
 import SelectMenu from '../components/SelectMenu.jsx'
 import FilterMenu from '../components/FilterMenu.jsx'
+import { compressPhoto } from '../lib/compressPhoto.js'
 import { uploadPhoto } from '../lib/uploadPhoto.js'
 import { hasChanges } from '../lib/hasChanges.js'
 import {
@@ -133,12 +134,14 @@ export default function InventoryPage() {
   }
 
   const addItem = async (fields) => {
-    const photos = photoFile ? [await uploadPhoto(photoFile)] : []
+    const photos = photoFile ? [await uploadPhoto(await compressPhoto(photoFile))] : []
     return apiFetch('items', { method: 'POST', body: { ...fields, photos } })
   }
 
   const editItem = async (fields) => {
-    const photos = photoFile ? [await uploadPhoto(photoFile)] : editingItem.photos
+    const photos = photoFile
+      ? [await uploadPhoto(await compressPhoto(photoFile))]
+      : editingItem.photos
     return apiFetch(`items/${editingItem._id}`, { method: 'PATCH', body: { ...fields, photos } })
   }
 
@@ -162,6 +165,10 @@ export default function InventoryPage() {
     }
     if (!fields.name) {
       setFormError('Enter an item name.')
+      return
+    }
+    if (!photoFile && !photoPreview) {
+      setFormError('Add a photo of the item.')
       return
     }
     setSaving(true)
@@ -305,65 +312,69 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        <div className="inventory-toolbar">
-          <ViewSwitch
-            label="Items to show"
-            options={[
-              {
-                id: 'available',
-                label: (
-                  <>
-                    Available<small>{availableCount}</small>
-                  </>
-                ),
-              },
-              {
-                id: 'lent',
-                label: (
-                  <>
-                    Lent<small>{lentCount}</small>
-                  </>
-                ),
-              },
-            ]}
-            selected={tab}
-            onChange={setTab}
-          />
-        </div>
-        <SearchField value={query} onChange={setQuery} placeholder="Search your items">
-          <FilterMenu
-            options={menuCategories}
-            counts={categoryCounts}
-            selected={selectedCategories}
-            onChange={setSelectedCategories}
-            allLabel="All categories"
-            pluralLabel="categories"
-            label="category"
-          />
-        </SearchField>
-
-        {error && (
-          <p className="inventory-error" role="status">
-            {error}
-          </p>
-        )}
         {loading ? (
           <AppLoader inline label="Loading your items…" />
-        ) : visibleItems.length ? (
-          <section className="item-grid" aria-label={`${tab} items`} ref={gridRef}>
-            {visibleItems.map((item) => (
-              <ItemCard key={item._id} item={item} onOpen={() => openForm(item)} />
-            ))}
-          </section>
         ) : (
-          <InventoryEmptyState
-            tab={tab}
-            isFiltering={isFiltering}
-            onClearFilters={() => {
-              setQuery('')
-              setSelectedCategories(new Set())
-            }}
-          />
+          <>
+            <div className="inventory-toolbar">
+              <ViewSwitch
+                label="Items to show"
+                options={[
+                  {
+                    id: 'available',
+                    label: (
+                      <>
+                        Available<small>{availableCount}</small>
+                      </>
+                    ),
+                  },
+                  {
+                    id: 'lent',
+                    label: (
+                      <>
+                        Lent<small>{lentCount}</small>
+                      </>
+                    ),
+                  },
+                ]}
+                selected={tab}
+                onChange={setTab}
+              />
+            </div>
+            <SearchField value={query} onChange={setQuery} placeholder="Search your items">
+              <FilterMenu
+                options={menuCategories}
+                counts={categoryCounts}
+                selected={selectedCategories}
+                onChange={setSelectedCategories}
+                allLabel="All categories"
+                pluralLabel="categories"
+                label="category"
+              />
+            </SearchField>
+
+            {error && (
+              <p className="inventory-error" role="status">
+                {error}
+              </p>
+            )}
+            {visibleItems.length ? (
+              <section className="item-grid" aria-label={`${tab} items`} ref={gridRef}>
+                {visibleItems.map((item) => (
+                  <ItemCard key={item._id} item={item} onOpen={() => openForm(item)} />
+                ))}
+              </section>
+            ) : (
+              <InventoryEmptyState
+                tab={tab}
+                isFiltering={isFiltering}
+                onClearFilters={() => {
+                  setQuery('')
+                  setSelectedCategories(new Set())
+                }}
+              />
+            )}
+          </>
         )}
         {isFormOpen && (
           <div

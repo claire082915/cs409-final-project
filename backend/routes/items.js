@@ -42,6 +42,10 @@ router.post('/', async (req, res) => {
   for (const field of editableFields) {
     fields[field] = body[field]
   }
+  // No photo -> 400, the owner needs it to check the item when it comes back
+  if (!Array.isArray(fields.photos) || fields.photos.length === 0) {
+    return res.status(400).json({ message: 'Add a photo of the item', data: {} })
+  }
   const item = await Item.create({ ...fields, owner: req.userId })
   // A new item has no loans yet
   res.status(201).json({ message: 'OK', data: withAvailability(item, true) })
@@ -239,6 +243,10 @@ router.patch('/:id', requireOwner, async (req, res) => {
     return res
       .status(409)
       .json({ message: "Can't change the condition while it's on loan", data: {} })
+  }
+  // Old items might have no photo, but a photo can't be removed -> 400
+  if (Array.isArray(body.photos) && body.photos.length === 0) {
+    return res.status(400).json({ message: 'Add a photo of the item', data: {} })
   }
   const oldPhotos = [...req.item.photos]
   for (const field of editableFields) {

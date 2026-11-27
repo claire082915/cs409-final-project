@@ -12,7 +12,7 @@ import { approveTrustedRequests, autoApproves, requestsToAutoApprove } from '../
 import { DUE_SOON_DAYS, MS_PER_DAY } from '../lib/notify.js'
 // Read routes show the item and both users instead of bare ids
 const loanDetails = [
-  { path: 'item', select: 'name description category photos deletedAt' },
+  { path: 'item', select: 'name description category condition photos deletedAt' },
   { path: 'owner', select: 'username displayName photo campusArea' },
   { path: 'borrower', select: 'username displayName photo' },
 ]
@@ -289,9 +289,14 @@ returnRoute.patch(async function (req, res) {
   if (req.loan.status !== 'approved') {
     return res.status(409).json({ message: 'Loan is not approved', data: {} })
   }
+  // No photo of the item -> 400
+  if (!req.body?.photo) {
+    return res.status(400).json({ message: 'Add a photo of the item to return it', data: {} })
+  }
 
   req.loan.status = 'returned'
   req.loan.returnedAt = new Date()
+  req.loan.returnPhoto = req.body.photo
   await req.loan.save()
   return res.status(200).json({ message: 'OK', data: req.loan })
 })

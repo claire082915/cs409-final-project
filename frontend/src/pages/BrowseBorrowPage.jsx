@@ -68,7 +68,7 @@ function BrowseEmptyState({ noItems, onClearFilters }) {
 
 export default function BrowseBorrowPage() {
   const [items, setItems] = useState([])
-  const [total, setTotal] = useState(0)
+  const [total, setTotal] = useState(null)
   // Results fetched so far, counting repeats, so paging always moves forward
   const [nextSkip, setNextSkip] = useState(0)
   const [searchParams] = useSearchParams()
@@ -144,75 +144,82 @@ export default function BrowseBorrowPage() {
             <p>Borrow from people on campus.</p>
           </div>
         </header>
-        <SearchField value={query} onChange={setQuery} placeholder="Search items">
-          <FilterMenu
-            options={ITEM_CATEGORIES}
-            selected={selectedCategories}
-            onChange={setSelectedCategories}
-            allLabel="All categories"
-            pluralLabel="categories"
-            label="category"
-          />
-          <FilterMenu
-            options={CAMPUS_AREAS}
-            selected={selectedAreas}
-            onChange={setSelectedAreas}
-            allLabel="All areas"
-            pluralLabel="areas"
-            label="area"
-          />
-        </SearchField>
-        {error && (
-          <p className="browse-message error" role="alert">
-            {error}
-          </p>
-        )}
-        {notice && (
-          <p className="browse-message success" role="status">
-            <Check size={16} />
-            {notice}
-            <button type="button" onClick={() => setNotice('')} aria-label="Dismiss message">
-              <X size={15} />
-            </button>
-          </p>
-        )}
-        <div className="count-label">
-          <span>
-            {selectedCategories.size === 0
-              ? 'Available now'
-              : describeSelection(selectedCategories, 'All categories', 'categories')}
-          </span>
-          <small>
-            {total} {total === 1 ? 'item' : 'items'}
-          </small>
-        </div>
-        {/* Keep the current cards up while new filters load so the grid doesn't blank out */}
-        {loading && !items.length ? (
+        {/* The count and filters wait for the first page so they never show a wrong 0 */}
+        {total === null ? (
           <AppLoader inline label="Loading items…" />
-        ) : items.length ? (
-          <section className="item-grid" aria-label="Available items" ref={gridRef}>
-            {items.map((item) => (
-              <ItemCard
-                key={item._id}
-                item={item}
-                onOpen={() => {
-                  setError('')
-                  setSelectedItem(item)
-                }}
-              >
-                <OwnerDetails owner={item.owner} />
-              </ItemCard>
-            ))}
-          </section>
         ) : (
-          <BrowseEmptyState
-            noItems={!hasFilters}
-            onClearFilters={() => {
-              setQuery('')
-              setSelectedCategories(new Set())
-              setSelectedAreas(new Set())
-            }}
-          />
+          <>
+            <SearchField value={query} onChange={setQuery} placeholder="Search items">
+              <FilterMenu
+                options={ITEM_CATEGORIES}
+                selected={selectedCategories}
+                onChange={setSelectedCategories}
+                allLabel="All categories"
+                pluralLabel="categories"
+                label="category"
+              />
+              <FilterMenu
+                options={CAMPUS_AREAS}
+                selected={selectedAreas}
+                onChange={setSelectedAreas}
+                allLabel="All areas"
+                pluralLabel="areas"
+                label="area"
+              />
+            </SearchField>
+            {error && (
+              <p className="browse-message error" role="alert">
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p className="browse-message success" role="status">
+                <Check size={16} />
+                {notice}
+                <button type="button" onClick={() => setNotice('')} aria-label="Dismiss message">
+                  <X size={15} />
+                </button>
+              </p>
+            )}
+            <div className="count-label">
+              <span>
+                {selectedCategories.size === 0
+                  ? 'Available now'
+                  : describeSelection(selectedCategories, 'All categories', 'categories')}
+              </span>
+              <small>
+                {total} {total === 1 ? 'item' : 'items'}
+              </small>
+            </div>
+            {/* Keep the current cards up while new filters load so the grid doesn't blank out */}
+            {loading && !items.length ? (
+              <AppLoader inline label="Loading items…" />
+            ) : items.length ? (
+              <section className="item-grid" aria-label="Available items" ref={gridRef}>
+                {items.map((item) => (
+                  <ItemCard
+                    key={item._id}
+                    item={item}
+                    onOpen={() => {
+                      setError('')
+                      setSelectedItem(item)
+                    }}
+                  >
+                    <OwnerDetails owner={item.owner} />
+                  </ItemCard>
+                ))}
+              </section>
+            ) : (
+              <BrowseEmptyState
+                noItems={!hasFilters}
+                onClearFilters={() => {
+                  setQuery('')
+                  setSelectedCategories(new Set())
+                  setSelectedAreas(new Set())
+                }}
+              />
+            )}
+          </>
         )}
         {/* Loads the next page as it nears the viewport */}
         <div ref={endRef} />

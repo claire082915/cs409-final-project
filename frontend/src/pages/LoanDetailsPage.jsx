@@ -7,12 +7,14 @@ import { countBy, orderBy } from 'lodash-es'
 import { toast } from 'sonner'
 import AppShell from '../components/AppShell.jsx'
 import AppLoader from '../components/AppLoader.jsx'
-import Avatar from '../components/Avatar.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import DueDateMenu from '../components/DueDateMenu.jsx'
 import FilterMenu from '../components/FilterMenu.jsx'
 import LoanStatus from '../components/LoanStatus.jsx'
+import PendingLabel from '../components/PendingLabel.jsx'
+import PersonLink from '../components/PersonLink.jsx'
+import PhotoDropZone from '../components/PhotoDropZone.jsx'
 import SearchField from '../components/SearchField.jsx'
 import ViewSwitch from '../components/ViewSwitch.jsx'
 import { apiFetch } from '../lib/api.js'
@@ -21,6 +23,9 @@ import { ANY_DUE_DATE, dueDateFromParam, dueDateParam, matchesDueDate } from '..
 import { getStatus, isFinished } from '../lib/loanStatus.js'
 import { useFiltersInUrl } from '../lib/useFiltersInUrl.js'
 import { useHighlightedLoan } from '../lib/useHighlightedLoan.js'
+import { compressPhoto } from '../lib/compressPhoto.js'
+import { uploadPhoto } from '../lib/uploadPhoto.js'
+import '../styles/components/item-tags.css'
 import '../styles/pages/loan-details.css'
 
 // Badge labels for the filter menu, open loans first with the ones needing action on top
@@ -96,7 +101,7 @@ function LoanCard({ loan, direction, isHighlighted, onAction }) {
         {image ? (
           <img src={image} alt="" loading="lazy" />
         ) : (
-          <PackageOpen size={26} aria-hidden="true" />
+          <PackageOpen size={46} aria-hidden="true" />
         )}
       </div>
       <div className="loan-card-main">
@@ -105,13 +110,7 @@ function LoanCard({ loan, direction, isHighlighted, onAction }) {
           <LoanStatus loan={loan} />
         </div>
         <div className="loan-card-person">
-          <Avatar
-            photo={person?.photo}
-            name={person?.displayName || 'Community member'}
-            username={person?.username || 'community'}
-            className="avatar-small"
-          />
-          <strong>{personName(person)}</strong>
+          <PersonLink person={person} />
         </div>
         <div className="loan-card-meta">
           <CalendarDays size={14} />
@@ -130,6 +129,33 @@ function LoanCard({ loan, direction, isHighlighted, onAction }) {
         </div>
       )}
     </article>
+  )
+}
+
+function ComparedPhoto({ label, photo, condition }) {
+  return (
+    <figure className="return-compare-photo">
+      <div className="photo-box">
+        {photo ? <img src={photo} alt={label} /> : <PackageOpen size={46} aria-hidden="true" />}
+      </div>
+      <figcaption>
+        {label}
+        {condition && <span className="item-tag item-tag-condition">{condition}</span>}
+      </figcaption>
+    </figure>
+  )
+}
+
+function ReturnPhotos({ loan }) {
+  return (
+    <div className="return-compare">
+      <ComparedPhoto
+        label="Listing photo"
+        photo={loan.item?.photos?.[0]}
+        condition={loan.item?.condition}
+      />
+      <ComparedPhoto label="Return photo" photo={loan.returnPhoto} />
+    </div>
   )
 }
 
@@ -172,6 +198,9 @@ export default function LoanDetailsPage() {
   const [error, setError] = useState('')
   const [actionTarget, setActionTarget] = useState(null)
   const [acting, setActing] = useState(false)
+  // The photo stays in the browser until the return is sent
+  const [returnPhotoFile, setReturnPhotoFile] = useState(null)
+  const [returnPhotoPreview, setReturnPhotoPreview] = useState('')
   const loadSequence = useRef(0)
   const [listRef] = useAutoAnimate(fadeInCards)
   const highlightId = useHighlightedLoan(!loading)
@@ -232,17 +261,35 @@ export default function LoanDetailsPage() {
   const isFiltering = query || selectedStatuses.size > 0 || dueFilter.range !== 'any'
   useFiltersInUrl(loanFilterParams({ direction, query, selectedStatuses, dueFilter }))
 
+  const openAction = (target) => {
+    setReturnPhotoFile(null)
+    setReturnPhotoPreview('')
+    setActionTarget(target)
+  }
+
+  const chooseReturnPhoto = (file) => {
+    setReturnPhotoFile(file)
+    const reader = new FileReader()
+    reader.onload = () => setReturnPhotoPreview(String(reader.result))
+    reader.readAsDataURL(file)
+  }
+
   const updateLoan = async () => {
     if (!actionTarget) return
     const { loan, action, direction: loanDirection } = actionTarget
     setActing(true)
     try {
-      await apiFetch(`loans/${loan._id}/${action}`, { method: 'PATCH' })
-      const nextStatus = action === 'return' ? 'returned' : 'confirmed'
+      const body =
+        action === 'return'
+          ? { photo: await uploadPhoto(await compressPhoto(returnPhotoFile)) }
+          : undefined
+      const updated = await apiFetch(`loans/${loan._id}/${action}`, { method: 'PATCH', body })
       setLoans((current) => ({
         ...current,
         [loanDirection]: current[loanDirection].map((entry) =>
-          entry._id === loan._id ? { ...entry, status: nextStatus } : entry,
+          entry._id === loan._id
+            ? { ...entry, status: updated.status, returnPhoto: updated.returnPhoto }
+            : entry,
         ),
       }))
       const messages = {
@@ -264,13 +311,15 @@ export default function LoanDetailsPage() {
     {
       return: [
         'Mark this item as returned?',
-        `This lets ${personName(actionTarget?.loan.owner)} know you’ve returned ${actionTarget?.loan.item?.name || 'the item'}. The lender still needs to confirm the return.`,
+        `Add a photo of ${actionTarget?.loan.item?.name || 'the item'} so ${personName(actionTarget?.loan.owner)} can check its condition.`,
         'Mark returned',
+        'Returning...',
       ],
       confirm: [
         'Confirm this return?',
-        `This confirms that ${actionTarget?.loan.item?.name || 'the item'} has been returned.`,
+        'Check that the return condition matches the listing.',
         'Confirm return',
+        'Confirming...',
       ],
     }[selectedAction] || []
 
@@ -284,73 +333,77 @@ export default function LoanDetailsPage() {
           </div>
         </header>
 
-        <div className="loans-toolbar">
-          <ViewSwitch
-            label="Loans to show"
-            options={[
-              {
-                id: 'borrowed',
-                label: (
-                  <>
-                    Borrowed<small>{borrowedLoans.length}</small>
-                  </>
-                ),
-              },
-              {
-                id: 'lent',
-                label: (
-                  <>
-                    Lent<small>{lentLoans.length}</small>
-                  </>
-                ),
-              },
-            ]}
-            selected={direction}
-            onChange={setDirection}
-          />
-        </div>
-        <SearchField value={query} onChange={setQuery} placeholder="Search loans">
-          <FilterMenu
-            options={menuStatuses}
-            counts={statusCounts}
-            selected={selectedStatuses}
-            onChange={setSelectedStatuses}
-            allLabel="All statuses"
-            pluralLabel="statuses"
-            label="status"
-          />
-          <DueDateMenu value={dueFilter} onChange={setDueFilter} />
-        </SearchField>
-
-        {error && (
-          <p className="loans-error" role="alert">
-            {error}
-          </p>
-        )}
         {loading ? (
           <AppLoader inline label="Loading your loans…" />
-        ) : visibleLoans.length ? (
-          <section className="loans-list" aria-label={`${direction} loans`} ref={listRef}>
-            {visibleLoans.map((loan) => (
-              <LoanCard
-                key={loan._id}
-                loan={loan}
-                direction={direction}
-                isHighlighted={loan._id === highlightId}
-                onAction={setActionTarget}
-              />
-            ))}
-          </section>
         ) : (
-          <LoansEmptyState
-            direction={direction}
-            isFiltering={isFiltering}
-            onClearFilters={() => {
-              setQuery('')
-              setSelectedStatuses(new Set())
-              setDueFilter(ANY_DUE_DATE)
-            }}
-          />
+          <>
+            <div className="loans-toolbar">
+              <ViewSwitch
+                label="Loans to show"
+                options={[
+                  {
+                    id: 'borrowed',
+                    label: (
+                      <>
+                        Borrowed<small>{borrowedLoans.length}</small>
+                      </>
+                    ),
+                  },
+                  {
+                    id: 'lent',
+                    label: (
+                      <>
+                        Lent<small>{lentLoans.length}</small>
+                      </>
+                    ),
+                  },
+                ]}
+                selected={direction}
+                onChange={setDirection}
+              />
+            </div>
+            <SearchField value={query} onChange={setQuery} placeholder="Search loans">
+              <FilterMenu
+                options={menuStatuses}
+                counts={statusCounts}
+                selected={selectedStatuses}
+                onChange={setSelectedStatuses}
+                allLabel="All statuses"
+                pluralLabel="statuses"
+                label="status"
+              />
+              <DueDateMenu value={dueFilter} onChange={setDueFilter} />
+            </SearchField>
+
+            {error && (
+              <p className="loans-error" role="alert">
+                {error}
+              </p>
+            )}
+            {visibleLoans.length ? (
+              <section className="loans-list" aria-label={`${direction} loans`} ref={listRef}>
+                {visibleLoans.map((loan) => (
+                  <LoanCard
+                    key={loan._id}
+                    loan={loan}
+                    direction={direction}
+                    isHighlighted={loan._id === highlightId}
+                    onAction={openAction}
+                  />
+                ))}
+              </section>
+            ) : (
+              <LoansEmptyState
+                direction={direction}
+                isFiltering={isFiltering}
+                onClearFilters={() => {
+                  setQuery('')
+                  setSelectedStatuses(new Set())
+                  setDueFilter(ANY_DUE_DATE)
+                }}
+              />
+            )}
+          </>
         )}
 
         <ConfirmDialog
@@ -359,11 +412,25 @@ export default function LoanDetailsPage() {
           title={actionCopy[0]}
           text={actionCopy[1]}
           cancelLabel="Keep loan"
-          confirmLabel={actionCopy[2]}
+          confirmLabel={
+            <PendingLabel pending={acting} pendingText={actionCopy[3]}>
+              {actionCopy[2]}
+            </PendingLabel>
+          }
           destructive={false}
+          confirmBlockedReason={
+            selectedAction === 'return' && !returnPhotoFile ? 'Add a photo first' : ''
+          }
           onCancel={() => setActionTarget(null)}
           onConfirm={updateLoan}
-        />
+        >
+          {selectedAction === 'return' && (
+            <PhotoDropZone className="return-photo-upload" onPhoto={chooseReturnPhoto}>
+              {returnPhotoPreview && <img src={returnPhotoPreview} alt="Change photo" />}
+            </PhotoDropZone>
+          )}
+          {selectedAction === 'confirm' && <ReturnPhotos loan={actionTarget.loan} />}
+        </ConfirmDialog>
       </main>
     </AppShell>
   )
